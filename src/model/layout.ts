@@ -15,3 +15,18 @@ export function withActiveItems(plan: Plan, items: Item[]): Plan {
   const id = activeLayout(plan).id;
   return { ...plan, layouts: plan.layouts.map((l) => (l.id === id ? { ...l, items } : l)) };
 }
+
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+export function nextLayoutName(names: string[]): string {
+  for (const c of LETTERS) {
+    const name = `${c}안`;
+    if (!names.includes(name)) return name;
+  }
+  return `배치안 ${names.length + 1}`;
+}
+
+export function compareItems(plan: Plan, layoutId: string | null): Item[] {
+  if (!layoutId || layoutId === activeLayout(plan).id) return [];
+  return plan.layouts.find((l) => l.id === layoutId)?.items ?? [];
+}

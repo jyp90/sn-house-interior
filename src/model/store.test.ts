@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { findProduct } from '../catalog/products';
 import { activeItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 import { createPlanStore, HISTORY_LIMIT } from './store';
+import { validatePlan } from '../validation/validate';
 
 const P = 'samsung-bespoke-4door-sample';
 const V = 'satin-white';
@@ -345,5 +347,85 @@ describe('잠금', () => {
     expect(activeItems(s.getState().plan)[0].verified).toBe(true);
     s.getState().updateItem(id, { locked: false, x: 10 });
     expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 10, locked: false });
+  });
+});
+
+describe('배치안', () => {
+  it('복제하면 아이템을 새 id로 복사한 B안이 활성화되고 실행 취소 한 번에 사라진다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const itemId = s.getState().addItem(P, V, { x: 100, y: 100 });
+    const pastLen = s.getState().past.length;
+    const id = s.getState().addLayout();
+    const plan = s.getState().plan;
+    expect(plan.activeLayoutId).toBe(id);
+    expect(plan.layouts.map((l) => l.name)).toEqual(['A안', 'B안']);
+    expect(activeItems(plan)[0]).toMatchObject({ x: 100, y: 100 });
+    expect(activeItems(plan)[0].id).not.toBe(itemId);
+    expect(s.getState().selectedId).toBeNull();
+    expect(s.getState().past.length).toBe(pastLen + 1);
+    s.getState().undo();
+    expect(s.getState().plan.layouts).toHaveLength(1);
+  });
+
+  it('B안에서 옮겨도 A안은 그대로다 (F09)', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().addItem(P, V, { x: 100, y: 100 });
+    s.getState().addLayout();
+    const moved = activeItems(s.getState().plan)[0].id;
+    s.getState().updateItem(moved, { x: 300 });
+    s.getState().switchLayout('layout-a');
+    expect(activeItems(s.getState().plan)[0].x).toBe(100);
+  });
+
+  it('벽을 추가하면 모든 배치안에서 보이고, 전환하면 그 배치안 기준으로 간섭을 다시 계산한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().addItem(P, V, { x: 100, y: 100 });
+    const b = s.getState().addLayout();
+    s.getState().updateItem(activeItems(s.getState().plan)[0].id, { x: 250 });
+    s.getState().addWalls([{ a: { x: 100, y: 40 }, b: { x: 100, y: 160 }, thickness: 10, height: 230 }]);
+    const status = () => {
+      const plan = s.getState().plan;
+      return Object.values(validatePlan(plan, (id) => findProduct(plan, id)))[0].collides;
+    };
+    expect(status()).toBe(false);
+    s.getState().switchLayout('layout-a');
+    expect(s.getState().plan.walls).toHaveLength(6);
+    expect(status()).toBe(true);
+    s.getState().switchLayout(b);
+    expect(status()).toBe(false);
+  });
+
+  it('이름과 메모를 바꾸고, 빈 이름은 무시한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().renameLayout('layout-a', '  창가 소파안 ');
+    s.getState().renameLayout('layout-a', '   ');
+    s.getState().setLayoutMemo('layout-a', '거실 넓게');
+    expect(s.getState().plan.layouts[0]).toMatchObject({ name: '창가 소파안', memo: '거실 넓게' });
+    s.getState().setLayoutMemo('layout-a', '');
+    expect(s.getState().plan.layouts[0].memo).toBeUndefined();
+  });
+
+  it('활성 배치안을 지우면 남은 첫 배치안이 활성화된다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const b = s.getState().addLayout();
+    s.getState().removeLayout(b);
+    expect(s.getState().plan.activeLayoutId).toBe('layout-a');
+    expect(s.getState().plan.layouts).toHaveLength(1);
+  });
+
+  it('마지막 배치안은 지울 수 없다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pastLen = s.getState().past.length;
+    s.getState().removeLayout('layout-a');
+    expect(s.getState().plan.layouts).toHaveLength(1);
+    expect(s.getState().past.length).toBe(pastLen);
+  });
+
+  it('없는 배치안이나 이미 활성인 배치안으로의 전환은 히스토리를 남기지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pastLen = s.getState().past.length;
+    s.getState().switchLayout('layout-a');
+    s.getState().switchLayout('nope');
+    expect(s.getState().past.length).toBe(pastLen);
   });
 });

@@ -2,8 +2,8 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
 import { wallLength } from '../geometry/walls';
 import { newId } from './ids';
-import { activeItems, withActiveItems } from './layout';
-import type { Background, Item, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
+import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
+import type { Background, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
 
 export const HISTORY_LIMIT = 100;
 
@@ -39,6 +39,11 @@ export type PlanState = {
   addRoom(name: string, label: Vec2): string;
   updateRoom(id: string, patch: Partial<Omit<Room, 'id'>>): void;
   removeRoom(id: string): void;
+  addLayout(): string;
+  renameLayout(id: string, name: string): void;
+  setLayoutMemo(id: string, memo: string): void;
+  removeLayout(id: string): void;
+  switchLayout(id: string): void;
   setBackground(background: Background | undefined): void;
   updateBackground(patch: Partial<Background>): void;
   undo(): void;
@@ -266,6 +271,57 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const plan = get().plan;
         if (!plan.rooms.some((r) => r.id === id)) return;
         commit({ ...plan, rooms: plan.rooms.filter((r) => r.id !== id) }, { selectedId: deselectIf(new Set([id])) });
+      },
+
+      addLayout: () => {
+        const plan = get().plan;
+        const source = activeLayout(plan);
+        const layout = {
+          id: newId('layout'),
+          name: nextLayoutName(plan.layouts.map((l) => l.name)),
+          items: source.items.map((i) => ({ ...i, id: newId('item') })),
+        };
+        commit({ ...plan, layouts: [...plan.layouts, layout], activeLayoutId: layout.id }, { selectedId: null });
+        return layout.id;
+      },
+
+      renameLayout: (id, name) => {
+        const plan = get().plan;
+        const trimmed = name.trim();
+        if (!trimmed || !plan.layouts.some((l) => l.id === id)) return;
+        commit({ ...plan, layouts: plan.layouts.map((l) => (l.id === id ? { ...l, name: trimmed } : l)) });
+      },
+
+      setLayoutMemo: (id, memo) => {
+        const plan = get().plan;
+        if (!plan.layouts.some((l) => l.id === id)) return;
+        const trimmed = memo.trim();
+        commit({
+          ...plan,
+          layouts: plan.layouts.map((l) => {
+            if (l.id !== id) return l;
+            const next: Layout = { ...l };
+            delete next.memo;
+            return trimmed ? { ...next, memo: trimmed } : next;
+          }),
+        });
+      },
+
+      removeLayout: (id) => {
+        const plan = get().plan;
+        if (plan.layouts.length <= 1 || !plan.layouts.some((l) => l.id === id)) return;
+        const layouts = plan.layouts.filter((l) => l.id !== id);
+        const wasActive = activeLayout(plan).id === id;
+        commit(
+          { ...plan, layouts, activeLayoutId: wasActive ? layouts[0].id : plan.activeLayoutId },
+          wasActive ? { selectedId: null } : {},
+        );
+      },
+
+      switchLayout: (id) => {
+        const plan = get().plan;
+        if (id === activeLayout(plan).id || !plan.layouts.some((l) => l.id === id)) return;
+        commit({ ...plan, activeLayoutId: id }, { selectedId: null });
       },
 
       setBackground: (background) => commit({ ...get().plan, background }),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeItems, activeLayout, withActiveItems } from './layout';
+import { activeItems, activeLayout, compareItems, nextLayoutName, withActiveItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 
 describe('layout', () => {
@@ -23,5 +23,21 @@ describe('layout', () => {
     const next = withActiveItems(plan, items);
     expect(next.layouts[0].items).toBe(items);
     expect(next.layouts[1]).toBe(other);
+  });
+});
+
+describe('nextLayoutName / compareItems', () => {
+  it('처음 비는 알파벳 이름을 고른다', () => {
+    expect(nextLayoutName(['A안'])).toBe('B안');
+    expect(nextLayoutName(['A안', 'C안'])).toBe('B안');
+  });
+
+  it('비교 대상은 활성 배치안이 아닌 존재하는 배치안만', () => {
+    const b = { id: 'layout-b', name: 'B안', items: [{ id: 'x', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0 }] };
+    const plan = { ...SAMPLE_PLAN, layouts: [...SAMPLE_PLAN.layouts, b] };
+    expect(compareItems(plan, 'layout-b')).toBe(b.items);
+    expect(compareItems(plan, 'layout-a')).toEqual([]);
+    expect(compareItems(plan, 'nope')).toEqual([]);
+    expect(compareItems(plan, null)).toEqual([]);
   });
 });
