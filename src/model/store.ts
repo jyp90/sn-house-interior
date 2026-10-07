@@ -1,4 +1,5 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
+import { activeItems, withActiveItems } from './layout';
 import type { Item, Plan, Product, Vec2 } from './schema';
 
 export const HISTORY_LIMIT = 100;
@@ -40,7 +41,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
           ? { plan, ...extra }
           : { plan, past: [...s.past, s.plan].slice(-HISTORY_LIMIT), future: [], ...extra },
       );
-    const withItems = (fn: (items: Item[]) => Item[]): Plan => ({ ...get().plan, items: fn(get().plan.items) });
+    const withItems = (fn: (items: Item[]) => Item[]): Plan => withActiveItems(get().plan, fn(activeItems(get().plan)));
 
     return {
       plan: initial,
@@ -59,19 +60,19 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       },
 
       updateItem: (id, patch) => {
-        if (!get().plan.items.some((i) => i.id === id)) return;
+        if (!activeItems(get().plan).some((i) => i.id === id)) return;
         commit(withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, ...patch }) : i))));
       },
 
       removeItem: (id) => {
-        if (!get().plan.items.some((i) => i.id === id)) return;
+        if (!activeItems(get().plan).some((i) => i.id === id)) return;
         commit(withItems((items) => items.filter((i) => i.id !== id)), {
           selectedId: get().selectedId === id ? null : get().selectedId,
         });
       },
 
       duplicateItem: (id) => {
-        const src = get().plan.items.find((i) => i.id === id);
+        const src = activeItems(get().plan).find((i) => i.id === id);
         if (!src) return null;
         const copy = { ...src, id: newId('item'), x: src.x + 20, y: src.y + 20 };
         commit(withItems((items) => [...items, copy]), { selectedId: copy.id });
@@ -79,7 +80,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       },
 
       rotateItem: (id, deltaDeg) => {
-        const src = get().plan.items.find((i) => i.id === id);
+        const src = activeItems(get().plan).find((i) => i.id === id);
         if (src) get().updateItem(id, { rotation: src.rotation + deltaDeg });
       },
 

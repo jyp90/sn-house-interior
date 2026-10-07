@@ -2,6 +2,7 @@ import { Grid, Html } from '@react-three/drei';
 import { useMemo } from 'react';
 import { planBounds } from '../geometry/bounds';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { cmToM } from '../model/units';
 import { toWorld } from './units';
 
 export function Floor() {
@@ -10,10 +11,10 @@ export function Floor() {
   const rooms = usePlan((s) => s.plan.rooms);
   const b = useMemo(() => planBounds({ walls }), [walls]);
   const margin = 200;
-  const w = (b.maxX - b.minX + margin * 2) / 100;
-  const d = (b.maxY - b.minY + margin * 2) / 100;
-  const cx = (b.minX + b.maxX) / 200;
-  const cz = (b.minY + b.maxY) / 200;
+  const w = cmToM(b.maxX - b.minX + margin * 2);
+  const d = cmToM(b.maxY - b.minY + margin * 2);
+  const cx = cmToM((b.minX + b.maxX) / 2);
+  const cz = cmToM((b.minY + b.maxY) / 2);
   return (
     <group>
       <mesh rotation-x={-Math.PI / 2} position={[cx, 0, cz]} onClick={() => store.getState().select(null)}>

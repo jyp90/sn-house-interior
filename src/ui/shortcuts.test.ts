@@ -59,4 +59,18 @@ describe('applyShortcut', () => {
     expect(press('Delete', { targetTag: 'BUTTON' })).toBe(false);
     expect(store.getState().plan.items).toHaveLength(1);
   });
+
+  it('버튼에 포커스가 있어도 Ctrl+Z / Ctrl+Shift+Z는 동작한다', () => {
+    const { store, press } = setup();
+    expect(press('z', { mod: true, targetTag: 'BUTTON' })).toBe(true);
+    expect(store.getState().plan.items).toHaveLength(0);
+    expect(press('z', { mod: true, shiftKey: true, targetTag: 'BUTTON' })).toBe(true);
+    expect(store.getState().plan.items).toHaveLength(1);
+  });
+
+  it('입력 필드에서는 Ctrl+Z를 가로채지 않는다', () => {
+    const { store, press } = setup();
+    expect(press('z', { mod: true, targetTag: 'INPUT' })).toBe(false);
+    expect(store.getState().plan.items).toHaveLength(1);
+  });
 });

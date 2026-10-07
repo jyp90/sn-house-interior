@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { wallPieces } from '../geometry/walls';
 import { usePlan } from '../model/StoreContext';
+import { cmToM } from '../model/units';
 
 export function Walls3D() {
   const walls = usePlan((s) => s.plan.walls);
@@ -12,8 +13,8 @@ export function Walls3D() {
   return (
     <group>
       {pieces.map((p, i) => (
-        <mesh key={i} position={[p.obb.cx / 100, (p.y0 + p.y1) / 200, p.obb.cy / 100]} rotation={[0, -p.obb.angle, 0]}>
-          <boxGeometry args={[(p.obb.hw * 2) / 100, (p.y1 - p.y0) / 100, (p.obb.hd * 2) / 100]} />
+        <mesh key={i} position={[cmToM(p.obb.cx), cmToM((p.y0 + p.y1) / 2), cmToM(p.obb.cy)]} rotation={[0, -p.obb.angle, 0]}>
+          <boxGeometry args={[cmToM(p.obb.hw * 2), cmToM(p.y1 - p.y0), cmToM(p.obb.hd * 2)]} />
           <meshStandardMaterial color="#f4f1ec" />
         </mesh>
       ))}

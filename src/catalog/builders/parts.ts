@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cmToM } from '../../model/units';
 
 const materials = new Map<string, THREE.MeshStandardMaterial>();
 
@@ -37,5 +38,5 @@ export function color(colors: Record<string, string>, key: string, fallback: str
 }
 
 export function meters(dims: { w: number; d: number; h: number }) {
-  return { W: dims.w / 100, D: dims.d / 100, H: dims.h / 100 };
+  return { W: cmToM(dims.w), D: cmToM(dims.d), H: cmToM(dims.h) };
 }

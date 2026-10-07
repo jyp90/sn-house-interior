@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { useMemo, useState, type DragEvent } from 'react';
 import { planCenter } from '../geometry/bounds';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { cmToM } from '../model/units';
 import { DND_MIME } from '../ui/dnd';
 import { useUi } from '../ui/uiStore';
 import { DropBridge, screenToFloor } from './DropBridge';
@@ -28,8 +29,8 @@ export function Viewport() {
   const [webgl] = useState(hasWebGL);
   // 벽이 바뀔 때만 카메라 기준점을 다시 계산한다(아이템 이동 때 카메라가 리셋되지 않도록)
   const c = useMemo(() => planCenter({ walls }), [walls]);
-  const cx = c.x / 100;
-  const cz = c.y / 100;
+  const cx = cmToM(c.x);
+  const cz = cmToM(c.y);
 
   if (!webgl) {
     return <div className="viewport viewport-fallback">이 브라우저는 WebGL을 지원하지 않아 3D 보기를 사용할 수 없습니다.</div>;

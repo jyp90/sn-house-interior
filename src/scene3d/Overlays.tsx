@@ -5,8 +5,10 @@ import { doorSwings, itemClearances, type ClearanceShape } from '../geometry/cle
 import { wallDistances } from '../geometry/distance';
 import { corners, itemObb, type OBB } from '../geometry/obb';
 import { planWallObbs } from '../geometry/walls';
+import { activeItems } from '../model/layout';
 import { usePlan } from '../model/StoreContext';
 import { useValidation } from '../model/useValidation';
+import { cmToM } from '../model/units';
 import { sectorToCircleArgs, toWorld } from './units';
 
 const Y = 0.004;
@@ -14,23 +16,23 @@ const OUTLINE_Y = 0.02;
 
 function outline(o: OBB): [number, number, number][] {
   const c = corners(o);
-  return [...c, c[0]].map((p) => [p.x / 100, OUTLINE_Y, p.y / 100]);
+  return [...c, c[0]].map((p) => [cmToM(p.x), OUTLINE_Y, cmToM(p.y)]);
 }
 
 function Shape({ shape, color }: { shape: ClearanceShape; color: string }) {
   if (shape.kind === 'rect') {
     const o = shape.obb;
     return (
-      <mesh position={[o.cx / 100, Y, o.cy / 100]} rotation={[-Math.PI / 2, 0, -o.angle]}>
-        <planeGeometry args={[(o.hw * 2) / 100, (o.hd * 2) / 100]} />
+      <mesh position={[cmToM(o.cx), Y, cmToM(o.cy)]} rotation={[-Math.PI / 2, 0, -o.angle]}>
+        <planeGeometry args={[cmToM(o.hw * 2), cmToM(o.hd * 2)]} />
         <meshBasicMaterial color={color} transparent opacity={0.25} depthWrite={false} />
       </mesh>
     );
   }
   const { thetaStart, thetaLength } = sectorToCircleArgs(shape.start, shape.end);
   return (
-    <mesh position={[shape.center.x / 100, Y, shape.center.y / 100]} rotation={[-Math.PI / 2, 0, 0]}>
-      <circleGeometry args={[shape.radius / 100, 24, thetaStart, thetaLength]} />
+    <mesh position={[cmToM(shape.center.x), Y, cmToM(shape.center.y)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <circleGeometry args={[cmToM(shape.radius), 24, thetaStart, thetaLength]} />
       <meshBasicMaterial color={color} transparent opacity={0.25} depthWrite={false} />
     </mesh>
   );
@@ -43,7 +45,7 @@ export function Overlays() {
   const wallObbs = useMemo(() => planWallObbs(plan), [plan]);
   const doors = useMemo(() => doorSwings(plan), [plan]);
 
-  const placed = plan.items.flatMap((item) => {
+  const placed = activeItems(plan).flatMap((item) => {
     const product = findProduct(plan, item.productId);
     return product ? [{ item, product, fp: itemObb(item.x, item.y, item.rotation, product.dims.w, product.dims.d) }] : [];
   });

@@ -42,4 +42,12 @@ describe('migrate', () => {
     expect(migrate({ version: 2 })).toBeNull();
     expect(migrate({})).toBeNull();
   });
+
+  it('버전을 올리지 않는 변환은 반복하지 않고 null', () => {
+    let calls = 0;
+    // 1000번째 호출부터 버전을 올리게 해서, 가드가 없는 구현도 테스트가 끝나게(RED가 멈추지 않게) 한다
+    const steps = { 0: (r: Record<string, unknown>) => (++calls > 1000 ? { ...r, version: 1 } : { ...r }) };
+    expect(migrate({ version: 0 }, steps, 1)).toBeNull();
+    expect(calls).toBe(1);
+  });
 });

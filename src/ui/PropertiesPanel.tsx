@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { findProduct } from '../catalog/products';
+import { activeItems } from '../model/layout';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useValidation } from '../model/useValidation';
 
@@ -32,7 +33,7 @@ export function PropertiesPanel() {
   const plan = usePlan((s) => s.plan);
   const selectedId = usePlan((s) => s.selectedId);
   const status = useValidation();
-  const item = plan.items.find((i) => i.id === selectedId);
+  const item = activeItems(plan).find((i) => i.id === selectedId);
 
   if (!item) {
     return (

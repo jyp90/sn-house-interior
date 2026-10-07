@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import type { StoreApi } from 'zustand/vanilla';
+import { activeItems } from '../model/layout';
 import type { PlanState } from '../model/store';
 
 export type KeyInput = { key: string; shiftKey: boolean; mod: boolean; targetTag?: string };
 
-const EDITABLE = new Set(['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON']);
+const TEXT_INPUT = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const ARROWS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
@@ -13,14 +14,16 @@ const ARROWS: Record<string, [number, number]> = {
 };
 
 export function applyShortcut(s: PlanState, k: KeyInput): boolean {
-  if (k.targetTag && EDITABLE.has(k.targetTag)) return false;
+  if (k.targetTag && TEXT_INPUT.has(k.targetTag)) return false;
   const key = k.key.toLowerCase();
   if (k.mod && key === 'z') {
     if (k.shiftKey) s.redo();
     else s.undo();
     return true;
   }
-  const item = s.plan.items.find((i) => i.id === s.selectedId);
+  // 패널 버튼을 누른 직후 포커스가 남아 있어도 Backspace로 지워지지 않게 한다
+  if (k.targetTag === 'BUTTON') return false;
+  const item = activeItems(s.plan).find((i) => i.id === s.selectedId);
   if (!item) return false;
   if (k.mod && key === 'd') {
     s.duplicateItem(item.id);

@@ -6,8 +6,10 @@ import { findProduct } from '../catalog/products';
 import { deg2rad, itemObb } from '../geometry/obb';
 import { snapToWalls } from '../geometry/snap';
 import { planWallObbs } from '../geometry/walls';
+import { activeItems } from '../model/layout';
 import type { Item, Product } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { cmToM, mToCm } from '../model/units';
 import { useUi } from '../ui/uiStore';
 import { FLOOR_PLANE } from './units';
 
@@ -24,7 +26,7 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
 
   const floorPoint = (e: ThreeEvent<PointerEvent>) => {
     const p = new THREE.Vector3();
-    return e.ray.intersectPlane(FLOOR_PLANE, p) ? { x: p.x * 100, y: p.z * 100 } : null;
+    return e.ray.intersectPlane(FLOOR_PLANE, p) ? { x: mToCm(p.x), y: mToCm(p.z) } : null;
   };
 
   const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -70,10 +72,10 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const y = product ? mountHeightCm(product) / 100 : 0;
+  const y = product ? cmToM(mountHeightCm(product)) : 0;
   return (
     <group
-      position={[item.x / 100, y, item.y / 100]}
+      position={[cmToM(item.x), y, cmToM(item.y)]}
       rotation={[0, -deg2rad(item.rotation), 0]}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -96,7 +98,7 @@ export function Items3D() {
   const plan = usePlan((s) => s.plan);
   return (
     <group>
-      {plan.items.map((item) => (
+      {activeItems(plan).map((item) => (
         <ItemMesh key={item.id} item={item} product={findProduct(plan, item.productId)} />
       ))}
     </group>

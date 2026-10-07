@@ -2,6 +2,7 @@ import { useThree } from '@react-three/fiber';
 import { useEffect } from 'react';
 import * as THREE from 'three';
 import type { Vec2 } from '../model/schema';
+import { mToCm } from '../model/units';
 import { FLOOR_PLANE } from './units';
 
 export const screenToFloor: { current: ((clientX: number, clientY: number) => Vec2 | null) | null } = { current: null };
@@ -15,7 +16,7 @@ export function DropBridge() {
       raycaster.setFromCamera(ndc, camera);
       const hit = new THREE.Vector3();
       if (!raycaster.ray.intersectPlane(FLOOR_PLANE, hit)) return null;
-      return { x: Math.round(hit.x * 100), y: Math.round(hit.z * 100) };
+      return { x: Math.round(mToCm(hit.x)), y: Math.round(mToCm(hit.z)) };
     };
     return () => {
       screenToFloor.current = null;

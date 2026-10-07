@@ -14,7 +14,9 @@ export function migrate(raw: RawPlan, steps = MIGRATIONS, current = CURRENT_VERS
   while (typeof cur.version === 'number' && cur.version < current) {
     const step = steps[cur.version];
     if (!step) return null;
-    cur = step(cur);
+    const next = step(cur);
+    if (typeof next.version !== 'number' || next.version <= cur.version) return null;
+    cur = next;
   }
   return cur.version === current ? cur : null;
 }
