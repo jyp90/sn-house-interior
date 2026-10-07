@@ -21,7 +21,7 @@ function hasWebGL(): boolean {
   }
 }
 
-export function Viewport() {
+export function Viewport({ active }: { active: boolean }) {
   const store = usePlanStore();
   const walls = usePlan((s) => s.plan.walls);
   const view = useUi((s) => s.view);
@@ -50,7 +50,12 @@ export function Viewport() {
 
   return (
     <div className="viewport" onDragOver={onDragOver} onDrop={onDrop}>
-      <Canvas dpr={[1, 2]} gl={{ preserveDrawingBuffer: true }} onPointerMissed={() => store.getState().select(null)}>
+      <Canvas
+        dpr={[1, 2]}
+        gl={{ preserveDrawingBuffer: true }}
+        frameloop={active ? 'always' : 'never'}
+        onPointerMissed={() => store.getState().select(null)}
+      >
         {view === 'top' ? (
           <OrthographicCamera makeDefault position={[cx, 30, cz + 0.01]} zoom={60} near={0.1} far={100} />
         ) : (

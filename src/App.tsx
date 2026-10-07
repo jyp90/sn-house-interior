@@ -20,7 +20,14 @@ export function App() {
       <aside className="left">
         <CatalogPanel />
       </aside>
-      <main className="center">{show2d ? <Editor2D /> : <Viewport />}</main>
+      <main className="center">
+        <div className={show2d ? 'layer' : 'layer layer-hidden'}>
+          <Editor2D />
+        </div>
+        <div className={show2d ? 'layer layer-hidden' : 'layer'}>
+          <Viewport active={!show2d} />
+        </div>
+      </main>
       <aside className="right">
         <PropertiesPanel />
       </aside>
