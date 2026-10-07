@@ -184,3 +184,135 @@ describe('createPlanStore', () => {
     expect(s.getState().plan.items.find((i) => i.id === id)).toBeDefined();
   });
 });
+
+describe('구조 편집', () => {
+  const twoWalls = () =>
+    createPlanStore({
+      ...SAMPLE_PLAN,
+      walls: [
+        { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 },
+        { id: 'v', a: { x: 400, y: 0 }, b: { x: 400, y: 300 }, thickness: 10, height: 230 },
+      ],
+      openings: [{ id: 'o', wallId: 'w', kind: 'door', offset: 250, width: 90, height: 210, sill: 0, hinge: 'start', swingIn: true }],
+      rooms: [],
+    });
+
+  it('벽 길이를 바꾸면 연결된 벽 끝점도 따라온다', () => {
+    const s = twoWalls();
+    expect(s.getState().resizeWall('w', 500)).toBeNull();
+    expect(s.getState().plan.walls[0].b).toEqual({ x: 500, y: 0 });
+    expect(s.getState().plan.walls[1].a).toEqual({ x: 500, y: 0 });
+  });
+
+  it('벽을 줄이면 개구부를 벽 안으로 당긴다', () => {
+    const s = twoWalls();
+    expect(s.getState().resizeWall('w', 300)).toBeNull();
+    expect(s.getState().plan.openings[0].offset).toBe(210);
+  });
+
+  it('개구부가 들어갈 수 없게 줄이면 거부하고 그대로 둔다', () => {
+    const s = twoWalls();
+    const pastLen = s.getState().past.length;
+    expect(s.getState().resizeWall('w', 80)).toBe('문이(가) 벽 길이를 벗어나 변경하지 않았습니다.');
+    expect(s.getState().plan.walls[0].b).toEqual({ x: 400, y: 0 });
+    expect(s.getState().past.length).toBe(pastLen);
+    expect(s.getState().resizeWall('w', 0)).toBe('길이는 1cm 이상이어야 합니다.');
+  });
+
+  it('끝점 드래그는 실행 취소 한 번으로 되돌아간다', () => {
+    const s = twoWalls();
+    s.getState().beginDrag();
+    s.getState().dragEndpoint({ x: 400, y: 0 }, { x: 450, y: 20.4 });
+    s.getState().dragEndpoint({ x: 400, y: 0 }, { x: 500, y: 0 });
+    s.getState().endDrag();
+    expect(s.getState().plan.walls[1].a).toEqual({ x: 500, y: 0 });
+    s.getState().undo();
+    expect(s.getState().plan.walls[0].b).toEqual({ x: 400, y: 0 });
+    expect(s.getState().plan.walls[1].a).toEqual({ x: 400, y: 0 });
+  });
+
+  it('끝점 드래그로 개구부가 벗어나면 마지막 유효 위치를 유지한다', () => {
+    const s = twoWalls();
+    s.getState().beginDrag();
+    s.getState().dragEndpoint({ x: 400, y: 0 }, { x: 350, y: 0 });
+    s.getState().dragEndpoint({ x: 400, y: 0 }, { x: 50, y: 0 });
+    s.getState().endDrag();
+    expect(s.getState().plan.walls[0].b).toEqual({ x: 350, y: 0 });
+  });
+
+  it('removeWall은 그 벽의 개구부도 지우고 선택을 푼다', () => {
+    const s = twoWalls();
+    s.getState().select('o');
+    s.getState().removeWall('w');
+    expect(s.getState().plan.walls.map((w) => w.id)).toEqual(['v']);
+    expect(s.getState().plan.openings).toEqual([]);
+    expect(s.getState().selectedId).toBeNull();
+  });
+
+  it('addRoomRect는 내측 치수를 유지하는 벽 4개와 방 이름을 한 번에 만든다', () => {
+    const s = twoWalls();
+    const pastLen = s.getState().past.length;
+    s.getState().addRoomRect({ origin: { x: 100, y: 100 }, w: 400, d: 300, thickness: 15, height: 230, name: '거실' });
+    const walls = s.getState().plan.walls.slice(-4);
+    const xs = walls.flatMap((w) => [w.a.x, w.b.x]);
+    const ys = walls.flatMap((w) => [w.a.y, w.b.y]);
+    expect(Math.max(...xs) - Math.min(...xs) - 15).toBe(400);
+    expect(Math.max(...ys) - Math.min(...ys) - 15).toBe(300);
+    expect(s.getState().plan.rooms).toEqual([expect.objectContaining({ name: '거실', label: { x: 300, y: 250 } })]);
+    expect(s.getState().past.length).toBe(pastLen + 1);
+  });
+
+  it('addOpening은 벽 안으로 맞추고 벽보다 넓으면 null', () => {
+    const s = twoWalls();
+    const id = s.getState().addOpening({ wallId: 'v', kind: 'window', offset: 280, width: 120, height: 120, sill: 90, hinge: 'start', swingIn: false });
+    expect(s.getState().plan.openings.find((o) => o.id === id)?.offset).toBe(180);
+    expect(s.getState().addOpening({ wallId: 'v', kind: 'door', offset: 0, width: 400, height: 210, sill: 0, hinge: 'start', swingIn: true })).toBeNull();
+  });
+
+  it('updateOpening은 벽을 벗어나는 값을 허용 범위와 함께 거부한다', () => {
+    const s = twoWalls();
+    expect(s.getState().updateOpening('o', { offset: 350 })).toBe('벽 시작점에서 거리는 0–310cm 사이여야 합니다.');
+    expect(s.getState().updateOpening('o', { width: 500 })).toBe('폭은 1–400cm 사이여야 합니다.');
+    expect(s.getState().plan.openings[0].offset).toBe(250);
+    expect(s.getState().updateOpening('o', { width: 100, verified: true })).toBeNull();
+    expect(s.getState().plan.openings[0]).toMatchObject({ width: 100, verified: true });
+  });
+
+  it('방 이름 추가·수정·삭제', () => {
+    const s = twoWalls();
+    const id = s.getState().addRoom('방', { x: 10.6, y: 20 });
+    s.getState().updateRoom(id, { name: '서재' });
+    expect(s.getState().plan.rooms[0]).toEqual({ id, name: '서재', label: { x: 11, y: 20 } });
+    s.getState().select(id);
+    s.getState().removeRoom(id);
+    expect(s.getState().plan.rooms).toEqual([]);
+    expect(s.getState().selectedId).toBeNull();
+  });
+
+  it('배경 설정·수정·제거', () => {
+    const s = twoWalls();
+    s.getState().setBackground({ imageRef: 'img', widthPx: 400, heightPx: 300, cmPerPx: 1, offsetX: 0, offsetY: 0, rotation: 0, opacity: 0.5 });
+    s.getState().updateBackground({ opacity: 0.8 });
+    expect(s.getState().plan.background?.opacity).toBe(0.8);
+    s.getState().setBackground(undefined);
+    expect(s.getState().plan.background).toBeUndefined();
+  });
+});
+
+describe('잠금', () => {
+  it('잠긴 아이템은 이동·회전·드래그되지 않지만 잠금 해제는 된다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().updateItem(id, { locked: true });
+    s.getState().updateItem(id, { x: 50 });
+    s.getState().rotateItem(id, 90);
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 80, 80);
+    s.getState().endDrag();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, rotation: 0, locked: true });
+    s.getState().updateItem(id, { verified: true });
+    expect(s.getState().plan.items[0].verified).toBe(true);
+    s.getState().updateItem(id, { locked: false, x: 10 });
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 10, locked: false });
+  });
+});
