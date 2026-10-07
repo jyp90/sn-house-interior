@@ -77,3 +77,15 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .tool-preview-room { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tool-preview .calib-point { fill: var(--danger); }
 .calib-line { stroke: var(--danger); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.item2d { stroke: #6b5e4b; stroke-width: 1.5; vector-effect: non-scaling-stroke; fill-opacity: 0.85; cursor: grab; }
+.item2d-selected { stroke: var(--accent); stroke-width: 2.5; }
+.item2d-warn { stroke: var(--warn); stroke-width: 2.5; }
+.item2d-danger { stroke: var(--danger); stroke-width: 2.5; }
+.item2d-label { fill: #1f2328; pointer-events: none; }
+.editor2d.mode-structure .items2d { opacity: 0.45; pointer-events: none; }
+.clearance { fill: rgba(79, 157, 222, 0.18); }
+.clearance-blocked { fill: rgba(245, 165, 36, 0.3); }
+.dist-line { stroke: var(--accent); stroke-dasharray: 5 3; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.dist-text { fill: var(--accent); }
+.candidates { position: fixed; z-index: 20; display: flex; flex-direction: column; gap: 4px; padding: 6px; background: #fff; border: 1px solid #d6d0c4; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+.candidates p { margin: 0 0 2px; }

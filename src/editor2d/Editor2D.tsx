@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type PointerEvent, type WheelEvent } from 'react';
 import { planBounds } from '../geometry/bounds';
 import type { Vec2 } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { DND_MIME } from '../ui/dnd';
 import { useUi } from '../ui/uiStore';
 import { BackgroundImage } from './BackgroundImage';
+import { Items2D } from './Items2D';
 import { Openings2D } from './Openings2D';
+import { Overlays2D } from './Overlays2D';
 import { Rooms2D } from './Rooms2D';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
@@ -104,9 +107,20 @@ export function Editor2D() {
     const p = toPlan(e);
     setVb((v) => zoomAt(v, p, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
   };
+  const onDragOver = (e: DragEvent) => {
+    if (mode === 'place' && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
+  };
+  const onDrop = (e: DragEvent) => {
+    const data = e.dataTransfer.getData(DND_MIME);
+    if (!data || mode !== 'place') return;
+    e.preventDefault();
+    const [productId, variantId] = data.split('|');
+    const p = toPlan(e);
+    store.getState().addItem(productId, variantId, { x: Math.round(p.x), y: Math.round(p.y) });
+  };
 
   return (
-    <div className={`editor2d mode-${mode}`}>
+    <div className={`editor2d mode-${mode}`} onDragOver={onDragOver} onDrop={onDrop}>
       <SvgContext.Provider value={svgRef}>
         <svg
           ref={svgRef}
@@ -123,6 +137,8 @@ export function Editor2D() {
           <rect x={vb.x} y={vb.y} width={vb.w} height={vb.h} className="editor2d-bg" />
           <BackgroundImage px={px} />
           <Rooms2D px={px} />
+          <Overlays2D px={px} />
+          <Items2D px={px} />
           <Walls2D px={px} />
           <Openings2D />
           <ToolPreview px={px} wallPoints={wallPoints} cursor={cursor} />

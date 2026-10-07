@@ -2,6 +2,7 @@ import { Editor2D } from './editor2d/Editor2D';
 import { usePlanStore } from './model/StoreContext';
 import { Viewport } from './scene3d/Viewport';
 import { Banner } from './ui/Banner';
+import { CandidatePicker } from './ui/CandidatePicker';
 import { CatalogPanel } from './ui/CatalogPanel';
 import { PropertiesPanel } from './ui/PropertiesPanel';
 import { useShortcuts } from './ui/shortcuts';
@@ -28,6 +29,7 @@ export function App() {
         <div className={show2d ? 'layer layer-hidden' : 'layer'}>
           <Viewport active={!show2d} />
         </div>
+        <CandidatePicker />
       </main>
       <aside className="right">
         <PropertiesPanel />
