@@ -52,4 +52,11 @@ describe('applyShortcut', () => {
     store.getState().select(null);
     expect(press('Delete')).toBe(false);
   });
+
+  it('버튼에 포커스가 있으면 삭제 단축키를 무시한다', () => {
+    const { store, press } = setup();
+    expect(press('Backspace', { targetTag: 'BUTTON' })).toBe(false);
+    expect(press('Delete', { targetTag: 'BUTTON' })).toBe(false);
+    expect(store.getState().plan.items).toHaveLength(1);
+  });
 });

@@ -4,7 +4,7 @@ import type { PlanState } from '../model/store';
 
 export type KeyInput = { key: string; shiftKey: boolean; mod: boolean; targetTag?: string };
 
-const EDITABLE = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
+const EDITABLE = new Set(['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON']);
 const ARROWS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
