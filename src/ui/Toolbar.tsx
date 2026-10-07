@@ -1,8 +1,9 @@
 import { useRef, type ChangeEvent } from 'react';
+import { findEntity } from '../model/entities';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { downloadText, planToJson, readPlanFile } from '../persistence/file';
 import { saveLabel } from './saveLabel';
-import { useUi, type View } from './uiStore';
+import { useUi, type Mode, type View } from './uiStore';
 
 const VIEWS: [View, string][] = [
   ['2d', '2D'],
@@ -28,18 +29,26 @@ export function Toolbar() {
     const r = await readPlanFile(file);
     if (r.ok) {
       store.getState().replacePlan(r.plan);
+      ui.resetView();
       ui.showBanner({ kind: 'info', text: `"${r.plan.info.title}"을(를) 불러왔습니다.` });
     } else {
       ui.showBanner({ kind: 'error', text: `불러오기 실패\n${r.error}` });
     }
   };
 
+  const changeMode = (m: Mode) => {
+    ui.setMode(m);
+    const s = store.getState();
+    const entity = findEntity(s.plan, s.selectedId);
+    if (entity && (m === 'structure') === (entity.kind === 'item')) s.select(null);
+  };
+
   return (
     <header className="toolbar">
       <strong className="brand">homefit</strong>
       <div className="segmented" role="group" aria-label="모드">
-        <button type="button" aria-pressed={mode === 'structure'} onClick={() => ui.setMode('structure')}>구조</button>
-        <button type="button" aria-pressed={mode === 'place'} onClick={() => ui.setMode('place')}>배치</button>
+        <button type="button" aria-pressed={mode === 'structure'} onClick={() => changeMode('structure')}>구조</button>
+        <button type="button" aria-pressed={mode === 'place'} onClick={() => changeMode('place')}>배치</button>
       </div>
       {mode === 'place' && (
         <div className="segmented" role="group" aria-label="보기">

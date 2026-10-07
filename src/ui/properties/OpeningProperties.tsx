@@ -1,3 +1,4 @@
+import { OPENING_DEFAULTS } from '../../editor2d/tools';
 import type { Opening } from '../../model/schema';
 import { usePlanStore } from '../../model/StoreContext';
 import { CheckboxField, NumberField } from '../fields';
@@ -26,7 +27,7 @@ export function OpeningProperties({ opening }: { opening: Opening }) {
           value={opening.kind}
           onChange={(e) => {
             const kind = KINDS.find(([k]) => k === e.target.value)?.[0];
-            if (kind) update({ kind });
+            if (kind) update({ kind, sill: OPENING_DEFAULTS[kind].sill, height: OPENING_DEFAULTS[kind].height });
           }}
         >
           {KINDS.map(([k, name]) => (
