@@ -29,4 +29,11 @@ describe('useUi', () => {
     useUi.getState().setRoomDraft({ w: 500 });
     expect(useUi.getState().roomDraft).toMatchObject({ w: 500, d: 300, name: '방' });
   });
+
+  it('이력 패널 열고 닫기', () => {
+    useUi.getState().setHistoryOpen(true);
+    expect(useUi.getState().historyOpen).toBe(true);
+    useUi.getState().setHistoryOpen(false);
+    expect(useUi.getState().historyOpen).toBe(false);
+  });
 });

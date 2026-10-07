@@ -19,6 +19,7 @@ export function Toolbar() {
   const view = useUi((s) => s.view);
   const snap = useUi((s) => s.snap);
   const saveStatus = useUi((s) => s.saveStatus);
+  const historyOpen = useUi((s) => s.historyOpen);
   const ui = useUi.getState();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -64,6 +65,7 @@ export function Toolbar() {
       <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="open-json" onChange={onOpen} />
       <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'homefit-plan.json')}>JSON 저장</button>
       <span className="sep" />
+      <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
       <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
       <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
       <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>

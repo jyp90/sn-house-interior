@@ -24,6 +24,7 @@ type UiState = {
   calibration: CalibrationDraft | null;
   wallDraft: WallDraft;
   roomDraft: RoomDraft;
+  historyOpen: boolean;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -40,6 +41,7 @@ type UiState = {
   cancelCalibration(): void;
   setWallDraft(patch: Partial<WallDraft>): void;
   setRoomDraft(patch: Partial<RoomDraft>): void;
+  setHistoryOpen(open: boolean): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -55,6 +57,7 @@ export const useUi = create<UiState>()((set, get) => ({
   calibration: null,
   wallDraft: { thickness: 12, height: 230 },
   roomDraft: { w: 400, d: 300, thickness: 12, height: 230, name: '방' },
+  historyOpen: false,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null }),
@@ -75,4 +78,5 @@ export const useUi = create<UiState>()((set, get) => ({
   cancelCalibration: () => set({ calibration: null, tool: 'select' }),
   setWallDraft: (patch) => set({ wallDraft: { ...get().wallDraft, ...patch } }),
   setRoomDraft: (patch) => set({ roomDraft: { ...get().roomDraft, ...patch } }),
+  setHistoryOpen: (open) => set({ historyOpen: open }),
 }));

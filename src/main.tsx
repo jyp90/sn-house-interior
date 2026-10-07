@@ -5,6 +5,7 @@ import { App } from './App';
 import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
+import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
 import { useUi } from './ui/uiStore';
 import './styles.css';
@@ -37,6 +38,7 @@ startAutosave(store, {
     useUi.getState().setSaveStatus(ok ? { state: 'saved', at: Date.now() } : { state: 'error' });
     if (ok) {
       saveFailedShown = false;
+      recordAutoRevision(store.getState().plan, Date.now());
       return;
     }
     if (saveFailedShown) return;

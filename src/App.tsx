@@ -4,6 +4,7 @@ import { Viewport } from './scene3d/Viewport';
 import { Banner } from './ui/Banner';
 import { CandidatePicker } from './ui/CandidatePicker';
 import { CatalogPanel } from './ui/CatalogPanel';
+import { HistoryPanel } from './ui/HistoryPanel';
 import { PropertiesPanel } from './ui/PropertiesPanel';
 import { useShortcuts } from './ui/shortcuts';
 import { StructurePanel } from './ui/StructurePanel';
@@ -30,6 +31,7 @@ export function App() {
           <Viewport active={!show2d} />
         </div>
         <CandidatePicker />
+        <HistoryPanel />
       </main>
       <aside className="right">
         <PropertiesPanel />

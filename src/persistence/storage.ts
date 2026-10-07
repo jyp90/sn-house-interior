@@ -5,7 +5,7 @@ import { parsePlan } from './parse';
 
 export const STORAGE_KEY = 'homefit:plan:v1';
 
-function defaultStorage(): Storage | undefined {
+export function defaultStorage(): Storage | undefined {
   try {
     return globalThis.localStorage;
   } catch {
