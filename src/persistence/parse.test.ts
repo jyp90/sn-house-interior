@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLE_PLAN } from '../model/samplePlan';
-import { parsePlan } from './parse';
+import { parsePlan, migrate } from './parse';
 
 describe('parsePlan', () => {
   it('정상 평면은 통과한다', () => {
@@ -21,5 +21,25 @@ describe('parsePlan', () => {
     const r = parsePlan({ ...SAMPLE_PLAN, walls: [{ ...SAMPLE_PLAN.walls[0], thickness: -1 }] });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toContain('walls.0.thickness');
+  });
+});
+
+describe('migrate', () => {
+  it('현재 버전은 그대로 돌려준다', () => {
+    const raw = { version: 1, a: 1 };
+    expect(migrate(raw)).toBe(raw);
+  });
+
+  it('등록된 변환을 순서대로 적용해 현재 버전까지 올린다', () => {
+    const steps = {
+      0: (r: Record<string, unknown>) => ({ ...r, version: 1, info: { title: '이전 파일' } }),
+    };
+    expect(migrate({ version: 0 }, steps, 1)).toEqual({ version: 1, info: { title: '이전 파일' } });
+  });
+
+  it('변환이 없거나 현재보다 높은 버전은 null', () => {
+    expect(migrate({ version: 0 })).toBeNull();
+    expect(migrate({ version: 2 })).toBeNull();
+    expect(migrate({})).toBeNull();
   });
 });
