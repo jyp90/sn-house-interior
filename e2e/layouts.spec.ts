@@ -60,7 +60,9 @@ test('2D·3D PNG를 내보낸다', async ({ page }) => {
 
   const [d3] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '3D PNG' }).click()]);
   expect(d3.suggestedFilename()).toBe('homefit-샘플-평면-A안-3d.png');
-  expect([...readFileSync((await d3.path())!).subarray(0, 8)]).toEqual(PNG_SIGNATURE);
+  const png3 = readFileSync((await d3.path())!);
+  expect([...png3.subarray(0, 8)]).toEqual(PNG_SIGNATURE);
+  expect(png3.length).toBeGreaterThan(5000);
 });
 
 test('이력: 지금 저장한 버전으로 복원하고 실행 취소로 되돌린다', async ({ page }) => {
@@ -84,6 +86,10 @@ test('이력: 지금 저장한 버전으로 복원하고 실행 취소로 되돌
 test('충돌 배지를 누르면 무엇과 겹치는지 보여준다', async ({ page }) => {
   await addSofa(page);
   await addSofa(page);
+  // 전제: 샘플 평면 중앙에 놓인 3인 소파(폭 210)는 x=350 칸막이 벽 w5에 걸친다
+  const sofa = itemsOf(await getPlan(page))[1];
+  expect(sofa.x - 105).toBeLessThan(350);
+  expect(sofa.x + 105).toBeGreaterThan(350);
   await page.getByTestId('status-collides').click();
   const details = page.getByTestId('conflict-details');
   await expect(details).toContainText('충돌:');
