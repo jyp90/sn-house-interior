@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { planBounds } from '../geometry/bounds';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { cmToM } from '../model/units';
+import { useUi } from '../ui/uiStore';
 import { toWorld } from './units';
 
 export function Floor() {
@@ -17,7 +18,14 @@ export function Floor() {
   const cz = cmToM((b.minY + b.maxY) / 2);
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position={[cx, 0, cz]} onClick={() => store.getState().select(null)}>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[cx, 0, cz]}
+        onClick={() => {
+          store.getState().select(null);
+          useUi.getState().clearCandidates();
+        }}
+      >
         <planeGeometry args={[w, d]} />
         <meshStandardMaterial color="#e8e2d6" />
       </mesh>

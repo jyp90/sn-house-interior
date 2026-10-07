@@ -96,7 +96,6 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
 
   useEffect(() => () => {
     finishDrag();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const y = product ? cmToM(mountHeightCm(product)) : 0;
@@ -109,6 +108,7 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={finishDrag}
+      onClick={(e: ThreeEvent<MouseEvent>) => e.stopPropagation()}
     >
       {object ? (
         <primitive object={object} />

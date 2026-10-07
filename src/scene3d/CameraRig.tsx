@@ -33,7 +33,6 @@ export function CameraRig() {
       controls.update();
     }
     // 창 크기(width, height)는 일부러 의존성에서 뺀다: 크기가 바뀔 때마다 사용자가 옮긴 시점을 덮어쓰지 않도록
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, camera, controls, view, resetKey]);
 
   return null;
