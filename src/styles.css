@@ -1,3 +1,4 @@
+:root { --danger: #e5484d; --warn: #f5a524; --accent: #3b82f6; }
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; height: 100%; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #1f2328; background: #f6f5f2; }
@@ -34,3 +35,9 @@ button.danger { color: #b42318; }
 .error { color: #b42318; font-size: 12px; }
 button { font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid #d6d0c4; border-radius: 4px; background: #fff; cursor: pointer; }
 button:disabled { opacity: 0.4; cursor: default; }
+.segmented { display: inline-flex; border: 1px solid #d6d0c4; border-radius: 6px; overflow: hidden; }
+.segmented button { border: 0; border-radius: 0; }
+.segmented button + button { border-left: 1px solid #d6d0c4; }
+button[aria-pressed='true'] { background: #1f2328; color: #fff; }
+.save-status { margin-left: auto; font-size: 12px; color: #6b7280; }
+.save-error { color: #b42318; }

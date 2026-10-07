@@ -68,7 +68,13 @@ export function saveToStorage(plan: Plan, storage: Storage | undefined = default
 
 export function startAutosave(
   store: StoreApi<PlanState>,
-  opts: { storage?: Storage; delayMs?: number; onResult?: (ok: boolean) => void; target?: EventTarget } = {},
+  opts: {
+    storage?: Storage;
+    delayMs?: number;
+    onPending?: () => void;
+    onResult?: (ok: boolean) => void;
+    target?: EventTarget;
+  } = {},
 ): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const save = () => {
@@ -79,6 +85,7 @@ export function startAutosave(
     if (s.plan === prev.plan) return;
     clearTimeout(timer);
     timer = setTimeout(save, opts.delayMs ?? 500);
+    opts.onPending?.();
   });
   const target = opts.target ?? (typeof globalThis.addEventListener === 'function' ? globalThis : undefined);
   const onPageHide = () => {

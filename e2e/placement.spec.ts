@@ -53,8 +53,8 @@ test('잘못된 JSON을 열면 오류 배너가 뜨고 배치는 유지된다', 
 test('탑뷰 전환 후에도 렌더링이 유지된다', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.getByRole('button', { name: '탑뷰로 보기' }).click();
-  await expect(page.getByRole('button', { name: '원근으로 보기' })).toBeVisible();
+  await page.getByRole('button', { name: '3D 탑뷰' }).click();
+  await expect(page.getByRole('button', { name: '3D 탑뷰' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.viewport canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });

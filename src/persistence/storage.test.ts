@@ -83,6 +83,21 @@ describe('storage', () => {
     expect(results).toEqual([true]);
     stop();
   });
+
+  it('autosave는 저장을 예약할 때마다 onPending을 부른다', () => {
+    vi.useFakeTimers();
+    const store = createPlanStore(SAMPLE_PLAN);
+    const events: string[] = [];
+    startAutosave(store, {
+      storage: memoryStorage(),
+      onPending: () => events.push('pending'),
+      onResult: (ok) => events.push(ok ? 'saved' : 'error'),
+    });
+    store.getState().addItem('p', 'v', { x: 0, y: 0 });
+    store.getState().addItem('p', 'v', { x: 10, y: 0 });
+    vi.advanceTimersByTime(500);
+    expect(events).toEqual(['pending', 'pending', 'saved']);
+  });
 });
 
 describe('readStoredPlan', () => {

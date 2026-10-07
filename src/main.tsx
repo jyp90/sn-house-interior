@@ -32,7 +32,9 @@ if (stored.status === 'ok') {
 const store = createPlanStore(initialPlan);
 let saveFailedShown = false;
 startAutosave(store, {
+  onPending: () => useUi.getState().setSaveStatus({ state: 'pending' }),
   onResult: (ok) => {
+    useUi.getState().setSaveStatus(ok ? { state: 'saved', at: Date.now() } : { state: 'error' });
     if (ok) {
       saveFailedShown = false;
       return;
