@@ -37,12 +37,12 @@ describe('autoChecklist', () => {
     const items = autoChecklist(plan, resolve(plan), clean);
     expect(items.map((i) => i.text)).toEqual([
       '전용회로 확인: 그랑데 드럼세탁기',
-      '콘센트 위치 공유: 전용회로 콘센트 1개 — 전기 계획도 참고',
+      '콘센트 위치 공유: 전용회로 콘센트 1개 — 전기 계획도·전기 설비 목록 참고',
     ]);
     expect(items.map((i) => i.id)).toEqual(['auto-circuit', 'auto-outlets']);
   });
 
-  it('빌트인 제품마다 치수와 벽 기준 위치', () => {
+  it('빌트인 제품마다 치수(미확인 ≈)와 벽 기준 위치', () => {
     const builtIn: Product = {
       id: 'custom-dw', brand: 'custom', model: '', name: '식기세척기', category: 'kitchen',
       dims: { w: 60, d: 60, h: 85 }, variants: [{ id: 'v', label: '기본', colors: {} }],
@@ -57,9 +57,13 @@ describe('autoChecklist', () => {
         id: 'auto-builtin-dw',
         phase: 'kitchen',
         auto: true,
-        text: '빌트인 치수 전달: 식기세척기 60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm',
+        text: '빌트인 치수 전달: 식기세척기 ≈60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm',
       },
     ]);
+    const verified = withActiveItems(plan, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0, verified: true }]);
+    expect(autoChecklist(verified, resolve(verified), clean)[0].text).toBe(
+      '빌트인 치수 전달: 식기세척기 60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm',
+    );
   });
 
   it('문 열림 간섭이 남은 가구(충돌 줄은 빼고)', () => {

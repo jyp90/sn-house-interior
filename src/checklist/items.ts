@@ -24,7 +24,7 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
   }
 
   if (plan.fixtures.length > 0) {
-    out.push({ id: 'auto-outlets', phase: 'carpentry', auto: true, text: `콘센트 위치 공유: ${fixtureSummary(plan.fixtures)} — 전기 계획도 참고` });
+    out.push({ id: 'auto-outlets', phase: 'carpentry', auto: true, text: `콘센트 위치 공유: ${fixtureSummary(plan.fixtures)} — 전기 계획도·전기 설비 목록 참고` });
   }
 
   for (const { item, product } of placed) {
@@ -34,7 +34,7 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
       id: `auto-builtin-${item.id}`,
       phase: product.category === 'kitchen' ? 'kitchen' : 'carpentry',
       auto: true,
-      text: `빌트인 치수 전달: ${product.name} ${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}`,
+      text: `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}`,
     });
   }
 

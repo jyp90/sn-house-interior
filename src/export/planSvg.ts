@@ -1,7 +1,7 @@
 import { findProduct } from '../catalog/products';
 import { itemColor, MISSING_COLOR } from '../editor2d/itemColor';
 import { pointsAttr, sectorPath } from '../editor2d/svg';
-import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, type FixtureKind } from '../electrical/fixtures';
+import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, fixtureNumbers, type FixtureKind } from '../electrical/fixtures';
 import { planBounds } from '../geometry/bounds';
 import { doorSwing } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
@@ -52,13 +52,15 @@ export type PlanSvgOptions = {
   header?: boolean; // 제목·단위 머리글
   items?: 'name' | 'number' | 'faint' | 'none'; // 가구 표시 방식
   dimensions?: boolean; // 벽 길이·개구부 폭
-  fixtures?: boolean; // 전기 설비 마커와 범례
+  fixtures?: boolean; // 전기 설비 마커·E번호와 범례
+  dimensionLines?: boolean; // 벽 치수선과 개구부 위치(벽 시작점 기준)
   highlightIds?: string[]; // 주황 테두리로 강조할 가구
 };
 
-// 배치도 번호 = 제품 목록 번호
+// 배치도 번호 = 제품 목록 번호. 제품을 찾을 수 없는 가구는 목록에 없으므로 번호도 없다
 export function itemNumbers(plan: Plan): Map<string, number> {
-  return new Map(activeItems(plan).map((item, i) => [item.id, i + 1]));
+  const known = activeItems(plan).filter((item) => findProduct(plan, item.productId));
+  return new Map(known.map((item, i) => [item.id, i + 1]));
 }
 
 const mark = (n: number, verified: boolean | undefined) => (verified ? `${n}` : `≈${n}`);
@@ -72,7 +74,15 @@ function glyphShape(kind: FixtureKind, cx: number, cy: number): string {
 }
 
 export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string; width: number; height: number } {
-  const { fontFamily = 'sans-serif', header = true, items: itemMode = 'name', dimensions = true, fixtures = false, highlightIds = [] } = options;
+  const {
+    fontFamily = 'sans-serif',
+    header = true,
+    items: itemMode = 'name',
+    dimensions = true,
+    fixtures = false,
+    dimensionLines = false,
+    highlightIds = [],
+  } = options;
   const font = escapeXml(fontFamily);
   const text = (x: number, y: number, size: number, value: string, attrs: string) =>
     `<text x="${x}" y="${y}" font-size="${size}" font-family="${font}" ${attrs}>${escapeXml(value)}</text>`;
@@ -124,6 +134,24 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
 
   if (fixtures) for (const f of plan.fixtures) parts.push(glyphShape(f.kind, f.pos.x, f.pos.y));
 
+  if (dimensionLines) {
+    const line = (x1: number, y1: number, x2: number, y2: number) =>
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8b8b8b" stroke-width="0.8"/>`;
+    for (const wall of plan.walls) {
+      if (Math.round(wallLength(wall)) === 0) continue;
+      const u = wallDir(wall);
+      const n = { x: -u.y, y: u.x }; // 벽 길이 글자와 같은 쪽
+      const off = wall.thickness / 2 + 6;
+      const at = (p: { x: number; y: number }, d: number) => ({ x: p.x + n.x * d, y: p.y + n.y * d });
+      const [a, b] = [at(wall.a, off), at(wall.b, off)];
+      parts.push(line(a.x, a.y, b.x, b.y));
+      for (const end of [wall.a, wall.b]) {
+        const [t1, t2] = [at(end, off - 3), at(end, off + 3)];
+        parts.push(line(t1.x, t1.y, t2.x, t2.y));
+      }
+    }
+  }
+
   if (dimensions) {
     for (const wall of plan.walls) {
       const len = Math.round(wallLength(wall));
@@ -139,6 +167,10 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const mid = o.offset + o.width / 2;
       const off = -(wall.thickness / 2 + 14);
       parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
+      if (dimensionLines) {
+        const off2 = off - 12; // 폭 글자 바깥쪽 한 줄 아래
+        parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
+      }
     }
   }
 
@@ -151,7 +183,8 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const size = `${dims.w}×${dims.d}`;
       parts.push(label(item.x, item.y + 9, 11, item.verified ? size : `≈${size}`, '#1f2328', center));
     } else if (itemMode === 'number') {
-      parts.push(label(item.x, item.y, 16, String(numbers.get(item.id)), '#1f2328', `font-weight="bold" ${center}`));
+      const n = numbers.get(item.id);
+      if (n !== undefined) parts.push(label(item.x, item.y, 16, String(n), '#1f2328', `font-weight="bold" ${center}`));
     } else if (itemMode === 'faint' && highlight.has(item.id)) {
       parts.push(label(item.x, item.y, 12, product?.name ?? '알 수 없는 제품', HIGHLIGHT, center));
     }
@@ -161,6 +194,11 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
     for (const f of plan.fixtures) {
       const g = FIXTURE_GLYPH[f.kind];
       parts.push(text(f.pos.x, f.pos.y, 10, g.letter, `fill="${g.letterFill}" font-weight="bold" ${center}`));
+    }
+    // 전기 설비 목록의 번호와 같은 E번호
+    const fxNumbers = fixtureNumbers(plan);
+    for (const f of plan.fixtures) {
+      parts.push(label(f.pos.x + FIXTURE_R_CM + 2, f.pos.y, 9, `E${fxNumbers.get(f.id)}`, '#1f2328', 'dominant-baseline="middle"'));
     }
     const ly = b.maxY + MARGIN + LEGEND / 2;
     legendKinds.forEach((k, i) => {

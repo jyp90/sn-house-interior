@@ -157,6 +157,45 @@ describe('planSvg 옵션', () => {
     expect(on.height).toBe(off.height + 100);
   });
 
+  it('fixtures:true는 마커 오른쪽에 E번호를 흰 테두리 글자로 붙인다', () => {
+    const withFx = {
+      ...plan,
+      fixtures: [
+        { id: 'f1', kind: 'outlet-dedicated' as const, pos: { x: 356, y: 200 }, wallId: 'w5', height: 30 },
+        { id: 'f2', kind: 'switch' as const, pos: { x: 10, y: 100 }, height: 120 },
+      ],
+    };
+    const on = planSvg(withFx, { fixtures: true }).svg;
+    expect(on).toMatch(/<text x="367" y="200" font-size="9"[^>]*stroke="#ffffff"[^>]*>E1<\/text><text x="367" y="200" font-size="9"[^>]*fill="#1f2328"[^>]*>E1<\/text>/);
+    expect(on).toContain('<text x="21" y="100" font-size="9"');
+    expect(on).toContain('>E2<');
+    expect(planSvg(withFx).svg).not.toContain('>E1<');
+  });
+
+  it('dimensionLines:true는 벽 치수선·끝 눈금과 개구부 위치(벽 시작점 기준)를 그린다', () => {
+    const on = planSvg(plan, { dimensionLines: true }).svg;
+    // 벽 5개 × (치수선 1 + 눈금 2)
+    expect(on.match(/<line [^>]*stroke="#8b8b8b" stroke-width="0.8"/g)).toHaveLength(15);
+    // w1 (0,0)→(600,0), 두께 20: 법선 (0,1) 쪽 16cm
+    expect(on).toContain('<line x1="0" y1="16" x2="600" y2="16"');
+    expect(on).toContain('<line x1="0" y1="13" x2="0" y2="19"');
+    expect(on).toContain('>250–340<');
+    expect(on).toContain('>80–260<');
+    expect(on).toMatch(/font-size="9"[^>]*fill="#4f6b8a"[^>]*>250–340</);
+    const off = planSvg(plan).svg;
+    expect(off).not.toContain('<line');
+    expect(off).not.toContain('>250–340<');
+  });
+
+  it('제품을 찾을 수 없는 가구는 번호를 매기지 않는다', () => {
+    const ghost = { id: 'g', productId: 'no-such-product', variantId: 'x', x: 100, y: 100, rotation: 0 };
+    const p = withActiveItems(SAMPLE_PLAN, [ghost, sofa, washer]);
+    expect(itemNumbers(p)).toEqual(new Map([['s', 1], ['wa', 2]]));
+    const { svg } = planSvg(p, { items: 'number' });
+    expect(svg).not.toContain('>undefined<');
+    expect(svg).toContain('>2<');
+  });
+
   it('pdfFileName', () => {
     expect(pdfFileName('샘플 평면', 'A안')).toBe('homefit-샘플-평면-A안.pdf');
   });

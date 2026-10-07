@@ -12,7 +12,7 @@ type Status =
   | { state: 'done'; pages: number }
   | { state: 'error'; message: string };
 
-const PAGE_LIST = '표지, 치수 평면도, 가구·가전 배치도, 전기 계획도, 빌트인 상세, 제품 목록, 3D 보기, 공사 체크리스트';
+const PAGE_LIST = '표지, 치수 평면도, 가구·가전 배치도, 전기 계획도, 전기 설비 목록, 빌트인 상세, 제품 목록, 3D 보기, 공사 체크리스트';
 
 function statusText(s: Status): string {
   switch (s.state) {
@@ -42,6 +42,7 @@ export function ExportView() {
       downloadBlob(r.blob, r.fileName);
       setStatus({ state: 'done', pages: r.pageCount });
     } catch (e) {
+      if (!(e instanceof PdfFontError)) console.error(e);
       setStatus({
         state: 'error',
         message:

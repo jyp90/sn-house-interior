@@ -1,10 +1,10 @@
 import { findProduct } from '../catalog/products';
 import { PHASES } from '../checklist/defaults';
 import { checklistEntry, checklistItems } from '../checklist/items';
-import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
+import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
 import { wallReferenceText } from '../geometry/wallReference';
 import { activeItems, activeLayout } from '../model/layout';
-import type { Plan } from '../model/schema';
+import type { Item, Plan, Product } from '../model/schema';
 import { itemNumbers, pdfFileName, planSvg, unverifiedCount } from './planSvg';
 
 export const PDF_FONT_FAMILY = 'Pretendard';
@@ -144,6 +144,12 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
   });
   const missing = new Set(missingDedicatedCircuit(plan, resolve));
   const dedicated = placed.filter((p) => p.product.power?.dedicatedCircuit);
+  const fxNumbers = fixtureNumbers(plan);
+  // 실측 미확인 가구는 ≈ (도면·제품 목록·빌트인 상세 공통)
+  const sizeText = (item: Item, product: Product) => {
+    const dims = `${product.dims.w}×${product.dims.d}×${product.dims.h}`;
+    return item.verified ? dims : `≈${dims}`;
+  };
 
   const drawing = (title: string, svg: ReturnType<typeof planSvg>, notes: string[]): DrawingPage => ({
     kind: 'drawing',
@@ -156,22 +162,36 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
 
   const pages: PdfPage[] = [
     { kind: 'cover', title: plan.info.title, rows: coverRows(plan, input.now) },
-    drawing('치수 평면도', planSvg(plan, { ...base, items: 'none' }), [
+    drawing('치수 평면도', planSvg(plan, { ...base, items: 'none', dimensionLines: true }), [
       '단위: cm · 벽 길이는 벽 중심선 기준',
       `≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`,
+      '개구부 아래 숫자는 벽 시작점 기준 위치(cm)',
     ]),
     drawing(`가구·가전 배치도 (${layout.name})`, planSvg(plan, { ...base, items: 'number' }), [
       '번호는 제품 목록의 번호와 같습니다',
       '회색 부채꼴은 방문 열림 반경입니다',
     ]),
     drawing('전기 계획도', planSvg(plan, { ...base, items: 'faint', fixtures: true, highlightIds: dedicated.map((p) => p.item.id) }), [
-      plan.fixtures.length > 0 ? `설비: ${fixtureSummary(plan.fixtures)}` : '배치된 전기 설비가 없습니다',
+      ...(plan.fixtures.length > 0
+        ? [`설비: ${fixtureSummary(plan.fixtures)}`, '설비별 높이·메모는 다음 쪽 전기 설비 목록 참고']
+        : ['배치된 전기 설비가 없습니다']),
       dedicated.length > 0 ? `전용회로 필요 가전(주황 테두리): ${dedicated.map((p) => p.product.name).join(', ')}` : '전용회로가 필요한 가전이 없습니다',
       ...dedicated
         .filter((p) => missing.has(p.item.id))
         .map((p) => `주의: ${p.product.name} 주변 ${DEDICATED_RADIUS_CM}cm 이내에 전용회로 콘센트가 없습니다`),
-      ...plan.fixtures.filter((f) => f.memo).map((f) => `${FIXTURE_LABEL[f.kind]} (높이 ${f.height}cm): ${f.memo}`),
     ]),
+    ...tablePages(
+      '전기 설비 목록',
+      [
+        { label: '번호', width: 18 },
+        { label: '종류', width: 50 },
+        { label: '설치 높이', width: 30 },
+        { label: '벽 부착', width: 25 },
+        { label: '메모', width: 144 },
+      ],
+      plan.fixtures.map((f) => [`E${fxNumbers.get(f.id)}`, FIXTURE_LABEL[f.kind], `${f.height}cm`, f.wallId ? '예' : '아니오', f.memo ?? '']),
+      '배치된 전기 설비가 없습니다',
+    ),
     ...tablePages(
       '빌트인 상세',
       [
@@ -185,7 +205,7 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
         .map(({ item, product }) => [
           String(numbers.get(item.id)),
           product.model ? `${product.name}\n${product.model}` : product.name,
-          `${product.dims.w}×${product.dims.d}×${product.dims.h}`,
+          sizeText(item, product),
           wallReferenceText(plan, item, product),
         ]),
       '빌트인 항목이 없습니다',
@@ -201,13 +221,12 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
         { label: '전용회로', width: 40 },
       ],
       placed.map(({ item, product }) => {
-        const dims = `${product.dims.w}×${product.dims.d}×${product.dims.h}`;
         const circuit = product.power?.dedicatedCircuit ? (missing.has(item.id) ? '필요 (콘센트 없음)' : '필요') : '-';
         return [
           String(numbers.get(item.id)),
           product.model || '-',
           product.name,
-          item.verified ? dims : `≈${dims}`,
+          sizeText(item, product),
           product.power ? `${product.power.watts}W` : '-',
           circuit,
         ];

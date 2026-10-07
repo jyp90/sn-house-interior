@@ -8,6 +8,8 @@ const NOW = new Date(2026, 9, 8);
 const input = { views: [], now: NOW };
 const sofa = (id: string) => ({ id, productId: 'sofa-3seat', variantId: 'gray', x: 175, y: 200, rotation: 0 });
 const washer = { id: 'wa', productId: 'samsung-grande-washer-sample', variantId: 'white', x: 300, y: 200, rotation: 0 };
+// 전용회로 가전 11대를 콘센트 없이 두면 주석은 설비 없음 1줄 + 가전 목록 2줄 + 경고 11줄 = 14줄
+const CAP_WASHERS = 11;
 const usedMm = (p: TablePage) => p.rows.reduce((sum, r) => sum + rowHeightMm(Math.max(...r.map((c) => c.length))), 0);
 
 describe('wrapText / clampLines', () => {
@@ -33,16 +35,17 @@ describe('buildPdf', () => {
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [washer]), input);
     expect(doc.header).toBe('샘플 평면 · A안');
     expect(doc.fileName).toBe('homefit-샘플-평면-A안.pdf');
-    expect(doc.pages.slice(0, 7).map((p) => [p.kind, p.title])).toEqual([
+    expect(doc.pages.slice(0, 8).map((p) => [p.kind, p.title])).toEqual([
       ['cover', '샘플 평면'],
       ['drawing', '치수 평면도'],
       ['drawing', '가구·가전 배치도 (A안)'],
       ['drawing', '전기 계획도'],
+      ['table', '전기 설비 목록'],
       ['table', '빌트인 상세'],
       ['table', '제품 목록 (A안)'],
       ['views', '3D 보기'],
     ]);
-    const rest = doc.pages.slice(7);
+    const rest = doc.pages.slice(8);
     expect(rest.length).toBeGreaterThanOrEqual(1);
     expect(rest.every((p) => p.kind === 'table' && p.title.startsWith('공사 체크리스트'))).toBe(true);
   });
@@ -95,7 +98,7 @@ describe('buildPdf', () => {
   });
 
   it('제품 목록: 번호·모델·이름·치수(미확인 ≈)·소비전력·전용회로', () => {
-    const products = buildPdf(withActiveItems(SAMPLE_PLAN, [sofa('s1'), washer]), input).pages[5] as TablePage;
+    const products = buildPdf(withActiveItems(SAMPLE_PLAN, [sofa('s1'), washer]), input).pages[6] as TablePage;
     expect(products.columns.map((c) => c.label)).toEqual(['번호', '모델명', '이름', 'W×D×H (cm)', '소비전력', '전용회로']);
     expect(products.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
       ['1', '-', '3인 소파', '≈210×90×80', '-', '-'],
@@ -103,7 +106,7 @@ describe('buildPdf', () => {
     ]);
   });
 
-  it('빌트인 상세: 번호·제품·치수·벽 기준 위치', () => {
+  it('빌트인 상세: 번호·제품·치수(미확인 ≈)·벽 기준 위치', () => {
     const builtIn: Product = {
       id: 'custom-dw', brand: 'custom', model: '', name: '식기세척기', category: 'kitchen',
       dims: { w: 60, d: 60, h: 85 }, variants: [{ id: 'v', label: '기본', colors: {} }],
@@ -113,10 +116,12 @@ describe('buildPdf', () => {
       ...withActiveItems(SAMPLE_PLAN, [sofa('s1'), { id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0 }]),
       customProducts: [builtIn],
     };
-    const table = buildPdf(plan, input).pages[4] as TablePage;
+    const table = buildPdf(plan, input).pages[5] as TablePage;
     expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
-      ['2', '식기세척기', '60×60×85', '왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm'],
+      ['2', '식기세척기', '≈60×60×85', '왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm'],
     ]);
+    const verified = withActiveItems(plan, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0, verified: true }]);
+    expect((buildPdf(verified, input).pages[5] as TablePage).rows[0][2]).toEqual(['60×60×85']);
   });
 
   it('제품이 많으면 여러 쪽으로 나누고 행을 잃지 않는다', () => {
@@ -148,16 +153,16 @@ describe('buildPdf', () => {
 
   it('빌트인이 없으면 안내 문구, 3D 캡처가 없으면 안내 문구', () => {
     const doc = buildPdf(SAMPLE_PLAN, input);
-    const builtin = doc.pages[4] as TablePage;
+    const builtin = doc.pages[5] as TablePage;
     expect(builtin.rows).toEqual([]);
     expect(builtin.emptyText).toBe('빌트인 항목이 없습니다');
-    const views = doc.pages[6];
+    const views = doc.pages[7];
     expect(views.kind === 'views' && views.views).toEqual([]);
-    const withViews = buildPdf(SAMPLE_PLAN, { views: [{ label: '위에서 본 전체', dataUrl: 'data:image/jpeg;base64,AA' }], now: NOW }).pages[6];
+    const withViews = buildPdf(SAMPLE_PLAN, { views: [{ label: '위에서 본 전체', dataUrl: 'data:image/jpeg;base64,AA' }], now: NOW }).pages[7];
     expect(withViews.kind === 'views' && withViews.views.map((v) => v.label)).toEqual(['위에서 본 전체']);
   });
 
-  it('전기 계획도 주석: 설비 요약, 전용회로 가전, 콘센트 없음 경고, 설비 메모', () => {
+  it('전기 계획도 주석: 설비 요약, 목록 안내, 전용회로 가전, 콘센트 없음 경고(설비별 메모는 넣지 않음)', () => {
     const plan: Plan = {
       ...withActiveItems(SAMPLE_PLAN, [washer]),
       fixtures: [{ id: 'f', kind: 'outlet', pos: { x: 10, y: 100 }, wallId: 'w4', height: 30, memo: 'TV 뒤' }],
@@ -165,17 +170,52 @@ describe('buildPdf', () => {
     const electric = buildPdf(plan, input).pages[3];
     expect(electric.kind === 'drawing' && electric.notes).toEqual([
       '설비: 콘센트 1개',
+      '설비별 높이·메모는 다음 쪽 전기 설비 목록 참고',
       '전용회로 필요 가전(주황 테두리): 그랑데 드럼세탁기',
       '주의: 그랑데 드럼세탁기 주변 150cm 이내에 전용회로 콘센트가 없습니다',
-      '콘센트 (높이 30cm): TV 뒤',
     ]);
   });
 
   it('주석이 많으면 8줄로 줄이고 나머지 줄 수를 알린다', () => {
-    const fixtures = Array.from({ length: 12 }, (_, i) => ({ id: `f${i}`, kind: 'light' as const, pos: { x: 100 + i, y: 100 }, height: 230, memo: `메모 ${i}` }));
-    const electric = buildPdf({ ...SAMPLE_PLAN, fixtures }, input).pages[3];
+    const washers = Array.from({ length: CAP_WASHERS }, (_, i) => ({ ...washer, id: `wa${i}`, x: 100 + i }));
+    const electric = buildPdf(withActiveItems(SAMPLE_PLAN, washers), input).pages[3];
     if (electric.kind !== 'drawing') throw new Error('drawing 아님');
     expect(electric.notes).toHaveLength(8);
     expect(electric.notes.at(-1)).toBe('외 7줄은 앱에서 확인하세요');
+  });
+
+  it('전기 설비 목록: E번호·종류·설치 높이·벽 부착·메모, 없으면 안내 문구', () => {
+    const plan: Plan = {
+      ...SAMPLE_PLAN,
+      fixtures: [
+        { id: 'f1', kind: 'outlet', pos: { x: 10, y: 100 }, wallId: 'w4', height: 30, memo: 'TV 뒤' },
+        { id: 'f2', kind: 'light', pos: { x: 200, y: 200 }, height: 230 },
+      ],
+    };
+    const table = buildPdf(plan, input).pages[4] as TablePage;
+    expect(table.title).toBe('전기 설비 목록');
+    expect(table.columns).toEqual([
+      { label: '번호', width: 18 },
+      { label: '종류', width: 50 },
+      { label: '설치 높이', width: 30 },
+      { label: '벽 부착', width: 25 },
+      { label: '메모', width: 144 },
+    ]);
+    expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
+      ['E1', '콘센트', '30cm', '예', 'TV 뒤'],
+      ['E2', '조명', '230cm', '아니오', ''],
+    ]);
+    const empty = buildPdf(SAMPLE_PLAN, input).pages[4] as TablePage;
+    expect(empty.title).toBe('전기 설비 목록');
+    expect(empty.rows).toEqual([]);
+    expect(empty.emptyText).toBe('배치된 전기 설비가 없습니다');
+  });
+
+  it('치수 평면도: 벽 치수선과 개구부 위치, 위치 표기 안내', () => {
+    const dims = buildPdf(SAMPLE_PLAN, input).pages[1];
+    if (dims.kind !== 'drawing') throw new Error('drawing 아님');
+    expect(dims.svg).toContain('<line ');
+    expect(dims.svg).toContain('>250–340<');
+    expect(dims.notes).toContain('개구부 아래 숫자는 벽 시작점 기준 위치(cm)');
   });
 });

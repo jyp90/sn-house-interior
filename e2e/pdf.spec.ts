@@ -46,6 +46,7 @@ test('기본 정보를 넣고 PDF를 내려받으면 쪽수가 맞는 PDF가 저
   const body = readFileSync((await download.path())!);
   expect(body.subarray(0, 5).toString('latin1')).toBe('%PDF-');
   const text = body.toString('latin1');
+  expect(text).toContain('Pretendard');
   expect(text.match(/\/Type \/Page\b/g)?.length).toBe(pages);
   expect(text.match(/\/Subtype \/Image/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
 
