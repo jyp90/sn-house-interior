@@ -163,3 +163,5 @@ export type BuilderId = z.infer<typeof BuilderIdSchema>;
 export type Background = z.infer<typeof BackgroundSchema>;
 export type Calibration = z.infer<typeof CalibrationSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
+export type ChecklistState = z.infer<typeof ChecklistStateSchema>;
+export type PlanInfo = z.infer<typeof PlanInfoSchema>;

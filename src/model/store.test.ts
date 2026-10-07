@@ -428,4 +428,56 @@ describe('배치안', () => {
     s.getState().switchLayout('nope');
     expect(s.getState().past.length).toBe(pastLen);
   });
+
+  describe('전기 설비', () => {
+    const outlet = { kind: 'outlet' as const, pos: { x: 100.4, y: 9.6 }, wallId: 'w1', height: 30 };
+
+    it('addFixture는 정수 좌표로 추가하고 선택하며 실행 취소된다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(outlet);
+      expect(s.getState().plan.fixtures).toEqual([{ id, kind: 'outlet', pos: { x: 100, y: 10 }, wallId: 'w1', height: 30 }]);
+      expect(s.getState().selectedId).toBe(id);
+      s.getState().undo();
+      expect(s.getState().plan.fixtures).toEqual([]);
+    });
+
+    it('updateFixture는 메모를 다듬고 빈 메모는 지우며, 높이는 0 이상 정수', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(outlet);
+      s.getState().updateFixture(id, { memo: '  세탁기용 ', height: 110.6 });
+      expect(s.getState().plan.fixtures[0]).toMatchObject({ memo: '세탁기용', height: 111 });
+      s.getState().updateFixture(id, { memo: '   ', height: -5 });
+      expect(s.getState().plan.fixtures[0]).not.toHaveProperty('memo');
+      expect(s.getState().plan.fixtures[0].height).toBe(0);
+    });
+
+    it('dragFixture는 드래그 중에만 움직이고 끝나면 실행 취소 한 번으로 돌아간다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(outlet);
+      s.getState().dragFixture(id, { x: 300, y: 300 });
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 100, y: 10 });
+      s.getState().beginDrag();
+      s.getState().dragFixture(id, { x: 150, y: 10 }, 'w1');
+      s.getState().dragFixture(id, { x: 200.4, y: 120 });
+      s.getState().endDrag();
+      expect(s.getState().plan.fixtures[0]).toEqual({ id, kind: 'outlet', pos: { x: 200, y: 120 }, height: 30 });
+      s.getState().undo();
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 100, y: 10 });
+    });
+
+    it('removeFixture는 지우고 선택을 푼다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(outlet);
+      s.getState().removeFixture(id);
+      expect(s.getState().plan.fixtures).toEqual([]);
+      expect(s.getState().selectedId).toBeNull();
+    });
+
+    it('벽을 지우면 붙어 있던 설비의 wallId를 지운다(설비는 남는다)', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(outlet);
+      s.getState().removeWall('w1');
+      expect(s.getState().plan.fixtures).toEqual([{ id, kind: 'outlet', pos: { x: 100, y: 10 }, height: 30 }]);
+    });
+  });
 });

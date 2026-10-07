@@ -11,6 +11,8 @@ describe('findEntity', () => {
     expect(findEntity(plan, 'w1')).toEqual({ kind: 'wall', wall: plan.walls[0] });
     expect(findEntity(plan, 'o1')?.kind).toBe('opening');
     expect(findEntity(plan, 'r1')?.kind).toBe('room');
+    const withFixture = { ...plan, fixtures: [{ id: 'fx-1', kind: 'switch' as const, pos: { x: 0, y: 0 }, height: 120 }] };
+    expect(findEntity(withFixture, 'fx-1')).toEqual({ kind: 'fixture', fixture: withFixture.fixtures[0] });
   });
 
   it('없는 id나 null은 null', () => {

@@ -91,6 +91,14 @@ describe('구조 단축키', () => {
     expect(store.getState().plan.rooms.some((r) => r.id === 'r1')).toBe(false);
   });
 
+  it('선택한 전기 설비는 Delete로 지운다', () => {
+    const store = createPlanStore(SAMPLE_PLAN);
+    const id = store.getState().addFixture({ kind: 'light', pos: { x: 100, y: 100 }, height: 230 });
+    expect(applyShortcut(store.getState(), { key: 'Delete', shiftKey: false, mod: false })).toBe(true);
+    expect(store.getState().plan.fixtures.some((f) => f.id === id)).toBe(false);
+    expect(applyShortcut(store.getState(), { key: 'r', shiftKey: false, mod: false })).toBe(false);
+  });
+
   it('벽 선택 중 R과 방향키는 처리하지 않는다', () => {
     const store = createPlanStore(SAMPLE_PLAN);
     store.getState().select('w1');

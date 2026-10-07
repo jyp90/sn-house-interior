@@ -3,7 +3,7 @@ import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength }
 import { wallLength } from '../geometry/walls';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
-import type { Background, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
+import type { Background, Fixture, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
 
 export const HISTORY_LIMIT = 100;
 
@@ -39,6 +39,10 @@ export type PlanState = {
   addRoom(name: string, label: Vec2): string;
   updateRoom(id: string, patch: Partial<Omit<Room, 'id'>>): void;
   removeRoom(id: string): void;
+  addFixture(fixture: Omit<Fixture, 'id'>): string;
+  updateFixture(id: string, patch: Partial<Omit<Fixture, 'id'>>): void;
+  dragFixture(id: string, pos: Vec2, wallId?: string): void;
+  removeFixture(id: string): void;
   addLayout(): string;
   renameLayout(id: string, name: string): void;
   setLayoutMemo(id: string, memo: string): void;
@@ -55,6 +59,15 @@ const roundVec = (p: Vec2): Vec2 => ({ x: Math.round(p.x), y: Math.round(p.y) })
 
 function normalizeItem(item: Item): Item {
   return { ...item, x: Math.round(item.x), y: Math.round(item.y), rotation: normalizeDeg(item.rotation) };
+}
+
+function normalizeFixture(f: Fixture): Fixture {
+  const next: Fixture = { ...f, pos: roundVec(f.pos), height: Math.max(0, Math.round(f.height)) };
+  if (next.wallId === undefined) delete next.wallId;
+  const memo = next.memo?.trim();
+  if (memo) next.memo = memo;
+  else delete next.memo;
+  return next;
 }
 
 function openingError(plan: Plan, openingId: string): string {
@@ -205,7 +218,12 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         if (!plan.walls.some((w) => w.id === id)) return;
         const gone = new Set([id, ...plan.openings.filter((o) => o.wallId === id).map((o) => o.id)]);
         commit(
-          { ...plan, walls: plan.walls.filter((w) => w.id !== id), openings: plan.openings.filter((o) => o.wallId !== id) },
+          {
+            ...plan,
+            walls: plan.walls.filter((w) => w.id !== id),
+            openings: plan.openings.filter((o) => o.wallId !== id),
+            fixtures: plan.fixtures.map((f) => (f.wallId === id ? normalizeFixture({ ...f, wallId: undefined }) : f)),
+          },
           { selectedId: deselectIf(gone) },
         );
       },
@@ -271,6 +289,31 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const plan = get().plan;
         if (!plan.rooms.some((r) => r.id === id)) return;
         commit({ ...plan, rooms: plan.rooms.filter((r) => r.id !== id) }, { selectedId: deselectIf(new Set([id])) });
+      },
+
+      addFixture: (fixture) => {
+        const created = normalizeFixture({ ...fixture, id: newId('fixture') });
+        commit({ ...get().plan, fixtures: [...get().plan.fixtures, created] }, { selectedId: created.id });
+        return created.id;
+      },
+
+      updateFixture: (id, patch) => {
+        const plan = get().plan;
+        if (!plan.fixtures.some((f) => f.id === id)) return;
+        commit({ ...plan, fixtures: plan.fixtures.map((f) => (f.id === id ? normalizeFixture({ ...f, ...patch }) : f)) });
+      },
+
+      dragFixture: (id, pos, wallId) => {
+        if (!get().dragOrigin) return;
+        const plan = get().plan;
+        if (!plan.fixtures.some((f) => f.id === id)) return;
+        set({ plan: { ...plan, fixtures: plan.fixtures.map((f) => (f.id === id ? normalizeFixture({ ...f, pos, wallId }) : f)) } });
+      },
+
+      removeFixture: (id) => {
+        const plan = get().plan;
+        if (!plan.fixtures.some((f) => f.id === id)) return;
+        commit({ ...plan, fixtures: plan.fixtures.filter((f) => f.id !== id) }, { selectedId: deselectIf(new Set([id])) });
       },
 
       addLayout: () => {

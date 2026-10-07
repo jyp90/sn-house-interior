@@ -38,6 +38,10 @@ export function applyShortcut(s: PlanState, k: KeyInput): boolean {
     if (isDelete) s.removeRoom(entity.room.id);
     return isDelete;
   }
+  if (entity.kind === 'fixture') {
+    if (isDelete) s.removeFixture(entity.fixture.id);
+    return isDelete;
+  }
   const item = entity.item;
   if (k.mod && key === 'd') {
     s.duplicateItem(item.id);
