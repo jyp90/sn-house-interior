@@ -4,7 +4,9 @@ import { Viewport } from './scene3d/Viewport';
 import { Banner } from './ui/Banner';
 import { CandidatePicker } from './ui/CandidatePicker';
 import { CatalogPanel } from './ui/CatalogPanel';
+import { ElectricPanel } from './ui/ElectricPanel';
 import { HistoryPanel } from './ui/HistoryPanel';
+import { isPageMode, shows2d } from './ui/modes';
 import { PropertiesPanel } from './ui/PropertiesPanel';
 import { useShortcuts } from './ui/shortcuts';
 import { StructurePanel } from './ui/StructurePanel';
@@ -15,27 +17,33 @@ export function App() {
   useShortcuts(usePlanStore());
   const mode = useUi((s) => s.mode);
   const view = useUi((s) => s.view);
-  const show2d = mode === 'structure' || view === '2d';
+  const page = isPageMode(mode);
+  const show2d = !page && shows2d(mode, view);
+  const show3d = !page && !shows2d(mode, view);
   return (
-    <div className="app">
+    <div className={page ? 'app app-wide' : 'app'}>
       <Toolbar />
       <Banner />
-      <aside className="left">
-        {mode === 'structure' ? <StructurePanel /> : <CatalogPanel />}
-      </aside>
+      {!page && (
+        <aside className="left">
+          {mode === 'structure' ? <StructurePanel /> : mode === 'electric' ? <ElectricPanel /> : <CatalogPanel />}
+        </aside>
+      )}
       <main className="center">
         <div className={show2d ? 'layer' : 'layer layer-hidden'}>
           <Editor2D />
         </div>
-        <div className={show2d ? 'layer layer-hidden' : 'layer'}>
-          <Viewport active={!show2d} />
+        <div className={show3d ? 'layer' : 'layer layer-hidden'}>
+          <Viewport active={show3d} />
         </div>
         <CandidatePicker />
         <HistoryPanel />
       </main>
-      <aside className="right">
-        <PropertiesPanel />
-      </aside>
+      {!page && (
+        <aside className="right">
+          <PropertiesPanel />
+        </aside>
+      )}
     </div>
   );
 }

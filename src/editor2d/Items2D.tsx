@@ -1,5 +1,6 @@
-import { useContext, useEffect, useRef, type PointerEvent } from 'react';
+import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { findProduct } from '../catalog/products';
+import { missingDedicatedCircuit } from '../electrical/fixtures';
 import { corners, itemObb } from '../geometry/obb';
 import { itemsAtPoint } from '../geometry/pick';
 import { snapToWalls } from '../geometry/snap';
@@ -29,6 +30,10 @@ export function Items2D({ px }: { px: number }) {
   const svgRef = useContext(SvgContext);
   const drag = useRef<Drag | null>(null);
   const interactive = mode === 'place' && tool === 'select';
+  const missingCircuit = useMemo(
+    () => (mode === 'electric' ? new Set(missingDedicatedCircuit(plan, (id) => findProduct(plan, id))) : new Set<string>()),
+    [mode, plan],
+  );
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
 
   const onDown = (e: PointerEvent<SVGPolygonElement>, item: Item) => {
@@ -97,6 +102,7 @@ export function Items2D({ px }: { px: number }) {
           item.id === selectedId ? 'item2d-selected' : '',
           st?.clearanceBlocked ? 'item2d-warn' : '',
           st?.collides || st?.blocksDoor ? 'item2d-danger' : '',
+          missingCircuit.has(item.id) ? 'item2d-circuit' : '',
         ]
           .filter(Boolean)
           .join(' ');

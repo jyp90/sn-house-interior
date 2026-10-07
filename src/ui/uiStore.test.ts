@@ -43,4 +43,11 @@ describe('useUi', () => {
     useUi.getState().setCompareLayout(null);
     expect(useUi.getState().compareLayoutId).toBeNull();
   });
+
+  it('설비 도구를 고르면 도구가 fixture가 되고 종류를 기억한다', () => {
+    useUi.getState().setFixtureTool('switch');
+    expect(useUi.getState()).toMatchObject({ tool: 'fixture', fixtureKind: 'switch' });
+    useUi.getState().setMode('electric');
+    expect(useUi.getState()).toMatchObject({ mode: 'electric', tool: 'select', fixtureKind: 'switch' });
+  });
 });

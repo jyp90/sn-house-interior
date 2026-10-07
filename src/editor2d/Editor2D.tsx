@@ -5,6 +5,7 @@ import { usePlan, usePlanStore } from '../model/StoreContext';
 import { DND_MIME } from '../ui/dnd';
 import { useUi } from '../ui/uiStore';
 import { BackgroundImage } from './BackgroundImage';
+import { Fixtures2D } from './Fixtures2D';
 import { Items2D } from './Items2D';
 import { Openings2D } from './Openings2D';
 import { Overlays2D } from './Overlays2D';
@@ -66,6 +67,7 @@ export function Editor2D() {
         const ui = useUi.getState();
         ui.clearCandidates();
         if (ui.calibration) ui.cancelCalibration();
+        if (ui.tool === 'fixture') ui.setTool('select');
       }
     };
     window.addEventListener('keydown', onKey);
@@ -141,6 +143,7 @@ export function Editor2D() {
           <Items2D px={px} />
           <Walls2D px={px} />
           <Openings2D />
+          <Fixtures2D />
           <ToolPreview px={px} wallPoints={wallPoints} cursor={cursor} />
         </svg>
       </SvgContext.Provider>

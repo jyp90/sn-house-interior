@@ -1,4 +1,5 @@
 import type { StoreApi } from 'zustand/vanilla';
+import { FIXTURE_DEFAULT_HEIGHT, snapFixture } from '../electrical/fixtures';
 import { nearestWall, openingAtPoint } from '../geometry/structure';
 import type { Opening, Vec2 } from '../model/schema';
 import type { PlanState } from '../model/store';
@@ -55,6 +56,12 @@ export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
     case 'label': {
       s.select(s.addRoom('방', round(raw)));
       ui.setTool('select');
+      return;
+    }
+    case 'fixture': {
+      const kind = ui.fixtureKind;
+      const snapped = snapFixture(s.plan.walls, raw, kind, ui.snap);
+      s.addFixture({ kind, pos: snapped.pos, ...(snapped.wallId ? { wallId: snapped.wallId } : {}), height: FIXTURE_DEFAULT_HEIGHT[kind] });
       return;
     }
     case 'calibrate': {

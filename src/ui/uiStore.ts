@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import type { CalibrationDraft } from '../editor2d/calibration';
+import type { FixtureKind } from '../electrical/fixtures';
 import type { Vec2 } from '../model/schema';
 
 export type Banner = { kind: 'error' | 'info'; text: string };
-export type Mode = 'structure' | 'place';
+export type Mode = 'structure' | 'place' | 'electric';
 export type View = '2d' | 'persp' | 'top';
-export type Tool = 'select' | 'wall' | 'room' | 'door' | 'window' | 'opening' | 'label' | 'calibrate';
+export type Tool = 'select' | 'wall' | 'room' | 'door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture';
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };
 export type Candidates = { ids: string[]; clientX: number; clientY: number };
 export type WallDraft = { thickness: number; height: number };
@@ -15,6 +16,7 @@ type UiState = {
   mode: Mode;
   view: View;
   tool: Tool;
+  fixtureKind: FixtureKind;
   snap: boolean;
   dragging: boolean;
   banner: Banner | null;
@@ -29,6 +31,7 @@ type UiState = {
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
+  setFixtureTool(kind: FixtureKind): void;
   toggleSnap(): void;
   setDragging(dragging: boolean): void;
   showBanner(banner: Banner): void;
@@ -50,6 +53,7 @@ export const useUi = create<UiState>()((set, get) => ({
   mode: 'place',
   view: 'persp',
   tool: 'select',
+  fixtureKind: 'outlet',
   snap: true,
   dragging: false,
   banner: null,
@@ -64,6 +68,7 @@ export const useUi = create<UiState>()((set, get) => ({
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null }),
+  setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null }),
   toggleSnap: () => set({ snap: !get().snap }),
   setDragging: (dragging) => set({ dragging }),
   showBanner: (banner) => set({ banner }),

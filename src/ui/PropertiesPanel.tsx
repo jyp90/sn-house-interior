@@ -1,5 +1,6 @@
 import { findEntity } from '../model/entities';
 import { usePlan } from '../model/StoreContext';
+import { FixtureProperties } from './properties/FixtureProperties';
 import { ItemProperties } from './properties/ItemProperties';
 import { OpeningProperties } from './properties/OpeningProperties';
 import { RoomProperties } from './properties/RoomProperties';
@@ -16,6 +17,7 @@ export function PropertiesPanel() {
       {entity?.kind === 'wall' && <WallProperties wall={entity.wall} />}
       {entity?.kind === 'opening' && <OpeningProperties opening={entity.opening} />}
       {entity?.kind === 'room' && <RoomProperties room={entity.room} />}
+      {entity?.kind === 'fixture' && <FixtureProperties key={entity.fixture.id} fixture={entity.fixture} />}
     </div>
   );
 }

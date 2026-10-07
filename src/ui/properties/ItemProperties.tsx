@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { findProduct } from '../../catalog/products';
+import { DEDICATED_RADIUS_CM, missingDedicatedCircuit } from '../../electrical/fixtures';
 import type { Item } from '../../model/schema';
 import { usePlan, usePlanStore } from '../../model/StoreContext';
 import { useValidation } from '../../model/useValidation';
@@ -15,6 +16,10 @@ export function ItemProperties({ item }: { item: Item }) {
   const st = status[item.id];
   const s = store.getState();
   const locked = !!item.locked;
+  const missingCircuit = useMemo(
+    () => missingDedicatedCircuit(plan, (id) => findProduct(plan, id)).includes(item.id),
+    [plan, item.id],
+  );
   return (
     <>
       <h3>{product?.name ?? '알 수 없는 제품'}</h3>
@@ -22,6 +27,16 @@ export function ItemProperties({ item }: { item: Item }) {
         <p className="muted">
           {product.model && `${product.model} · `}
           {product.dims.w}×{product.dims.d}×{product.dims.h}cm
+        </p>
+      )}
+      {product?.power && (
+        <p className="muted">
+          소비전력 {product.power.watts}W{product.power.dedicatedCircuit ? ' · 전용회로 필요' : ''}
+        </p>
+      )}
+      {missingCircuit && (
+        <p className="badge warn" data-testid="status-circuit">
+          전용회로 콘센트 없음 ({DEDICATED_RADIUS_CM}cm 이내)
         </p>
       )}
       {st && (st.collides || st.blocksDoor || st.clearanceBlocked) && (

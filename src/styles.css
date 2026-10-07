@@ -70,7 +70,7 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .unit { font-size: 12px; color: #6b7280; }
 .calib { margin-top: 8px; }
 .editor2d-svg.tool-wall, .editor2d-svg.tool-room, .editor2d-svg.tool-door, .editor2d-svg.tool-window,
-.editor2d-svg.tool-opening, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate { cursor: crosshair; }
+.editor2d-svg.tool-opening, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture { cursor: crosshair; }
 .tool-preview polyline { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .tool-preview circle { fill: var(--accent); }
 .tool-preview text { fill: var(--accent); }
@@ -82,14 +82,14 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .item2d-warn { stroke: var(--warn); stroke-width: 2.5; }
 .item2d-danger { stroke: var(--danger); stroke-width: 2.5; }
 .item2d-label { fill: #1f2328; pointer-events: none; }
-.editor2d.mode-structure .items2d { opacity: 0.45; pointer-events: none; }
+.editor2d.mode-structure .items2d, .editor2d.mode-electric .items2d { opacity: 0.45; pointer-events: none; }
 .clearance { fill: rgba(79, 157, 222, 0.18); }
 .clearance-blocked { fill: rgba(245, 165, 36, 0.3); }
 .dist-line { stroke: var(--accent); stroke-dasharray: 5 3; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .dist-text { fill: var(--accent); }
 .candidates { position: fixed; z-index: 20; display: flex; flex-direction: column; gap: 4px; padding: 6px; background: #fff; border: 1px solid #d6d0c4; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
 .candidates p { margin: 0 0 2px; }
-.editor2d.mode-place .walls2d, .editor2d.mode-place .openings2d, .editor2d.mode-place .rooms2d { pointer-events: none; }
+.editor2d.mode-place .walls2d, .editor2d.mode-place .openings2d, .editor2d.mode-place .rooms2d, .editor2d.mode-electric .walls2d, .editor2d.mode-electric .openings2d, .editor2d.mode-electric .rooms2d { pointer-events: none; }
 .props .field select { padding: 4px 6px; border: 1px solid #d6d0c4; border-radius: 4px; font-size: 13px; }
 .check { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 8px; }
 .props label.check { flex-direction: row; }
@@ -105,3 +105,13 @@ button.badge { border: 0; cursor: pointer; font: inherit; font-size: 12px; }
 .layout-tabs { flex-wrap: wrap; margin-bottom: 6px; }
 .layout-bar select { padding: 4px 6px; border: 1px solid #d6d0c4; border-radius: 4px; font-size: 13px; }
 .compare-ghost { fill: none; stroke: #7c3aed; stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.fixtures2d { pointer-events: none; }
+.fixtures2d-interactive { pointer-events: auto; }
+.fixtures2d-interactive .fixture2d { cursor: grab; }
+.fixture2d-shape { stroke-width: 2; vector-effect: non-scaling-stroke; }
+.fixture2d-selected .fixture2d-shape { stroke: var(--accent); stroke-width: 3; }
+.fixture2d-letter { font-weight: 700; pointer-events: none; user-select: none; }
+.item2d-circuit { stroke: var(--danger); stroke-width: 3; stroke-dasharray: 6 4; }
+.electric h3 { font-size: 13px; margin: 12px 0 6px; color: #6b5e4b; }
+.circuit-list { margin: 0; padding-left: 18px; font-size: 12px; }
+p.badge { display: inline-block; margin: 0 0 8px; }

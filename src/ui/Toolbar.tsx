@@ -3,6 +3,7 @@ import { findEntity } from '../model/entities';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { downloadText, planToJson, readPlanFile } from '../persistence/file';
 import { ExportButtons } from './ExportButtons';
+import { canSelectInMode, MODES } from './modes';
 import { saveLabel } from './saveLabel';
 import { useUi, type Mode, type View } from './uiStore';
 
@@ -42,15 +43,16 @@ export function Toolbar() {
     ui.setMode(m);
     const s = store.getState();
     const entity = findEntity(s.plan, s.selectedId);
-    if (entity && (m === 'structure') === (entity.kind === 'item')) s.select(null);
+    if (entity && !canSelectInMode(m, entity.kind)) s.select(null);
   };
 
   return (
     <header className="toolbar">
       <strong className="brand">homefit</strong>
       <div className="segmented" role="group" aria-label="모드">
-        <button type="button" aria-pressed={mode === 'structure'} onClick={() => changeMode('structure')}>구조</button>
-        <button type="button" aria-pressed={mode === 'place'} onClick={() => changeMode('place')}>배치</button>
+        {MODES.map(([m, label]) => (
+          <button key={m} type="button" aria-pressed={mode === m} onClick={() => changeMode(m)}>{label}</button>
+        ))}
       </div>
       {mode === 'place' && (
         <div className="segmented" role="group" aria-label="보기">
