@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { findProduct } from '../../catalog/products';
 import type { Item } from '../../model/schema';
 import { usePlan, usePlanStore } from '../../model/StoreContext';
 import { useValidation } from '../../model/useValidation';
+import { conflictLines } from '../../validation/describe';
 import { CheckboxField, NumberField } from '../fields';
 
 export function ItemProperties({ item }: { item: Item }) {
+  const [open, setOpen] = useState(false);
   const store = usePlanStore();
   const plan = usePlan((s) => s.plan);
   const status = useValidation();
@@ -21,11 +24,28 @@ export function ItemProperties({ item }: { item: Item }) {
           {product.dims.w}×{product.dims.d}×{product.dims.h}cm
         </p>
       )}
-      <div className="badges">
-        {st?.collides && <span className="badge danger" data-testid="status-collides">충돌</span>}
-        {st?.blocksDoor && <span className="badge danger" data-testid="status-blocks-door">방문 열림 간섭</span>}
-        {st?.clearanceBlocked && <span className="badge warn" data-testid="status-clearance">문 열림 공간 부족</span>}
-      </div>
+      {st && (st.collides || st.blocksDoor || st.clearanceBlocked) && (
+        <>
+          <div className="badges">
+            {st.collides && (
+              <button type="button" className="badge danger" data-testid="status-collides" aria-expanded={open} onClick={() => setOpen(!open)}>충돌</button>
+            )}
+            {st.blocksDoor && (
+              <button type="button" className="badge danger" data-testid="status-blocks-door" aria-expanded={open} onClick={() => setOpen(!open)}>방문 열림 간섭</button>
+            )}
+            {st.clearanceBlocked && (
+              <button type="button" className="badge warn" data-testid="status-clearance" aria-expanded={open} onClick={() => setOpen(!open)}>문 열림 공간 부족</button>
+            )}
+          </div>
+          {open && (
+            <ul className="conflicts" data-testid="conflict-details">
+              {conflictLines(st, plan).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
       <NumberField key={`${item.id}-x`} label="X" unit="cm" value={item.x} disabled={locked} onCommit={(v) => s.updateItem(item.id, { x: v })} />
       <NumberField key={`${item.id}-y`} label="Y" unit="cm" value={item.y} disabled={locked} onCommit={(v) => s.updateItem(item.id, { y: v })} />
       <NumberField key={`${item.id}-r`} label="회전" unit="°" value={item.rotation} disabled={locked} onCommit={(v) => s.updateItem(item.id, { rotation: v })} />

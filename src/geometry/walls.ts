@@ -79,8 +79,14 @@ export function wallPieces(w: Wall, openings: Opening[]): WallPiece[] {
   return pieces;
 }
 
+export function planWallObbsWithIds(plan: Plan): { wallId: string; obb: OBB }[] {
+  return plan.walls.flatMap((w) =>
+    wallSolidObbs(w, plan.openings.filter((o) => o.wallId === w.id)).map((obb) => ({ wallId: w.id, obb })),
+  );
+}
+
 export function planWallObbs(plan: Plan): OBB[] {
-  return plan.walls.flatMap((w) => wallSolidObbs(w, plan.openings.filter((o) => o.wallId === w.id)));
+  return planWallObbsWithIds(plan).map((x) => x.obb);
 }
 
 export function openingObb(w: Wall, o: Opening): OBB {

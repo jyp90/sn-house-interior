@@ -28,8 +28,8 @@ describe('validatePlan', () => {
 
   it('냉장고 문 앞을 막으면 냉장고의 clearanceBlocked만 켜진다', () => {
     const s = validatePlan(plan({ items: [item('a', 'fridge', 100, 100), item('b', 'bench', 100, 175)] }), resolve);
-    expect(s.a).toEqual({ collides: false, clearanceBlocked: true, blocksDoor: false });
-    expect(s.b).toEqual({ collides: false, clearanceBlocked: false, blocksDoor: false });
+    expect(s.a).toMatchObject({ collides: false, clearanceBlocked: true, blocksDoor: false });
+    expect(s.b).toMatchObject({ collides: false, clearanceBlocked: false, blocksDoor: false });
   });
 
   it('벽을 파고들면 충돌', () => {
@@ -48,12 +48,23 @@ describe('validatePlan', () => {
     const walls = [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 }];
     const openings = [{ id: 'o', wallId: 'w', kind: 'door' as const, offset: 100, width: 80, height: 210, sill: 0, hinge: 'start' as const, swingIn: true }];
     const s = validatePlan(plan({ walls, openings, items: [item('a', 'cube', 140, 60)] }), resolve);
-    expect(s.a).toEqual({ collides: false, clearanceBlocked: false, blocksDoor: true });
+    expect(s.a).toMatchObject({ collides: false, clearanceBlocked: false, blocksDoor: true });
   });
 
   it('알 수 없는 제품은 오류 없이 상태 false이고 다른 아이템에 영향을 주지 않는다', () => {
     const s = validatePlan(plan({ items: [item('a', 'missing', 100, 100), item('b', 'cube', 100, 100)] }), resolve);
-    expect(s.a).toEqual({ collides: false, clearanceBlocked: false, blocksDoor: false });
+    expect(s.a).toMatchObject({ collides: false, clearanceBlocked: false, blocksDoor: false });
     expect(s.b.collides).toBe(false);
+  });
+
+  it('사유에 상대 아이템·벽·문을 담고 같은 대상은 한 번만', () => {
+    const walls = [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 20, height: 230 }];
+    const openings = [{ id: 'o', wallId: 'w', kind: 'door' as const, offset: 200, width: 80, height: 210, sill: 0, hinge: 'start' as const, swingIn: true }];
+    const s = validatePlan(plan({ walls, openings, items: [item('a', 'cube', 100, 20), item('b', 'cube', 120, 30), item('c', 'cube', 240, 50)] }), resolve);
+    expect(s.a.conflicts).toEqual([
+      { type: 'collides', target: { kind: 'wall', id: 'w' } },
+      { type: 'collides', target: { kind: 'item', id: 'b' } },
+    ]);
+    expect(s.c.conflicts).toEqual([{ type: 'blocksDoor', target: { kind: 'door', id: 'o' } }]);
   });
 });
