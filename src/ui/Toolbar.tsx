@@ -18,7 +18,7 @@ export function Toolbar() {
     if (!file) return;
     const r = await readPlanFile(file);
     if (r.ok) {
-      store.getState().loadPlan(r.plan);
+      store.getState().replacePlan(r.plan);
       showBanner({ kind: 'info', text: `"${r.plan.info.title}"을(를) 불러왔습니다.` });
     } else {
       showBanner({ kind: 'error', text: `불러오기 실패\n${r.error}` });

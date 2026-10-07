@@ -19,6 +19,7 @@ export type PlanState = {
   beginDrag(): void;
   dragItem(id: string, x: number, y: number): void;
   endDrag(): void;
+  replacePlan(plan: Plan): void;
   addCustomProduct(input: { name: string; w: number; d: number; h: number }): string;
   undo(): void;
   redo(): void;
@@ -34,7 +35,11 @@ function normalizeItem(item: Item): Item {
 export function createPlanStore(initial: Plan): StoreApi<PlanState> {
   return createStore<PlanState>()((set, get) => {
     const commit = (plan: Plan, extra: Partial<PlanState> = {}) =>
-      set((s) => ({ plan, past: [...s.past, s.plan].slice(-HISTORY_LIMIT), future: [], ...extra }));
+      set((s) =>
+        s.dragOrigin
+          ? { plan, ...extra }
+          : { plan, past: [...s.past, s.plan].slice(-HISTORY_LIMIT), future: [], ...extra },
+      );
     const withItems = (fn: (items: Item[]) => Item[]): Plan => ({ ...get().plan, items: fn(get().plan.items) });
 
     return {
@@ -80,8 +85,10 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
 
       beginDrag: () => set({ dragOrigin: get().plan }),
 
-      dragItem: (id, x, y) =>
-        set({ plan: withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, x, y }) : i))) }),
+      dragItem: (id, x, y) => {
+        if (!get().dragOrigin) return;
+        set({ plan: withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, x, y }) : i))) });
+      },
 
       endDrag: () => {
         const { dragOrigin, plan, past } = get();
@@ -91,6 +98,8 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
           set({ dragOrigin: null });
         }
       },
+
+      replacePlan: (plan) => commit(plan, { selectedId: null, dragOrigin: null }),
 
       addCustomProduct: ({ name, w, d, h }) => {
         const product: Product = {

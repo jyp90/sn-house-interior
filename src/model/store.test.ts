@@ -129,4 +129,58 @@ describe('createPlanStore', () => {
     s.getState().removeItem('nope');
     expect(s.getState().past.length).toBe(n);
   });
+
+  it('드래그 중 회전은 히스토리를 남기지 않고 endDrag 한 번으로 위치·회전이 함께 되돌아간다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    const pastLen = s.getState().past.length;
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 50, 60);
+    s.getState().rotateItem(id, 90);
+    expect(s.getState().past.length).toBe(pastLen);
+    s.getState().endDrag();
+    expect(s.getState().past.length).toBe(pastLen + 1);
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 50, y: 60, rotation: 90 });
+    s.getState().undo();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, rotation: 0 });
+  });
+
+  it('드래그 중 삭제는 히스토리를 남기지 않고 endDrag 한 번의 실행 취소로 원위치에 복원된다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    const pastLen = s.getState().past.length;
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 50, 60);
+    s.getState().removeItem(id);
+    expect(s.getState().past.length).toBe(pastLen);
+    expect(s.getState().plan.items).toEqual([]);
+    s.getState().endDrag();
+    expect(s.getState().past.length).toBe(pastLen + 1);
+    s.getState().undo();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, id });
+  });
+
+  it('실행 취소로 드래그가 사라진 뒤 dragItem은 아무 일도 하지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 10, 10);
+    s.getState().undo();
+    const afterUndo = s.getState().plan;
+    s.getState().dragItem(id, 99, 99);
+    expect(s.getState().plan).toBe(afterUndo);
+  });
+
+  it('replacePlan은 현재 평면을 히스토리에 남기고 교체하며, 실행 취소로 복원된다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 1, y: 2 });
+    const before = s.getState().plan;
+    const other = { ...SAMPLE_PLAN, info: { title: '다른 평면' } };
+    s.getState().replacePlan(other);
+    expect(s.getState().plan).toEqual(other);
+    expect(s.getState().selectedId).toBeNull();
+    s.getState().undo();
+    expect(s.getState().plan).toEqual(before);
+    expect(s.getState().plan.items.find((i) => i.id === id)).toBeDefined();
+  });
 });

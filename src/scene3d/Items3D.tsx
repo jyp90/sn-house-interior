@@ -38,8 +38,20 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     setDragging(true);
   };
 
+  const finishDrag = () => {
+    if (!grab.current) return false;
+    grab.current = null;
+    store.getState().endDrag();
+    setDragging(false);
+    return true;
+  };
+
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
     if (!grab.current) return;
+    if (store.getState().dragOrigin === null) {
+      finishDrag();
+      return;
+    }
     e.stopPropagation();
     const p = floorPoint(e);
     if (!p) return;
@@ -49,17 +61,14 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     store.getState().dragItem(item.id, snapped.cx, snapped.cy);
   };
 
-  const finishDrag = () => {
-    if (!grab.current) return false;
-    grab.current = null;
-    store.getState().endDrag();
-    setDragging(false);
-    return true;
-  };
-
   const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
     if (finishDrag()) (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
+
+  useEffect(() => () => {
+    finishDrag();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const y = product ? mountHeightCm(product) / 100 : 0;
   return (
