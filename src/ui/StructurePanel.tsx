@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { getDefaultImageStore, saveBackgroundImage } from '../persistence/images';
+import { NumberField } from './fields';
 import { useUi, type Tool } from './uiStore';
 
 const TOOLS: [Tool, string][] = [
@@ -175,13 +176,25 @@ export function StructurePanel() {
               onChange={(e) => store.getState().updateBackground({ opacity: Number(e.target.value) })}
             />
           </label>
+          <NumberField
+            label="배경 X"
+            unit="cm"
+            value={Math.round(bg.offsetX)}
+            onCommit={(v) => store.getState().updateBackground({ offsetX: v })}
+          />
+          <NumberField
+            label="배경 Y"
+            unit="cm"
+            value={Math.round(bg.offsetY)}
+            onCommit={(v) => store.getState().updateBackground({ offsetY: v })}
+          />
           <p className="muted" data-testid="scale-info">{scaleText(bg)}</p>
           <div className="row">
             <button type="button" aria-pressed={calibration?.target === 'primary'} onClick={() => ui.startCalibration('primary')}>축척 보정</button>
             <button type="button" disabled={!bg.calibration} aria-pressed={calibration?.target === 'check'} onClick={() => ui.startCalibration('check')}>검증 길이</button>
             <button type="button" className="danger" onClick={() => { if (calibration) ui.cancelCalibration(); store.getState().setBackground(undefined); }}>배경 제거</button>
           </div>
-          <CalibrationForm />
+          <CalibrationForm key={`${calibration?.target ?? 'none'}-${calibration?.points.length === 0}`} />
         </>
       )}
     </div>
