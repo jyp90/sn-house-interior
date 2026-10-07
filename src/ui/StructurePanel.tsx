@@ -160,13 +160,26 @@ export function StructurePanel() {
         <>
           <label className="field">
             투명도
-            <input type="range" min={0} max={1} step={0.05} value={bg.opacity} onChange={(e) => store.getState().updateBackground({ opacity: Number(e.target.value) })} />
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={bg.opacity}
+              onPointerDown={(e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                store.getState().beginDrag();
+              }}
+              onPointerUp={() => store.getState().endDrag()}
+              onPointerCancel={() => store.getState().endDrag()}
+              onChange={(e) => store.getState().updateBackground({ opacity: Number(e.target.value) })}
+            />
           </label>
           <p className="muted" data-testid="scale-info">{scaleText(bg)}</p>
           <div className="row">
             <button type="button" aria-pressed={calibration?.target === 'primary'} onClick={() => ui.startCalibration('primary')}>축척 보정</button>
             <button type="button" disabled={!bg.calibration} aria-pressed={calibration?.target === 'check'} onClick={() => ui.startCalibration('check')}>검증 길이</button>
-            <button type="button" className="danger" onClick={() => store.getState().setBackground(undefined)}>배경 제거</button>
+            <button type="button" className="danger" onClick={() => { if (calibration) ui.cancelCalibration(); store.getState().setBackground(undefined); }}>배경 제거</button>
           </div>
           <CalibrationForm />
         </>

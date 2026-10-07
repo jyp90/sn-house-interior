@@ -53,7 +53,7 @@ export function Editor2D() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
-      if ((e.key === 'Enter' || e.key === 'Escape') && wallPoints.length > 0) {
+      if ((e.key === 'Enter' || e.key === 'Escape') && tool === 'wall' && wallPoints.length > 0) {
         e.preventDefault();
         finishWall(store, wallPoints);
         setWallPoints([]);
@@ -67,7 +67,7 @@ export function Editor2D() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [store, wallPoints]);
+  }, [store, wallPoints, tool]);
 
   const px = vb.w / size.w;
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);

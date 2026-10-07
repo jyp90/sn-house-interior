@@ -297,6 +297,18 @@ describe('구조 편집', () => {
     s.getState().setBackground(undefined);
     expect(s.getState().plan.background).toBeUndefined();
   });
+
+  it('드래그 트랜잭션 안의 배경 수정은 실행 취소 한 번으로 묶인다', () => {
+    const s = twoWalls();
+    s.getState().setBackground({ imageRef: 'img', widthPx: 400, heightPx: 300, cmPerPx: 1, offsetX: 0, offsetY: 0, rotation: 0, opacity: 0.5 });
+    const pastLen = s.getState().past.length;
+    s.getState().beginDrag();
+    for (const o of [0.55, 0.6, 0.65, 0.7]) s.getState().updateBackground({ opacity: o });
+    s.getState().endDrag();
+    expect(s.getState().past.length).toBe(pastLen + 1);
+    s.getState().undo();
+    expect(s.getState().plan.background?.opacity).toBe(0.5);
+  });
 });
 
 describe('잠금', () => {
