@@ -504,3 +504,23 @@ describe('체크리스트 상태', () => {
     expect(s.getState().plan.checklist).toEqual([]);
   });
 });
+
+describe('기본 정보', () => {
+  it('문자열은 다듬고, 빈 값과 undefined는 지우며, 빈 제목은 무시한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().updateInfo({ address: '  어딘가 1 ', supplyArea: 93.6, builtYear: 1999 });
+    expect(s.getState().plan.info).toEqual({ title: '샘플 평면', address: '어딘가 1', supplyArea: 93.6, builtYear: 1999 });
+    s.getState().updateInfo({ address: '', supplyArea: undefined, title: '  ' });
+    expect(s.getState().plan.info).toEqual({ title: '샘플 평면', builtYear: 1999 });
+    s.getState().updateInfo({ title: ' 우리 집 ' });
+    expect(s.getState().plan.info.title).toBe('우리 집');
+    s.getState().undo();
+    expect(s.getState().plan.info.title).toBe('샘플 평면');
+  });
+
+  it('바뀌는 것이 없으면 이력에 남기지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().updateInfo({ title: '샘플 평면', address: '' });
+    expect(s.getState().past).toHaveLength(0);
+  });
+});

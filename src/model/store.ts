@@ -3,7 +3,7 @@ import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength }
 import { wallLength } from '../geometry/walls';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
-import type { Background, ChecklistState, Fixture, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
+import type { Background, ChecklistState, Fixture, Item, Layout, Opening, Plan, PlanInfo, Product, Room, Vec2, Wall } from './schema';
 
 export const HISTORY_LIMIT = 100;
 
@@ -44,6 +44,7 @@ export type PlanState = {
   dragFixture(id: string, pos: Vec2, wallId?: string): void;
   removeFixture(id: string): void;
   setChecklistEntry(itemId: string, patch: { checked?: boolean; memo?: string }): void;
+  updateInfo(patch: Partial<PlanInfo>): void;
   addLayout(): string;
   renameLayout(id: string, name: string): void;
   setLayoutMemo(id: string, memo: string): void;
@@ -331,6 +332,23 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
             : plan.checklist.filter((c) => c.itemId !== itemId)
           : [...plan.checklist, next];
         commit({ ...plan, checklist });
+      },
+
+      updateInfo: (patch) => {
+        const plan = get().plan;
+        const info: Record<string, unknown> = { ...plan.info };
+        for (const [key, value] of Object.entries(patch)) {
+          const v = typeof value === 'string' ? value.trim() : value;
+          if (key === 'title') {
+            if (typeof v === 'string' && v) info.title = v;
+            continue;
+          }
+          if (v === undefined || v === '') delete info[key];
+          else info[key] = v;
+        }
+        const next = info as PlanInfo;
+        if (JSON.stringify(next) === JSON.stringify(plan.info)) return;
+        commit({ ...plan, info: next });
       },
 
       addLayout: () => {

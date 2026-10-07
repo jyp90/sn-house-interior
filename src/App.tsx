@@ -6,6 +6,7 @@ import { CandidatePicker } from './ui/CandidatePicker';
 import { CatalogPanel } from './ui/CatalogPanel';
 import { ChecklistView } from './ui/ChecklistView';
 import { ElectricPanel } from './ui/ElectricPanel';
+import { ExportView } from './ui/ExportView';
 import { HistoryPanel } from './ui/HistoryPanel';
 import { isPageMode, shows2d } from './ui/modes';
 import { PropertiesPanel } from './ui/PropertiesPanel';
@@ -41,6 +42,11 @@ export function App() {
         {mode === 'checklist' && (
           <div className="page-panel">
             <ChecklistView />
+          </div>
+        )}
+        {mode === 'export' && (
+          <div className="page-panel">
+            <ExportView />
           </div>
         )}
         <HistoryPanel />

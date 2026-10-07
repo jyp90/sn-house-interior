@@ -8,6 +8,7 @@ describe('modes', () => {
       ['place', '배치'],
       ['electric', '전기'],
       ['checklist', '체크리스트'],
+      ['export', '내보내기'],
     ]);
   });
 
@@ -28,5 +29,6 @@ describe('modes', () => {
     expect(isPageMode('electric')).toBe(false);
     expect(isPageMode('checklist')).toBe(true);
     expect(canSelectInMode('checklist', 'item')).toBe(false);
+    expect(isPageMode('export')).toBe(true);
   });
 });

@@ -6,6 +6,7 @@ export const MODES: [Mode, string][] = [
   ['place', '배치'],
   ['electric', '전기'],
   ['checklist', '체크리스트'],
+  ['export', '내보내기'],
 ];
 
 const SELECTABLE: Record<Mode, Entity['kind'][]> = {
@@ -13,6 +14,7 @@ const SELECTABLE: Record<Mode, Entity['kind'][]> = {
   place: ['item'],
   electric: ['fixture'],
   checklist: [],
+  export: [],
 };
 
 export function canSelectInMode(mode: Mode, kind: Entity['kind']): boolean {

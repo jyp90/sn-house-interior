@@ -4,7 +4,7 @@ import type { FixtureKind } from '../electrical/fixtures';
 import type { Vec2 } from '../model/schema';
 
 export type Banner = { kind: 'error' | 'info'; text: string };
-export type Mode = 'structure' | 'place' | 'electric' | 'checklist';
+export type Mode = 'structure' | 'place' | 'electric' | 'checklist' | 'export';
 export type View = '2d' | 'persp' | 'top';
 export type Tool = 'select' | 'wall' | 'room' | 'door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture';
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };

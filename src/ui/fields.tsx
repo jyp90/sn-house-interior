@@ -72,3 +72,65 @@ export function CheckboxField({ label, checked, onChange }: { label: string; che
     </label>
   );
 }
+
+export function OptionalNumberField({
+  label,
+  unit,
+  value,
+  integer = false,
+  onCommit,
+}: {
+  label: string;
+  unit: string;
+  value: number | undefined;
+  integer?: boolean;
+  onCommit: (v: number | undefined) => void;
+}) {
+  const shown = value === undefined ? '' : String(value);
+  const [text, setText] = useState(shown);
+  useEffect(() => setText(shown), [shown]);
+  const commit = () => {
+    const t = text.trim();
+    if (t === '') {
+      if (value !== undefined) onCommit(undefined);
+    } else {
+      const v = Number(t);
+      if (Number.isFinite(v) && v >= 0 && (!integer || Number.isInteger(v)) && v !== value) onCommit(v);
+    }
+    // 거부된 입력은 원래 값으로 되돌린다(성공하면 바뀐 value가 effect로 들어온다)
+    setText(shown);
+  };
+  return (
+    <label className="field">
+      {label}
+      <span className="field-input">
+        <input
+          inputMode="decimal"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur();
+          }}
+        />
+        <span className="unit">{unit}</span>
+      </span>
+    </label>
+  );
+}
+
+export function TextAreaField({ label, value, onCommit }: { label: string; value: string; onCommit: (v: string) => void }) {
+  const [text, setText] = useState(value);
+  useEffect(() => setText(value), [value]);
+  const commit = () => {
+    const v = text.trim();
+    if (v !== value) onCommit(v);
+    setText(value);
+  };
+  return (
+    <label className="field">
+      {label}
+      <textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} onBlur={commit} />
+    </label>
+  );
+}
