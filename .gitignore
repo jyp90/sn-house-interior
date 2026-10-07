@@ -2,3 +2,5 @@ node_modules/
 dist/
 private/
 *.local.json
+playwright-report/
+test-results/
