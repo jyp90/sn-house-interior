@@ -36,4 +36,11 @@ describe('useUi', () => {
     useUi.getState().setHistoryOpen(false);
     expect(useUi.getState().historyOpen).toBe(false);
   });
+
+  it('비교 대상 배치안 설정과 해제', () => {
+    useUi.getState().setCompareLayout('layout-b');
+    expect(useUi.getState().compareLayoutId).toBe('layout-b');
+    useUi.getState().setCompareLayout(null);
+    expect(useUi.getState().compareLayoutId).toBeNull();
+  });
 });

@@ -2,17 +2,20 @@ import { useMemo } from 'react';
 import { findProduct } from '../catalog/products';
 import { itemClearances } from '../geometry/clearance';
 import { wallDistances } from '../geometry/distance';
-import { itemObb } from '../geometry/obb';
+import { corners, itemObb } from '../geometry/obb';
 import { planWallObbs } from '../geometry/walls';
-import { activeItems } from '../model/layout';
+import { activeItems, compareItems } from '../model/layout';
 import { usePlan } from '../model/StoreContext';
 import { useValidation } from '../model/useValidation';
-import { shapePath } from './svg';
+import { useUi } from '../ui/uiStore';
+import { pointsAttr, shapePath } from './svg';
 
 export function Overlays2D({ px }: { px: number }) {
   const plan = usePlan((s) => s.plan);
   const selectedId = usePlan((s) => s.selectedId);
   const status = useValidation();
+  const compareId = useUi((s) => s.compareLayoutId);
+  const ghosts = compareItems(plan, compareId);
   const wallObbs = useMemo(() => planWallObbs(plan), [plan]);
   const placed = activeItems(plan).flatMap((item) => {
     const product = findProduct(plan, item.productId);
@@ -25,6 +28,20 @@ export function Overlays2D({ px }: { px: number }) {
 
   return (
     <g className="overlays2d" pointerEvents="none">
+      {ghosts.length > 0 && (
+        <g className="compare-ghosts" data-testid="compare-ghosts">
+          {ghosts.map((item) => {
+            const dims = findProduct(plan, item.productId)?.dims ?? { w: 50, d: 50 };
+            return (
+              <polygon
+                key={item.id}
+                points={pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}
+                className="compare-ghost"
+              />
+            );
+          })}
+        </g>
+      )}
       {placed.flatMap(({ item, product }) =>
         itemClearances(item, product).map((shape, i) => (
           <path key={`${item.id}-${i}`} d={shapePath(shape)} className={status[item.id]?.clearanceBlocked ? 'clearance clearance-blocked' : 'clearance'} />

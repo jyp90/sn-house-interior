@@ -31,12 +31,22 @@ export function NumberField({ label, unit, value, onCommit, disabled = false }: 
   );
 }
 
-export function TextField({ label, value, onCommit }: { label: string; value: string; onCommit: (v: string) => void }) {
+export function TextField({
+  label,
+  value,
+  onCommit,
+  allowEmpty = false,
+}: {
+  label: string;
+  value: string;
+  onCommit: (v: string) => void;
+  allowEmpty?: boolean;
+}) {
   const [text, setText] = useState(value);
   useEffect(() => setText(value), [value]);
   const commit = () => {
     const v = text.trim();
-    if (v && v !== value) onCommit(v);
+    if ((v || allowEmpty) && v !== value) onCommit(v);
     setText(value);
   };
   return (

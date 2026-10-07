@@ -5,6 +5,7 @@ import type { Product } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { CustomBoxForm } from './CustomBoxForm';
 import { DND_MIME } from './dnd';
+import { LayoutBar } from './LayoutBar';
 
 export function CatalogPanel() {
   const store = usePlanStore();
@@ -21,6 +22,7 @@ export function CatalogPanel() {
 
   return (
     <div className="catalog">
+      <LayoutBar />
       {groups.map(([cat, list]) => (
         <section key={cat}>
           <h3>{CATEGORY_LABEL[cat]}</h3>

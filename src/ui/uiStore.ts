@@ -25,6 +25,7 @@ type UiState = {
   wallDraft: WallDraft;
   roomDraft: RoomDraft;
   historyOpen: boolean;
+  compareLayoutId: string | null;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -42,6 +43,7 @@ type UiState = {
   setWallDraft(patch: Partial<WallDraft>): void;
   setRoomDraft(patch: Partial<RoomDraft>): void;
   setHistoryOpen(open: boolean): void;
+  setCompareLayout(id: string | null): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -58,6 +60,7 @@ export const useUi = create<UiState>()((set, get) => ({
   wallDraft: { thickness: 12, height: 230 },
   roomDraft: { w: 400, d: 300, thickness: 12, height: 230, name: '방' },
   historyOpen: false,
+  compareLayoutId: null,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null }),
@@ -79,4 +82,5 @@ export const useUi = create<UiState>()((set, get) => ({
   setWallDraft: (patch) => set({ wallDraft: { ...get().wallDraft, ...patch } }),
   setRoomDraft: (patch) => set({ roomDraft: { ...get().roomDraft, ...patch } }),
   setHistoryOpen: (open) => set({ historyOpen: open }),
+  setCompareLayout: (id) => set({ compareLayoutId: id }),
 }));
