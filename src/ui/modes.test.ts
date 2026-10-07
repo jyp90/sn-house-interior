@@ -7,6 +7,7 @@ describe('modes', () => {
       ['structure', '구조'],
       ['place', '배치'],
       ['electric', '전기'],
+      ['checklist', '체크리스트'],
     ]);
   });
 
@@ -25,5 +26,7 @@ describe('modes', () => {
     expect(shows2d('place', '2d')).toBe(true);
     expect(shows2d('place', 'persp')).toBe(false);
     expect(isPageMode('electric')).toBe(false);
+    expect(isPageMode('checklist')).toBe(true);
+    expect(canSelectInMode('checklist', 'item')).toBe(false);
   });
 });

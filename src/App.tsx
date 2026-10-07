@@ -4,6 +4,7 @@ import { Viewport } from './scene3d/Viewport';
 import { Banner } from './ui/Banner';
 import { CandidatePicker } from './ui/CandidatePicker';
 import { CatalogPanel } from './ui/CatalogPanel';
+import { ChecklistView } from './ui/ChecklistView';
 import { ElectricPanel } from './ui/ElectricPanel';
 import { HistoryPanel } from './ui/HistoryPanel';
 import { isPageMode, shows2d } from './ui/modes';
@@ -37,6 +38,11 @@ export function App() {
           <Viewport active={show3d} />
         </div>
         <CandidatePicker />
+        {mode === 'checklist' && (
+          <div className="page-panel">
+            <ChecklistView />
+          </div>
+        )}
         <HistoryPanel />
       </main>
       {!page && (

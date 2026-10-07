@@ -481,3 +481,26 @@ describe('배치안', () => {
     });
   });
 });
+
+describe('체크리스트 상태', () => {
+  it('체크와 메모를 저장하고, 둘 다 없어지면 항목을 지운다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setChecklistEntry('demo-1', { checked: true });
+    expect(s.getState().plan.checklist).toEqual([{ itemId: 'demo-1', checked: true }]);
+    s.getState().setChecklistEntry('demo-1', { memo: '  붙박이장 포함 ' });
+    expect(s.getState().plan.checklist).toEqual([{ itemId: 'demo-1', checked: true, memo: '붙박이장 포함' }]);
+    s.getState().setChecklistEntry('demo-1', { checked: false });
+    expect(s.getState().plan.checklist).toEqual([{ itemId: 'demo-1', checked: false, memo: '붙박이장 포함' }]);
+    s.getState().setChecklistEntry('demo-1', { memo: '' });
+    expect(s.getState().plan.checklist).toEqual([]);
+  });
+
+  it('바뀌는 것이 없으면 이력에 남기지 않고, 변경은 실행 취소된다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setChecklistEntry('demo-1', { checked: false });
+    expect(s.getState().past).toHaveLength(0);
+    s.getState().setChecklistEntry('demo-1', { checked: true });
+    s.getState().undo();
+    expect(s.getState().plan.checklist).toEqual([]);
+  });
+});

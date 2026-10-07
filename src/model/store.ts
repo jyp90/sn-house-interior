@@ -3,7 +3,7 @@ import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength }
 import { wallLength } from '../geometry/walls';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
-import type { Background, Fixture, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
+import type { Background, ChecklistState, Fixture, Item, Layout, Opening, Plan, Product, Room, Vec2, Wall } from './schema';
 
 export const HISTORY_LIMIT = 100;
 
@@ -43,6 +43,7 @@ export type PlanState = {
   updateFixture(id: string, patch: Partial<Omit<Fixture, 'id'>>): void;
   dragFixture(id: string, pos: Vec2, wallId?: string): void;
   removeFixture(id: string): void;
+  setChecklistEntry(itemId: string, patch: { checked?: boolean; memo?: string }): void;
   addLayout(): string;
   renameLayout(id: string, name: string): void;
   setLayoutMemo(id: string, memo: string): void;
@@ -314,6 +315,22 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const plan = get().plan;
         if (!plan.fixtures.some((f) => f.id === id)) return;
         commit({ ...plan, fixtures: plan.fixtures.filter((f) => f.id !== id) }, { selectedId: deselectIf(new Set([id])) });
+      },
+
+      setChecklistEntry: (itemId, patch) => {
+        const plan = get().plan;
+        const current = plan.checklist.find((c) => c.itemId === itemId);
+        const merged = { checked: current?.checked ?? false, memo: current?.memo, ...patch };
+        const memo = merged.memo?.trim();
+        const next: ChecklistState = { itemId, checked: merged.checked, ...(memo ? { memo } : {}) };
+        const keep = next.checked || !!next.memo;
+        if (current ? current.checked === next.checked && current.memo === next.memo : !keep) return;
+        const checklist = current
+          ? keep
+            ? plan.checklist.map((c) => (c.itemId === itemId ? next : c))
+            : plan.checklist.filter((c) => c.itemId !== itemId)
+          : [...plan.checklist, next];
+        commit({ ...plan, checklist });
       },
 
       addLayout: () => {
