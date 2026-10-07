@@ -50,6 +50,24 @@ describe('planSvg', () => {
     expect(svg).toMatch(/<text[^>]*paint-order="stroke"[^>]*>3인 소파</);
   });
 
+  it('방 이름표는 마지막 폴리곤보다 뒤에 그린다', () => {
+    const { svg } = planSvg(SAMPLE_PLAN);
+    const roomName = SAMPLE_PLAN.rooms[0].name;
+    const lastPolygon = svg.lastIndexOf('<polygon');
+    expect(lastPolygon).toBeGreaterThan(-1);
+    expect(svg.indexOf(`>${roomName}<`)).toBeGreaterThan(lastPolygon);
+  });
+
+  it('가구는 벽보다 나중에 그려 벽 두께에 걸쳐도 가려지지 않는다', () => {
+    const { svg } = planSvg(withActiveItems(SAMPLE_PLAN, [sofa]));
+    const wallFill = '"#3f3a33"/>';
+    const lastWallIndex = svg.lastIndexOf(wallFill);
+    const firstItemPolygon = svg.indexOf('fill-opacity="0.85"');
+    expect(lastWallIndex).toBeGreaterThan(-1);
+    expect(firstItemPolygon).toBeGreaterThan(-1);
+    expect(lastWallIndex).toBeLessThan(firstItemPolygon);
+  });
+
   it('제어 문자는 SVG와 파일명에서 지운다', () => {
     expect(escapeXml('a\u0001b')).toBe('ab');
     expect(exportFileName('a\u0001b', 'A안', '2d')).toBe('homefit-a-b-A안-2d.png');

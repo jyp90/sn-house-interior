@@ -57,18 +57,6 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
   const center = 'text-anchor="middle" dominant-baseline="middle"';
   const parts: string[] = [`<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#ffffff"/>`];
 
-  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, `fill="#6b5e4b" ${center}`));
-
-  const items = activeItems(plan);
-  for (const item of items) {
-    const product = findProduct(plan, item.productId);
-    const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
-    const fill = product ? itemColor(product, item.variantId) : MISSING_COLOR;
-    parts.push(
-      `<polygon points="${pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}" fill="${fill}" fill-opacity="0.85" stroke="#6b5e4b" stroke-width="1.5"/>`,
-    );
-  }
-
   for (const wall of plan.walls) {
     parts.push(`<polygon points="${pointsAttr(corners(wallObb(wall)))}" fill="#3f3a33"/>`);
   }
@@ -82,6 +70,16 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
       const s = doorSwing(wall, o);
       if (s.kind === 'sector') parts.push(`<path d="${sectorPath(s.center, s.radius, s.start, s.end)}" fill="none" stroke="#8b8b8b" stroke-width="1"/>`);
     }
+  }
+
+  const items = activeItems(plan);
+  for (const item of items) {
+    const product = findProduct(plan, item.productId);
+    const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
+    const fill = product ? itemColor(product, item.variantId) : MISSING_COLOR;
+    parts.push(
+      `<polygon points="${pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}" fill="${fill}" fill-opacity="0.85" stroke="#6b5e4b" stroke-width="1.5"/>`,
+    );
   }
 
   for (const wall of plan.walls) {
@@ -104,6 +102,8 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
       label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), `fill="#4f6b8a" ${center}`),
     );
   }
+
+  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, `fill="#6b5e4b" ${center}`));
 
   for (const item of items) {
     const product = findProduct(plan, item.productId);

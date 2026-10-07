@@ -28,6 +28,9 @@ export function HistoryPanel() {
   };
 
   const restore = (r: Revision) => {
+    const snapshot = addRevision(loadRevisions(), store.getState().plan, Date.now(), '복원 전');
+    saveRevisions(snapshot);
+    setRevisions(snapshot);
     store.getState().replacePlan(r.plan);
     ui.resetView();
     ui.setHistoryOpen(false);

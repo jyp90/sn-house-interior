@@ -79,6 +79,11 @@ test('이력: 지금 저장한 버전으로 복원하고 실행 취소로 되돌
   await expect(panel.getByText('처음')).toBeVisible();
   await panel.getByRole('button', { name: '복원' }).first().click();
   await expect.poll(async () => itemsOf(await getPlan(page)).length).toBe(0);
+
+  await page.getByRole('button', { name: '이력' }).click();
+  await expect(panel.getByText('복원 전')).toBeVisible();
+  await panel.getByRole('button', { name: '닫기' }).click();
+
   await page.keyboard.press('Control+z');
   await expect.poll(async () => itemsOf(await getPlan(page)).length).toBe(1);
 });
