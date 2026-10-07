@@ -1,4 +1,4 @@
-import { useContext, useRef, type PointerEvent } from 'react';
+import { useContext, useEffect, useRef, type PointerEvent } from 'react';
 import { findProduct } from '../catalog/products';
 import { corners, itemObb } from '../geometry/obb';
 import { itemsAtPoint } from '../geometry/pick';
@@ -71,6 +71,12 @@ export function Items2D({ px }: { px: number }) {
     }
     return d;
   };
+
+  // 드래그 중인 가구가 사라지거나(삭제·실행 취소·파일 열기) 조작 불가 상태가 되면 드래그를 닫는다
+  useEffect(() => {
+    const d = drag.current;
+    if (d && (!interactive || !activeItems(plan).some((i) => i.id === d.id))) finish();
+  });
 
   const onUp = (e: PointerEvent<SVGPolygonElement>) => {
     const d = finish();
