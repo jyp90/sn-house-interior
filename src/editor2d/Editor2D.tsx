@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { planBounds } from '../geometry/bounds';
+import type { Vec2 } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
 import { BackgroundImage } from './BackgroundImage';
@@ -7,6 +8,8 @@ import { Openings2D } from './Openings2D';
 import { Rooms2D } from './Rooms2D';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
+import { ToolPreview } from './ToolPreview';
+import { applyToolClick, finishWall } from './tools';
 import { fitViewBox, panBy, zoomAt, type ViewBox } from './viewBox';
 import { Walls2D } from './Walls2D';
 
@@ -21,6 +24,8 @@ export function Editor2D() {
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
   const [vb, setVb] = useState<ViewBox>(() => fitViewBox(planBounds({ walls }), 4 / 3));
+  const [wallPoints, setWallPoints] = useState<Vec2[]>([]);
+  const [cursor, setCursor] = useState<Vec2 | null>(null);
   const pan = useRef<{ x: number; y: number; vb: ViewBox } | null>(null);
 
   useEffect(() => {
@@ -39,26 +44,64 @@ export function Editor2D() {
     setVb(fitViewBox(planBounds({ walls: store.getState().plan.walls }), size.w / size.h));
   }, [store, size.w, size.h, resetKey]);
 
+  // 도구를 바꾸면 그리던 벽은 버린다
+  useEffect(() => {
+    setWallPoints([]);
+    setCursor(null);
+  }, [tool]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
+      if ((e.key === 'Enter' || e.key === 'Escape') && wallPoints.length > 0) {
+        e.preventDefault();
+        finishWall(store, wallPoints);
+        setWallPoints([]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        const ui = useUi.getState();
+        ui.clearCandidates();
+        if (ui.calibration) ui.cancelCalibration();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [store, wallPoints]);
+
   const px = vb.w / size.w;
+  const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
-    if (e.button !== 0 || tool !== 'select') return;
-    store.getState().select(null);
-    useUi.getState().clearCandidates();
-    pan.current = { x: e.clientX, y: e.clientY, vb };
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (e.button !== 0) return;
+    if (tool === 'select') {
+      store.getState().select(null);
+      useUi.getState().clearCandidates();
+      pan.current = { x: e.clientX, y: e.clientY, vb };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
+    applyToolClick(tool, toPlan(e), { store, wallPoints, setWallPoints });
   };
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
     const p = pan.current;
-    if (!p) return;
-    const k = p.vb.w / size.w;
-    setVb(panBy(p.vb, -(e.clientX - p.x) * k, -(e.clientY - p.y) * k));
+    if (p) {
+      const k = p.vb.w / size.w;
+      setVb(panBy(p.vb, -(e.clientX - p.x) * k, -(e.clientY - p.y) * k));
+      return;
+    }
+    if (tool !== 'select') setCursor(toPlan(e));
   };
   const endPan = () => {
     pan.current = null;
   };
+  const onDoubleClick = () => {
+    if (tool !== 'wall' || wallPoints.length === 0) return;
+    finishWall(store, wallPoints);
+    setWallPoints([]);
+  };
   const onWheel = (e: WheelEvent<SVGSVGElement>) => {
-    const p = clientToPlan(e.currentTarget, e.clientX, e.clientY);
+    const p = toPlan(e);
     setVb((v) => zoomAt(v, p, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
   };
 
@@ -74,6 +117,7 @@ export function Editor2D() {
           onPointerMove={onPointerMove}
           onPointerUp={endPan}
           onPointerCancel={endPan}
+          onDoubleClick={onDoubleClick}
           onWheel={onWheel}
         >
           <rect x={vb.x} y={vb.y} width={vb.w} height={vb.h} className="editor2d-bg" />
@@ -81,6 +125,7 @@ export function Editor2D() {
           <Rooms2D px={px} />
           <Walls2D px={px} />
           <Openings2D />
+          <ToolPreview px={px} wallPoints={wallPoints} cursor={cursor} />
         </svg>
       </SvgContext.Provider>
     </div>

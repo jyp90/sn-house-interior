@@ -59,3 +59,21 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .room-name { fill: #6b5e4b; }
 .room-selected { fill: var(--accent); font-weight: 600; }
 .muted-svg { fill: #6b7280; }
+
+.structure h3 { font-size: 13px; margin: 12px 0 6px; color: #6b5e4b; }
+.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.structure fieldset { border: 1px solid #e5e1d8; border-radius: 6px; margin: 8px 0; padding: 8px; }
+.field { display: flex; flex-direction: column; gap: 2px; font-size: 12px; margin-bottom: 8px; }
+.field input { padding: 4px 6px; border: 1px solid #d6d0c4; border-radius: 4px; font-size: 13px; min-width: 0; }
+.field-input { display: flex; align-items: center; gap: 4px; }
+.field-input input { flex: 1; }
+.unit { font-size: 12px; color: #6b7280; }
+.calib { margin-top: 8px; }
+.editor2d-svg.tool-wall, .editor2d-svg.tool-room, .editor2d-svg.tool-door, .editor2d-svg.tool-window,
+.editor2d-svg.tool-opening, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate { cursor: crosshair; }
+.tool-preview polyline { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.tool-preview circle { fill: var(--accent); }
+.tool-preview text { fill: var(--accent); }
+.tool-preview-room { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.tool-preview .calib-point { fill: var(--danger); }
+.calib-line { stroke: var(--danger); stroke-width: 2; vector-effect: non-scaling-stroke; }

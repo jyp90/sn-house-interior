@@ -5,6 +5,7 @@ import { Banner } from './ui/Banner';
 import { CatalogPanel } from './ui/CatalogPanel';
 import { PropertiesPanel } from './ui/PropertiesPanel';
 import { useShortcuts } from './ui/shortcuts';
+import { StructurePanel } from './ui/StructurePanel';
 import { Toolbar } from './ui/Toolbar';
 import { useUi } from './ui/uiStore';
 
@@ -18,7 +19,7 @@ export function App() {
       <Toolbar />
       <Banner />
       <aside className="left">
-        <CatalogPanel />
+        {mode === 'structure' ? <StructurePanel /> : <CatalogPanel />}
       </aside>
       <main className="center">
         <div className={show2d ? 'layer' : 'layer layer-hidden'}>
