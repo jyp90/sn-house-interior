@@ -4,7 +4,7 @@ const id = z.string().min(1);
 const cm = z.number().int();
 const positiveCm = z.number().int().positive();
 
-export const Vec2Schema = z.object({ x: z.number(), y: z.number() });
+export const Vec2Schema = z.object({ x: z.number().int(), y: z.number().int() });
 
 export const WallSchema = z.object({
   id,

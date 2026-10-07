@@ -23,4 +23,12 @@ describe('PlanSchema', () => {
   it('version이 1이 아니면 실패한다', () => {
     expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, version: 2 }).success).toBe(false);
   });
+
+  it('벽 끝점 좌표가 정수가 아니면 실패한다', () => {
+    const bad = {
+      ...SAMPLE_PLAN,
+      walls: [{ ...SAMPLE_PLAN.walls[0], a: { x: 10.5, y: 0 } }, ...SAMPLE_PLAN.walls.slice(1)],
+    };
+    expect(PlanSchema.safeParse(bad).success).toBe(false);
+  });
 });
