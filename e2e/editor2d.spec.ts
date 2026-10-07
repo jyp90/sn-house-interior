@@ -4,6 +4,7 @@ type P = { x: number; y: number };
 
 const getPlan = (page: Page) => page.evaluate(() => window.__homefit!.store.getState().plan);
 const selectedId = (page: Page) => page.evaluate(() => window.__homefit!.store.getState().selectedId);
+const itemsOf = (plan: Awaited<ReturnType<typeof getPlan>>) => plan.layouts.find((l) => l.id === plan.activeLayoutId)!.items;
 
 async function planToClient(page: Page, p: P): Promise<P> {
   return page.evaluate(({ x, y }) => {
@@ -139,18 +140,18 @@ test('2D 배치에서 드래그·실행 취소·잠금이 동작한다', async (
     sourcePosition: { x: 12, y: 12 },
     targetPosition: { x: box.width / 2, y: box.height / 2 },
   });
-  await expect.poll(async () => (await getPlan(page)).items.length).toBe(1);
+  await expect.poll(async () => itemsOf(await getPlan(page)).length).toBe(1);
 
-  const first = (await getPlan(page)).items[0];
+  const first = itemsOf(await getPlan(page))[0];
   const start = await centerOf(page, `item2d-${first.id}`);
   await dragBy(page, start, 60);
-  await expect.poll(async () => (await getPlan(page)).items[0].x).toBeGreaterThan(first.x);
+  await expect.poll(async () => itemsOf(await getPlan(page))[0].x).toBeGreaterThan(first.x);
   await page.keyboard.press('Control+z');
-  await expect.poll(async () => (await getPlan(page)).items[0].x).toBe(first.x);
+  await expect.poll(async () => itemsOf(await getPlan(page))[0].x).toBe(first.x);
 
   await page.getByLabel('잠금').check();
   await dragBy(page, await centerOf(page, `item2d-${first.id}`), 60);
-  expect((await getPlan(page)).items[0]).toMatchObject({ x: first.x, y: first.y, locked: true });
+  expect(itemsOf(await getPlan(page))[0]).toMatchObject({ x: first.x, y: first.y, locked: true });
 });
 
 test('겹친 물체는 클릭하면 후보 목록에서 고른다', async ({ page }) => {
@@ -158,7 +159,7 @@ test('겹친 물체는 클릭하면 후보 목록에서 고른다', async ({ pag
   const add = page.getByTestId('catalog-card-sofa-3seat').getByRole('button', { name: '추가' });
   await add.click();
   await add.click();
-  const ids = (await getPlan(page)).items.map((i) => i.id);
+  const ids = itemsOf(await getPlan(page)).map((i) => i.id);
   expect(ids).toHaveLength(2);
   const c = await centerOf(page, `item2d-${ids[1]}`);
   await page.mouse.click(c.x, c.y);

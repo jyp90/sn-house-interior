@@ -1,6 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const itemCount = (page: Page) => page.evaluate(() => window.__homefit!.store.getState().plan.items.length);
+const itemCount = (page: Page) =>
+  page.evaluate(() => {
+    const p = window.__homefit!.store.getState().plan;
+    return p.layouts.find((l) => l.id === p.activeLayoutId)!.items.length;
+  });
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -21,14 +25,14 @@ test('카탈로그에서 가전을 드래그해 배치하고 충돌·삭제·자
 
   await page.evaluate(() => {
     const s = window.__homefit!.store.getState();
-    const it = s.plan.items[0];
+    const it = s.plan.layouts.find((l) => l.id === s.plan.activeLayoutId)!.items[0];
     s.addItem(it.productId, it.variantId, { x: it.x + 10, y: it.y });
   });
   await expect(page.getByTestId('status-collides')).toBeVisible();
 
   await page.evaluate(() => {
     const s = window.__homefit!.store.getState();
-    s.select(s.plan.items[1].id);
+    s.select(s.plan.layouts.find((l) => l.id === s.plan.activeLayoutId)!.items[1].id);
   });
   await page.keyboard.press('Delete');
   await expect.poll(() => itemCount(page)).toBe(1);

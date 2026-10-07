@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { activeItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 import { createPlanStore, HISTORY_LIMIT } from './store';
 
@@ -10,7 +11,7 @@ describe('createPlanStore', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const id = s.getState().addItem(P, V, { x: 100.6, y: 50.2 });
     const st = s.getState();
-    expect(st.plan.items).toEqual([{ id, productId: P, variantId: V, x: 101, y: 50, rotation: 0 }]);
+    expect(activeItems(st.plan)).toEqual([{ id, productId: P, variantId: V, x: 101, y: 50, rotation: 0 }]);
     expect(st.selectedId).toBe(id);
   });
 
@@ -19,9 +20,9 @@ describe('createPlanStore', () => {
     const id = s.getState().addItem(P, V, { x: 0, y: 0 });
     s.getState().updateItem(id, { x: 10 });
     s.getState().undo();
-    expect(s.getState().plan.items[0].x).toBe(0);
+    expect(activeItems(s.getState().plan)[0].x).toBe(0);
     s.getState().redo();
-    expect(s.getState().plan.items[0].x).toBe(10);
+    expect(activeItems(s.getState().plan)[0].x).toBe(10);
     s.getState().undo();
     s.getState().rotateItem(id, 90);
     expect(s.getState().future).toEqual([]);
@@ -35,9 +36,9 @@ describe('createPlanStore', () => {
     for (let i = 1; i <= 30; i++) s.getState().dragItem(id, i * 3, i);
     s.getState().endDrag();
     expect(s.getState().past.length).toBe(pastBefore + 1);
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 90, y: 30 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 90, y: 30 });
     s.getState().undo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 0, y: 0 });
   });
 
   it('움직이지 않은 드래그는 히스토리를 남기지 않는다', () => {
@@ -53,14 +54,14 @@ describe('createPlanStore', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const id = s.getState().addItem(P, V, { x: 0, y: 0 });
     s.getState().rotateItem(id, -90);
-    expect(s.getState().plan.items[0].rotation).toBe(270);
+    expect(activeItems(s.getState().plan)[0].rotation).toBe(270);
   });
 
   it('duplicateItem은 20cm 옆에 복제하고 선택한다', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const id = s.getState().addItem(P, V, { x: 100, y: 100 });
     const copy = s.getState().duplicateItem(id)!;
-    expect(s.getState().plan.items.find((i) => i.id === copy)).toMatchObject({ x: 120, y: 120 });
+    expect(activeItems(s.getState().plan).find((i) => i.id === copy)).toMatchObject({ x: 120, y: 120 });
     expect(s.getState().selectedId).toBe(copy);
   });
 
@@ -68,7 +69,7 @@ describe('createPlanStore', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const id = s.getState().addItem(P, V, { x: 0, y: 0 });
     s.getState().removeItem(id);
-    expect(s.getState().plan.items).toEqual([]);
+    expect(activeItems(s.getState().plan)).toEqual([]);
     expect(s.getState().selectedId).toBeNull();
   });
 
@@ -100,12 +101,12 @@ describe('createPlanStore', () => {
     s.getState().beginDrag();
     s.getState().dragItem(id, 50, 50);
     s.getState().undo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 10, y: 0 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 10, y: 0 });
     s.getState().endDrag();
     expect(s.getState().past.length).toBe(pastLen);
     expect(s.getState().future).toEqual([]);
     s.getState().undo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 0, y: 0 });
   });
 
   it('드래그 중 다시 실행은 무시한다', () => {
@@ -116,7 +117,7 @@ describe('createPlanStore', () => {
     s.getState().beginDrag();
     s.getState().dragItem(id, 50, 50);
     s.getState().redo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 50, y: 50 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 50, y: 50 });
     s.getState().endDrag();
     expect(s.getState().future).toEqual([]);
   });
@@ -140,9 +141,9 @@ describe('createPlanStore', () => {
     expect(s.getState().past.length).toBe(pastLen);
     s.getState().endDrag();
     expect(s.getState().past.length).toBe(pastLen + 1);
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 50, y: 60, rotation: 90 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 50, y: 60, rotation: 90 });
     s.getState().undo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, rotation: 0 });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 0, y: 0, rotation: 0 });
   });
 
   it('드래그 중 삭제는 히스토리를 남기지 않고 endDrag 한 번의 실행 취소로 원위치에 복원된다', () => {
@@ -153,11 +154,11 @@ describe('createPlanStore', () => {
     s.getState().dragItem(id, 50, 60);
     s.getState().removeItem(id);
     expect(s.getState().past.length).toBe(pastLen);
-    expect(s.getState().plan.items).toEqual([]);
+    expect(activeItems(s.getState().plan)).toEqual([]);
     s.getState().endDrag();
     expect(s.getState().past.length).toBe(pastLen + 1);
     s.getState().undo();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, id });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 0, y: 0, id });
   });
 
   it('실행 취소로 드래그가 사라진 뒤 dragItem은 아무 일도 하지 않는다', () => {
@@ -181,7 +182,7 @@ describe('createPlanStore', () => {
     expect(s.getState().selectedId).toBeNull();
     s.getState().undo();
     expect(s.getState().plan).toEqual(before);
-    expect(s.getState().plan.items.find((i) => i.id === id)).toBeDefined();
+    expect(activeItems(s.getState().plan).find((i) => i.id === id)).toBeDefined();
   });
 });
 
@@ -339,10 +340,10 @@ describe('잠금', () => {
     s.getState().beginDrag();
     s.getState().dragItem(id, 80, 80);
     s.getState().endDrag();
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0, rotation: 0, locked: true });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 0, y: 0, rotation: 0, locked: true });
     s.getState().updateItem(id, { verified: true });
-    expect(s.getState().plan.items[0].verified).toBe(true);
+    expect(activeItems(s.getState().plan)[0].verified).toBe(true);
     s.getState().updateItem(id, { locked: false, x: 10 });
-    expect(s.getState().plan.items[0]).toMatchObject({ x: 10, locked: false });
+    expect(activeItems(s.getState().plan)[0]).toMatchObject({ x: 10, locked: false });
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { activeItems } from '../model/layout';
 import { SAMPLE_PLAN } from '../model/samplePlan';
 import { createPlanStore } from '../model/store';
 import { applyShortcut } from './shortcuts';
@@ -16,35 +17,35 @@ describe('applyShortcut', () => {
     const { store, press } = setup();
     expect(press('ArrowRight')).toBe(true);
     press('ArrowUp', { shiftKey: true });
-    expect(store.getState().plan.items[0]).toMatchObject({ x: 101, y: 90 });
+    expect(activeItems(store.getState().plan)[0]).toMatchObject({ x: 101, y: 90 });
   });
 
   it('R은 90° 회전', () => {
     const { store, press } = setup();
     press('r');
-    expect(store.getState().plan.items[0].rotation).toBe(90);
+    expect(activeItems(store.getState().plan)[0].rotation).toBe(90);
   });
 
   it('Delete는 선택 아이템을 삭제', () => {
     const { store, press } = setup();
     press('Delete');
-    expect(store.getState().plan.items).toHaveLength(0);
+    expect(activeItems(store.getState().plan)).toHaveLength(0);
   });
 
   it('Ctrl+D는 복제, Ctrl+Z/Ctrl+Shift+Z는 실행 취소/다시 실행', () => {
     const { store, press } = setup();
     press('d', { mod: true });
-    expect(store.getState().plan.items).toHaveLength(2);
+    expect(activeItems(store.getState().plan)).toHaveLength(2);
     press('z', { mod: true });
-    expect(store.getState().plan.items).toHaveLength(1);
+    expect(activeItems(store.getState().plan)).toHaveLength(1);
     press('Z', { mod: true, shiftKey: true });
-    expect(store.getState().plan.items).toHaveLength(2);
+    expect(activeItems(store.getState().plan)).toHaveLength(2);
   });
 
   it('입력 필드에서는 무시한다', () => {
     const { store, press } = setup();
     expect(press('Delete', { targetTag: 'INPUT' })).toBe(false);
-    expect(store.getState().plan.items).toHaveLength(1);
+    expect(activeItems(store.getState().plan)).toHaveLength(1);
   });
 
   it('선택이 없으면 편집 단축키는 무시한다', () => {
@@ -57,21 +58,21 @@ describe('applyShortcut', () => {
     const { store, press } = setup();
     expect(press('Backspace', { targetTag: 'BUTTON' })).toBe(false);
     expect(press('Delete', { targetTag: 'BUTTON' })).toBe(false);
-    expect(store.getState().plan.items).toHaveLength(1);
+    expect(activeItems(store.getState().plan)).toHaveLength(1);
   });
 
   it('버튼에 포커스가 있어도 Ctrl+Z / Ctrl+Shift+Z는 동작한다', () => {
     const { store, press } = setup();
     expect(press('z', { mod: true, targetTag: 'BUTTON' })).toBe(true);
-    expect(store.getState().plan.items).toHaveLength(0);
+    expect(activeItems(store.getState().plan)).toHaveLength(0);
     expect(press('z', { mod: true, shiftKey: true, targetTag: 'BUTTON' })).toBe(true);
-    expect(store.getState().plan.items).toHaveLength(1);
+    expect(activeItems(store.getState().plan)).toHaveLength(1);
   });
 
   it('입력 필드에서는 Ctrl+Z를 가로채지 않는다', () => {
     const { store, press } = setup();
     expect(press('z', { mod: true, targetTag: 'INPUT' })).toBe(false);
-    expect(store.getState().plan.items).toHaveLength(1);
+    expect(activeItems(store.getState().plan)).toHaveLength(1);
   });
 });
 
@@ -103,5 +104,5 @@ it('잠긴 아이템은 방향키와 R을 무시한다', () => {
   store.getState().updateItem(id, { locked: true });
   expect(press('ArrowRight')).toBe(false);
   expect(press('r')).toBe(false);
-  expect(store.getState().plan.items[0]).toMatchObject({ x: 100, y: 100, rotation: 0 });
+  expect(activeItems(store.getState().plan)[0]).toMatchObject({ x: 100, y: 100, rotation: 0 });
 });

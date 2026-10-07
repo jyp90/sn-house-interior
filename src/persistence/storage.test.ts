@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { activeItems } from '../model/layout';
 import { SAMPLE_PLAN } from '../model/samplePlan';
 import { createPlanStore } from '../model/store';
 import { backupInvalidPlan, loadFromStorage, readStoredPlan, saveToStorage, startAutosave, STORAGE_KEY } from './storage';
@@ -54,7 +55,7 @@ describe('storage', () => {
     vi.advanceTimersByTime(499);
     expect(st.getItem(STORAGE_KEY)).toBeNull();
     vi.advanceTimersByTime(1);
-    expect(loadFromStorage(st)?.items[0].x).toBe(50);
+    expect(activeItems(loadFromStorage(st)!)[0].x).toBe(50);
     expect(results).toEqual([true]);
     stop();
   });
@@ -79,7 +80,7 @@ describe('storage', () => {
     const id = store.getState().addItem('p', 'v', { x: 0, y: 0 });
     store.getState().updateItem(id, { x: 50 });
     target.dispatchEvent(new Event('pagehide'));
-    expect(loadFromStorage(st)?.items[0].x).toBe(50);
+    expect(activeItems(loadFromStorage(st)!)[0].x).toBe(50);
     expect(results).toEqual([true]);
     stop();
   });

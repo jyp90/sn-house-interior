@@ -1,13 +1,22 @@
+import { DEFAULT_LAYOUT_ID } from '../model/layout';
 import { PlanSchema, type Plan } from '../model/schema';
 
 export type ParseResult = { ok: true; plan: Plan } | { ok: false; error: string };
 
 type RawPlan = Record<string, unknown>;
 
-export const CURRENT_VERSION = 1;
+export const CURRENT_VERSION = 2;
 
 // version N → N+1 변환. 스키마 버전을 올릴 때 여기에 추가한다.
-const MIGRATIONS: Record<number, (raw: RawPlan) => RawPlan> = {};
+const MIGRATIONS: Record<number, (raw: RawPlan) => RawPlan> = {
+  // v2: 배치안 도입. 기존 아이템은 A안으로 옮긴다
+  1: ({ items, ...rest }) => ({
+    ...rest,
+    version: 2,
+    layouts: [{ id: DEFAULT_LAYOUT_ID, name: 'A안', items: Array.isArray(items) ? items : [] }],
+    activeLayoutId: DEFAULT_LAYOUT_ID,
+  }),
+};
 
 export function migrate(raw: RawPlan, steps = MIGRATIONS, current = CURRENT_VERSION): RawPlan | null {
   let cur = raw;

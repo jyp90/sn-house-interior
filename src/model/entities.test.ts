@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { findEntity } from './entities';
+import { withActiveItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 
-const plan = { ...SAMPLE_PLAN, items: [{ id: 'item-1', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0 }] };
+const plan = withActiveItems(SAMPLE_PLAN, [{ id: 'item-1', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0 }]);
 
 describe('findEntity', () => {
   it('id로 아이템·벽·개구부·방을 찾는다', () => {

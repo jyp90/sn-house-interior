@@ -42,6 +42,13 @@ export const ItemSchema = z.object({
   verified: z.boolean().optional(),
 });
 
+export const LayoutSchema = z.object({
+  id,
+  name: z.string().min(1),
+  memo: z.string().optional(),
+  items: z.array(ItemSchema),
+});
+
 export const FixtureSchema = z.object({
   id,
   kind: z.enum(['outlet', 'outlet-dedicated', 'outlet-waterproof', 'switch', 'light']),
@@ -122,24 +129,31 @@ export const BackgroundSchema = z.object({
   calibration: CalibrationSchema.optional(),
 });
 
-export const PlanSchema = z.object({
-  version: z.literal(1),
-  info: PlanInfoSchema,
-  background: BackgroundSchema.optional(),
-  walls: z.array(WallSchema),
-  openings: z.array(OpeningSchema),
-  rooms: z.array(RoomSchema),
-  items: z.array(ItemSchema),
-  fixtures: z.array(FixtureSchema),
-  checklist: z.array(ChecklistStateSchema),
-  customProducts: z.array(ProductSchema),
-});
+export const PlanSchema = z
+  .object({
+    version: z.literal(2),
+    info: PlanInfoSchema,
+    background: BackgroundSchema.optional(),
+    walls: z.array(WallSchema),
+    openings: z.array(OpeningSchema),
+    rooms: z.array(RoomSchema),
+    layouts: z.array(LayoutSchema).min(1),
+    activeLayoutId: id,
+    fixtures: z.array(FixtureSchema),
+    checklist: z.array(ChecklistStateSchema),
+    customProducts: z.array(ProductSchema),
+  })
+  .refine((p) => p.layouts.some((l) => l.id === p.activeLayoutId), {
+    message: 'activeLayoutId가 layouts에 없습니다',
+    path: ['activeLayoutId'],
+  });
 
 export type Vec2 = z.infer<typeof Vec2Schema>;
 export type Wall = z.infer<typeof WallSchema>;
 export type Opening = z.infer<typeof OpeningSchema>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Item = z.infer<typeof ItemSchema>;
+export type Layout = z.infer<typeof LayoutSchema>;
 export type Fixture = z.infer<typeof FixtureSchema>;
 export type Clearance = z.infer<typeof ClearanceSchema>;
 export type Variant = z.infer<typeof VariantSchema>;

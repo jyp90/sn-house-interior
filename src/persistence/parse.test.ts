@@ -8,8 +8,8 @@ describe('parsePlan', () => {
   });
 
   it('parsePlan은 버전이 다르면 실패한다', () => {
-    const r = parsePlan({ ...SAMPLE_PLAN, version: 2 });
-    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 2' });
+    const r = parsePlan({ ...SAMPLE_PLAN, version: 3 });
+    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 3' });
   });
 
   it('객체가 아니면 실패한다', () => {
@@ -26,7 +26,7 @@ describe('parsePlan', () => {
 
 describe('migrate', () => {
   it('현재 버전은 그대로 돌려준다', () => {
-    const raw = { version: 1, a: 1 };
+    const raw = { version: 2, a: 1 };
     expect(migrate(raw)).toBe(raw);
   });
 
@@ -39,7 +39,7 @@ describe('migrate', () => {
 
   it('변환이 없거나 현재보다 높은 버전은 null', () => {
     expect(migrate({ version: 0 })).toBeNull();
-    expect(migrate({ version: 2 })).toBeNull();
+    expect(migrate({ version: 3 })).toBeNull();
     expect(migrate({})).toBeNull();
   });
 
@@ -49,5 +49,25 @@ describe('migrate', () => {
     const steps = { 0: (r: Record<string, unknown>) => (++calls > 1000 ? { ...r, version: 1 } : { ...r }) };
     expect(migrate({ version: 0 }, steps, 1)).toBeNull();
     expect(calls).toBe(1);
+  });
+
+  it('v1 평면은 아이템을 A안으로 옮겨 v2가 된다', () => {
+    const item = { id: 'i', productId: 'p', variantId: 'v', x: 1, y: 2, rotation: 0 };
+    const v1 = {
+      version: 1,
+      info: SAMPLE_PLAN.info,
+      walls: SAMPLE_PLAN.walls,
+      openings: SAMPLE_PLAN.openings,
+      rooms: SAMPLE_PLAN.rooms,
+      items: [item],
+      fixtures: [],
+      checklist: [],
+      customProducts: [],
+    };
+    const r = parsePlan(v1);
+    if (!r.ok) throw new Error(r.error);
+    expect(r.plan.version).toBe(2);
+    expect(r.plan.layouts).toEqual([{ id: 'layout-a', name: 'A안', items: [item] }]);
+    expect(r.plan.activeLayoutId).toBe('layout-a');
   });
 });

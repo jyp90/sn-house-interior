@@ -1,12 +1,19 @@
+import { DEFAULT_LAYOUT_ID } from './layout';
 import type { Plan } from './schema';
 
-export function emptyPlanFields(): Pick<Plan, 'items' | 'fixtures' | 'checklist' | 'customProducts'> {
-  return { items: [], fixtures: [], checklist: [], customProducts: [] };
+export function emptyPlanFields(): Pick<Plan, 'layouts' | 'activeLayoutId' | 'fixtures' | 'checklist' | 'customProducts'> {
+  return {
+    layouts: [{ id: DEFAULT_LAYOUT_ID, name: 'A안', items: [] }],
+    activeLayoutId: DEFAULT_LAYOUT_ID,
+    fixtures: [],
+    checklist: [],
+    customProducts: [],
+  };
 }
 
 // 익명 샘플: 600×400cm, 칸막이 하나와 문 하나
 export const SAMPLE_PLAN: Plan = {
-  version: 1,
+  version: 2,
   info: { title: '샘플 평면' },
   walls: [
     { id: 'w1', a: { x: 0, y: 0 }, b: { x: 600, y: 0 }, thickness: 20, height: 230 },

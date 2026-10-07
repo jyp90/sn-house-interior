@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { withActiveItems } from '../model/layout';
 import type { Item, Plan, Product } from '../model/schema';
 import { emptyPlanFields } from '../model/samplePlan';
 import { validatePlan } from './validate';
@@ -15,9 +16,8 @@ const products: Record<string, Product> = {
 };
 const resolve = (id: string) => products[id];
 const item = (id: string, productId: string, x: number, y: number, rotation = 0): Item => ({ id, productId, variantId: 'v', x, y, rotation });
-const plan = (over: Partial<Plan>): Plan => ({
-  version: 1, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over,
-});
+const plan = ({ items = [], ...over }: Partial<Plan> & { items?: Item[] }): Plan =>
+  withActiveItems({ version: 2, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over }, items);
 
 describe('validatePlan', () => {
   it('겹친 두 아이템은 둘 다 충돌', () => {

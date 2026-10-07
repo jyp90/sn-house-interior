@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { withActiveItems } from './layout';
 import { PlanSchema } from './schema';
 import { SAMPLE_PLAN } from './samplePlan';
 
@@ -8,7 +9,7 @@ describe('PlanSchema', () => {
   });
 
   it('아이템 좌표가 정수가 아니면 실패한다', () => {
-    const bad = { ...SAMPLE_PLAN, items: [{ id: 'i1', productId: 'p', variantId: 'v', x: 1.5, y: 0, rotation: 0 }] };
+    const bad = withActiveItems(SAMPLE_PLAN, [{ id: 'i1', productId: 'p', variantId: 'v', x: 1.5, y: 0, rotation: 0 }]);
     expect(PlanSchema.safeParse(bad).success).toBe(false);
   });
 
@@ -20,8 +21,8 @@ describe('PlanSchema', () => {
     expect(PlanSchema.safeParse(bad).success).toBe(false);
   });
 
-  it('version이 1이 아니면 실패한다', () => {
-    expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, version: 2 }).success).toBe(false);
+  it('version이 2가 아니면 실패한다', () => {
+    expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, version: 1 }).success).toBe(false);
   });
 
   it('벽 끝점 좌표가 정수가 아니면 실패한다', () => {
@@ -33,11 +34,10 @@ describe('PlanSchema', () => {
   });
 
   it('verified·locked는 선택 필드다', () => {
-    const plan = {
-      ...SAMPLE_PLAN,
-      walls: [{ ...SAMPLE_PLAN.walls[0], verified: true }, ...SAMPLE_PLAN.walls.slice(1)],
-      items: [{ id: 'i', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0, locked: true, verified: false }],
-    };
+    const plan = withActiveItems(
+      { ...SAMPLE_PLAN, walls: [{ ...SAMPLE_PLAN.walls[0], verified: true }, ...SAMPLE_PLAN.walls.slice(1)] },
+      [{ id: 'i', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0, locked: true, verified: false }],
+    );
     expect(PlanSchema.safeParse(plan).success).toBe(true);
   });
 
@@ -48,5 +48,10 @@ describe('PlanSchema', () => {
     };
     expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, background }).success).toBe(true);
     expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, background: { ...background, widthPx: 0 } }).success).toBe(false);
+  });
+
+  it('배치안은 하나 이상이고 activeLayoutId는 그 안에 있어야 한다', () => {
+    expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, layouts: [] }).success).toBe(false);
+    expect(PlanSchema.safeParse({ ...SAMPLE_PLAN, activeLayoutId: 'nope' }).success).toBe(false);
   });
 });
