@@ -72,7 +72,7 @@ Plan {
   info: { title, address?, supplyArea?, exclusiveArea?, builtYear?, moveInDate?, scope?, notes? }
   background?: { imageRef, cmPerPx, offsetX, offsetY, rotation, opacity }  // imageRef: IndexedDB key
   walls:    { id, a: Vec2, b: Vec2, thickness, height }[]                  // 기본 높이 230
-  openings: { id, wallId, kind: 'door' | 'window', offset, width, height, sill,
+  openings: { id, wallId, kind: 'door' | 'window' | 'opening', offset, width, height, sill,
               hinge: 'start' | 'end', swingIn: boolean }[]                 // offset: 벽 a점 기준
   rooms:    { id, name, label: Vec2 }[]
   items:    { id, productId, variantId, x, y, rotation, label? }[]        // rotation: deg
@@ -88,10 +88,11 @@ Product {
   variants: { id, label, colors: Record<string, string> }[]
   builder: BuilderId
   builderParams?: Record<string, unknown>
-  clearances: ({ kind: 'swing', side: 'front' | 'left' | 'right', hinge: 'left' | 'right', radius }
-             | { kind: 'front', depth })[]
+  clearances: ({ kind: 'swing', hinge: 'left' | 'right', radius }   // 제품 전면 문, 경첩 위치
+             | { kind: 'front', depth })[]                       // 서랍·세탁기 등 전면 확보 공간
   power?: { watts: number; dedicatedCircuit: boolean }
   builtIn: boolean
+  mount: 'floor' | 'wall'                 // wall: 벽걸이 TV 등 바닥 점유 없음
   sourceUrl?: string
 }
 ```
@@ -116,7 +117,7 @@ Product {
 - 검증(항상 표시): 충돌 시 빨간 외곽선, 선택 아이템에서 4방향 최근접 벽까지 거리선(cm), 문 열림 부채꼴(반투명)
 - 복제 `Ctrl+D`, 삭제 `Delete`, 실행 취소/다시 실행 `Ctrl+Z` / `Ctrl+Shift+Z`
 
-**충돌 규칙**: 2D OBB SAT. 대상은 아이템↔아이템, 아이템↔벽, clearance↔아이템·벽. clearance끼리는 겹쳐도 경고하지 않는다. 벽걸이 TV처럼 바닥 점유가 없는 제품은 벽 충돌만 검사한다.
+**충돌 규칙**: 2D OBB SAT. 아이템 상태는 `collides`(아이템↔아이템·벽), `clearanceBlocked`(제품 문/전면 공간↔아이템·벽), `blocksDoor`(아이템↔방문 열림 영역) 세 가지다. clearance끼리는 겹쳐도 경고하지 않는다. `mount: 'wall'` 제품은 벽 충돌만 검사한다. 문(`door`)과 개구부(`opening`), 창턱 높이 10cm 미만인 창은 바닥 충돌 계산에서 벽을 끊는다. 충돌 판정에서 문 열림 부채꼴은 반지름×반지름 정사각형으로 보수적으로 근사한다.
 
 **전기 모드(2D, 구조 위 오버레이)**
 - 콘센트(일반/전용회로/방수), 스위치, 조명 마커 배치. 벽 스냅, 설치 높이(cm)와 메모
