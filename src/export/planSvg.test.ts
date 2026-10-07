@@ -41,6 +41,19 @@ describe('planSvg', () => {
     const plan = { ...SAMPLE_PLAN, background: { imageRef: 'i', widthPx: 10, heightPx: 10, cmPerPx: 1, offsetX: 0, offsetY: 0, rotation: 0, opacity: 1 } };
     expect(planSvg(plan).svg).not.toContain('<image');
   });
+
+  it('글자는 모든 도형 위에 흰 테두리로 그린다', () => {
+    const { svg } = planSvg(withActiveItems(SAMPLE_PLAN, [sofa]));
+    const lastShape = Math.max(svg.lastIndexOf('<polygon'), svg.lastIndexOf('<path'));
+    expect(svg.indexOf('>3인 소파<')).toBeGreaterThan(lastShape);
+    expect(svg.indexOf('>≈600<')).toBeGreaterThan(lastShape);
+    expect(svg).toMatch(/<text[^>]*paint-order="stroke"[^>]*>3인 소파</);
+  });
+
+  it('제어 문자는 SVG와 파일명에서 지운다', () => {
+    expect(escapeXml('a\u0001b')).toBe('ab');
+    expect(exportFileName('a\u0001b', 'A안', '2d')).toBe('homefit-a-b-A안-2d.png');
+  });
 });
 
 describe('unverifiedCount / exportFileName', () => {

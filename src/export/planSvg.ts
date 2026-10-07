@@ -13,8 +13,16 @@ export const EXPORT_PX_PER_CM = 2;
 const MARGIN = 80;
 const HEADER = 70;
 
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
+
 export function escapeXml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return s
+    .replace(CONTROL_CHARS, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export function unverifiedCount(plan: Plan): number {
@@ -26,7 +34,7 @@ export function unverifiedCount(plan: Plan): number {
 }
 
 export function exportFileName(title: string, layoutName: string, kind: '2d' | '3d'): string {
-  const safe = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, '-');
+  const safe = (s: string) => s.replace(/[\\/:*?"<>|\s\u0000-\u001F]+/g, '-');
   return `homefit-${safe(title)}-${safe(layoutName)}-${kind}.png`;
 }
 
@@ -34,6 +42,10 @@ const mark = (n: number, verified: boolean | undefined) => (verified ? `${n}` : 
 
 function text(x: number, y: number, size: number, value: string, attrs: string): string {
   return `<text x="${x}" y="${y}" font-size="${size}" font-family="sans-serif" ${attrs}>${escapeXml(value)}</text>`;
+}
+
+function label(x: number, y: number, size: number, value: string, attrs: string): string {
+  return text(x, y, size, value, `stroke="#ffffff" stroke-width="3" paint-order="stroke" ${attrs}`);
 }
 
 export function planSvg(plan: Plan): { svg: string; width: number; height: number } {
@@ -45,29 +57,20 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
   const center = 'text-anchor="middle" dominant-baseline="middle"';
   const parts: string[] = [`<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#ffffff"/>`];
 
-  for (const r of plan.rooms) parts.push(text(r.label.x, r.label.y, 18, r.name, `fill="#6b5e4b" ${center}`));
+  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, `fill="#6b5e4b" ${center}`));
 
-  for (const item of activeItems(plan)) {
+  const items = activeItems(plan);
+  for (const item of items) {
     const product = findProduct(plan, item.productId);
     const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
     const fill = product ? itemColor(product, item.variantId) : MISSING_COLOR;
     parts.push(
       `<polygon points="${pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}" fill="${fill}" fill-opacity="0.85" stroke="#6b5e4b" stroke-width="1.5"/>`,
     );
-    parts.push(text(item.x, item.y - 7, 12, product?.name ?? '알 수 없는 제품', `fill="#1f2328" ${center}`));
-    const size = `${dims.w}×${dims.d}`;
-    parts.push(text(item.x, item.y + 9, 11, item.verified ? size : `≈${size}`, `fill="#1f2328" ${center}`));
   }
 
   for (const wall of plan.walls) {
     parts.push(`<polygon points="${pointsAttr(corners(wallObb(wall)))}" fill="#3f3a33"/>`);
-    const len = Math.round(wallLength(wall));
-    if (len === 0) continue;
-    const u = wallDir(wall);
-    const off = wall.thickness / 2 + 14;
-    parts.push(
-      text((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), `fill="#3f3a33" ${center}`),
-    );
   }
 
   const wallById = new Map(plan.walls.map((x) => [x.id, x]));
@@ -79,12 +82,35 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
       const s = doorSwing(wall, o);
       if (s.kind === 'sector') parts.push(`<path d="${sectorPath(s.center, s.radius, s.start, s.end)}" fill="none" stroke="#8b8b8b" stroke-width="1"/>`);
     }
+  }
+
+  for (const wall of plan.walls) {
+    const len = Math.round(wallLength(wall));
+    if (len === 0) continue;
+    const u = wallDir(wall);
+    const off = wall.thickness / 2 + 14;
+    parts.push(
+      label((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), `fill="#3f3a33" ${center}`),
+    );
+  }
+
+  for (const o of plan.openings) {
+    const wall = wallById.get(o.wallId);
+    if (!wall) continue;
     const u = wallDir(wall);
     const mid = o.offset + o.width / 2;
     const off = -(wall.thickness / 2 + 14);
     parts.push(
-      text(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), `fill="#4f6b8a" ${center}`),
+      label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), `fill="#4f6b8a" ${center}`),
     );
+  }
+
+  for (const item of items) {
+    const product = findProduct(plan, item.productId);
+    const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
+    parts.push(label(item.x, item.y - 7, 12, product?.name ?? '알 수 없는 제품', `fill="#1f2328" ${center}`));
+    const size = `${dims.w}×${dims.d}`;
+    parts.push(label(item.x, item.y + 9, 11, item.verified ? size : `≈${size}`, `fill="#1f2328" ${center}`));
   }
 
   parts.push(text(x0 + 20, y0 + 30, 22, `${plan.info.title} · ${activeLayout(plan).name}`, 'fill="#1f2328" font-weight="bold"'));

@@ -26,7 +26,8 @@ export async function svgToPngBlob(svg: string, width: number, height: number): 
 }
 
 export async function canvasWithHeader(source: HTMLCanvasElement, lines: string[]): Promise<Blob> {
-  const header = 16 + lines.length * 28;
+  const k = Math.max(1, Math.round(source.width / (source.clientWidth || source.width)));
+  const header = (16 + lines.length * 28) * k;
   const canvas = document.createElement('canvas');
   canvas.width = source.width;
   canvas.height = source.height + header;
@@ -36,8 +37,8 @@ export async function canvasWithHeader(source: HTMLCanvasElement, lines: string[
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   lines.forEach((line, i) => {
     ctx.fillStyle = i === 0 ? '#1f2328' : '#6b7280';
-    ctx.font = i === 0 ? 'bold 20px sans-serif' : '15px sans-serif';
-    ctx.fillText(line, 16, 30 + i * 28);
+    ctx.font = i === 0 ? `bold ${20 * k}px sans-serif` : `${15 * k}px sans-serif`;
+    ctx.fillText(line, 16 * k, (30 + i * 28) * k);
   });
   ctx.drawImage(source, 0, header);
   return toPngBlob(canvas);
