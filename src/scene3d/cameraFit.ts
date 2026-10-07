@@ -22,3 +22,17 @@ export function fitTopZoom(b: Bounds, width: number, height: number, margin = 1.
   const bh = Math.max(cmToM(b.maxY - b.minY) * margin, 0.01);
   return Math.min(width / bw, height / bh);
 }
+
+const PDF_FOV_HALF = (25 * Math.PI) / 180; // CaptureBridge 카메라 fov 50
+
+export function pdfViewPoses(b: Bounds): { label: string; fit: CameraFit }[] {
+  const t = center(b);
+  const span = cmToM(Math.max(b.maxX - b.minX, b.maxY - b.minY));
+  const topH = (span * 0.6) / Math.tan(PDF_FOV_HALF) + 2;
+  const d = span * 1.1 + 2;
+  return [
+    { label: '위에서 본 전체', fit: { position: [t[0], topH, t[2] + 0.01], target: t } },
+    { label: '오른쪽 앞에서', fit: { position: [t[0] + d * 0.7, d * 0.75, t[2] + d * 0.7], target: t } },
+    { label: '왼쪽 뒤에서', fit: { position: [t[0] - d * 0.7, d * 0.75, t[2] - d * 0.7], target: t } },
+  ];
+}
