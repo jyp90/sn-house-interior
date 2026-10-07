@@ -1,6 +1,7 @@
 import { findProduct } from '../catalog/products';
 import { itemColor, MISSING_COLOR } from '../editor2d/itemColor';
 import { pointsAttr, sectorPath } from '../editor2d/svg';
+import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, type FixtureKind } from '../electrical/fixtures';
 import { planBounds } from '../geometry/bounds';
 import { doorSwing } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
@@ -12,6 +13,9 @@ export const EXPORT_PX_PER_CM = 2;
 
 const MARGIN = 80;
 const HEADER = 70;
+const LEGEND = 50;
+const LEGEND_STEP = 150;
+const HIGHLIGHT = '#c2410c';
 
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
 
@@ -33,27 +37,58 @@ export function unverifiedCount(plan: Plan): number {
   );
 }
 
+const safeFilePart = (s: string) => s.replace(/[\\/:*?"<>|\s\u0000-\u001F]+/g, '-');
+
 export function exportFileName(title: string, layoutName: string, kind: '2d' | '3d'): string {
-  const safe = (s: string) => s.replace(/[\\/:*?"<>|\s\u0000-\u001F]+/g, '-');
-  return `homefit-${safe(title)}-${safe(layoutName)}-${kind}.png`;
+  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}-${kind}.png`;
+}
+
+export function pdfFileName(title: string, layoutName: string): string {
+  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
+}
+
+export type PlanSvgOptions = {
+  fontFamily?: string; // PDF는 jsPDF에 등록한 'Pretendard'
+  header?: boolean; // 제목·단위 머리글
+  items?: 'name' | 'number' | 'faint' | 'none'; // 가구 표시 방식
+  dimensions?: boolean; // 벽 길이·개구부 폭
+  fixtures?: boolean; // 전기 설비 마커와 범례
+  highlightIds?: string[]; // 주황 테두리로 강조할 가구
+};
+
+// 배치도 번호 = 제품 목록 번호
+export function itemNumbers(plan: Plan): Map<string, number> {
+  return new Map(activeItems(plan).map((item, i) => [item.id, i + 1]));
 }
 
 const mark = (n: number, verified: boolean | undefined) => (verified ? `${n}` : `≈${n}`);
 
-function text(x: number, y: number, size: number, value: string, attrs: string): string {
-  return `<text x="${x}" y="${y}" font-size="${size}" font-family="sans-serif" ${attrs}>${escapeXml(value)}</text>`;
+function glyphShape(kind: FixtureKind, cx: number, cy: number): string {
+  const g = FIXTURE_GLYPH[kind];
+  const r = FIXTURE_R_CM;
+  return g.shape === 'circle'
+    ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${g.fill}" stroke="${g.stroke}" stroke-width="2"/>`
+    : `<rect x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" fill="${g.fill}" stroke="${g.stroke}" stroke-width="2"/>`;
 }
 
-function label(x: number, y: number, size: number, value: string, attrs: string): string {
-  return text(x, y, size, value, `stroke="#ffffff" stroke-width="3" paint-order="stroke" ${attrs}`);
-}
+export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string; width: number; height: number } {
+  const { fontFamily = 'sans-serif', header = true, items: itemMode = 'name', dimensions = true, fixtures = false, highlightIds = [] } = options;
+  const font = escapeXml(fontFamily);
+  const text = (x: number, y: number, size: number, value: string, attrs: string) =>
+    `<text x="${x}" y="${y}" font-size="${size}" font-family="${font}" ${attrs}>${escapeXml(value)}</text>`;
+  // svg2pdf는 paint-order를 무시하므로 흰 테두리 글자를 먼저, 본 글자를 그 위에 그린다
+  const label = (x: number, y: number, size: number, value: string, fill: string, extra: string) =>
+    text(x, y, size, value, `fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" ${extra}`) +
+    text(x, y, size, value, `fill="${fill}" ${extra}`);
 
-export function planSvg(plan: Plan): { svg: string; width: number; height: number } {
   const b = planBounds(plan);
+  const legendKinds = fixtures ? FIXTURE_KINDS.filter((k) => plan.fixtures.some((f) => f.kind === k)) : [];
+  const headerH = header ? HEADER : 0;
+  const legendH = legendKinds.length > 0 ? LEGEND : 0;
   const x0 = b.minX - MARGIN;
-  const y0 = b.minY - MARGIN - HEADER;
+  const y0 = b.minY - MARGIN - headerH;
   const w = b.maxX - b.minX + MARGIN * 2;
-  const h = b.maxY - b.minY + MARGIN * 2 + HEADER;
+  const h = b.maxY - b.minY + MARGIN * 2 + headerH + legendH;
   const center = 'text-anchor="middle" dominant-baseline="middle"';
   const parts: string[] = [`<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#ffffff"/>`];
 
@@ -72,49 +107,75 @@ export function planSvg(plan: Plan): { svg: string; width: number; height: numbe
     }
   }
 
-  const items = activeItems(plan);
-  for (const item of items) {
-    const product = findProduct(plan, item.productId);
-    const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
-    const fill = product ? itemColor(product, item.variantId) : MISSING_COLOR;
-    parts.push(
-      `<polygon points="${pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}" fill="${fill}" fill-opacity="0.85" stroke="#6b5e4b" stroke-width="1.5"/>`,
-    );
+  const highlight = new Set(highlightIds);
+  const numbers = itemNumbers(plan);
+  const placed = activeItems(plan).map((item) => ({ item, product: findProduct(plan, item.productId) }));
+  if (itemMode !== 'none') {
+    for (const { item, product } of placed) {
+      const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
+      const fill = product ? itemColor(product, item.variantId) : MISSING_COLOR;
+      const opacity = itemMode === 'faint' ? 0.3 : 0.85;
+      const stroke = highlight.has(item.id) ? `stroke="${HIGHLIGHT}" stroke-width="3"` : 'stroke="#6b5e4b" stroke-width="1.5"';
+      parts.push(
+        `<polygon points="${pointsAttr(corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)))}" fill="${fill}" fill-opacity="${opacity}" ${stroke}/>`,
+      );
+    }
   }
 
-  for (const wall of plan.walls) {
-    const len = Math.round(wallLength(wall));
-    if (len === 0) continue;
-    const u = wallDir(wall);
-    const off = wall.thickness / 2 + 14;
-    parts.push(
-      label((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), `fill="#3f3a33" ${center}`),
-    );
+  if (fixtures) for (const f of plan.fixtures) parts.push(glyphShape(f.kind, f.pos.x, f.pos.y));
+
+  if (dimensions) {
+    for (const wall of plan.walls) {
+      const len = Math.round(wallLength(wall));
+      if (len === 0) continue;
+      const u = wallDir(wall);
+      const off = wall.thickness / 2 + 14;
+      parts.push(label((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), '#3f3a33', center));
+    }
+    for (const o of plan.openings) {
+      const wall = wallById.get(o.wallId);
+      if (!wall) continue;
+      const u = wallDir(wall);
+      const mid = o.offset + o.width / 2;
+      const off = -(wall.thickness / 2 + 14);
+      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
+    }
   }
 
-  for (const o of plan.openings) {
-    const wall = wallById.get(o.wallId);
-    if (!wall) continue;
-    const u = wallDir(wall);
-    const mid = o.offset + o.width / 2;
-    const off = -(wall.thickness / 2 + 14);
-    parts.push(
-      label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), `fill="#4f6b8a" ${center}`),
-    );
+  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
+
+  for (const { item, product } of placed) {
+    if (itemMode === 'name') {
+      const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
+      parts.push(label(item.x, item.y - 7, 12, product?.name ?? '알 수 없는 제품', '#1f2328', center));
+      const size = `${dims.w}×${dims.d}`;
+      parts.push(label(item.x, item.y + 9, 11, item.verified ? size : `≈${size}`, '#1f2328', center));
+    } else if (itemMode === 'number') {
+      parts.push(label(item.x, item.y, 16, String(numbers.get(item.id)), '#1f2328', `font-weight="bold" ${center}`));
+    } else if (itemMode === 'faint' && highlight.has(item.id)) {
+      parts.push(label(item.x, item.y, 12, product?.name ?? '알 수 없는 제품', HIGHLIGHT, center));
+    }
   }
 
-  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, `fill="#6b5e4b" ${center}`));
-
-  for (const item of items) {
-    const product = findProduct(plan, item.productId);
-    const dims = product?.dims ?? { w: 50, d: 50, h: 50 };
-    parts.push(label(item.x, item.y - 7, 12, product?.name ?? '알 수 없는 제품', `fill="#1f2328" ${center}`));
-    const size = `${dims.w}×${dims.d}`;
-    parts.push(label(item.x, item.y + 9, 11, item.verified ? size : `≈${size}`, `fill="#1f2328" ${center}`));
+  if (fixtures) {
+    for (const f of plan.fixtures) {
+      const g = FIXTURE_GLYPH[f.kind];
+      parts.push(text(f.pos.x, f.pos.y, 10, g.letter, `fill="${g.letterFill}" font-weight="bold" ${center}`));
+    }
+    const ly = b.maxY + MARGIN + LEGEND / 2;
+    legendKinds.forEach((k, i) => {
+      const cx = b.minX + i * LEGEND_STEP + FIXTURE_R_CM;
+      const g = FIXTURE_GLYPH[k];
+      parts.push(glyphShape(k, cx, ly));
+      parts.push(text(cx, ly, 10, g.letter, `fill="${g.letterFill}" font-weight="bold" ${center}`));
+      parts.push(text(cx + FIXTURE_R_CM + 8, ly, 14, FIXTURE_LABEL[k], 'fill="#1f2328" dominant-baseline="middle"'));
+    });
   }
 
-  parts.push(text(x0 + 20, y0 + 30, 22, `${plan.info.title} · ${activeLayout(plan).name}`, 'fill="#1f2328" font-weight="bold"'));
-  parts.push(text(x0 + 20, y0 + 56, 14, `단위: cm · ≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`, 'fill="#6b7280"'));
+  if (header) {
+    parts.push(text(x0 + 20, y0 + 30, 22, `${plan.info.title} · ${activeLayout(plan).name}`, 'fill="#1f2328" font-weight="bold"'));
+    parts.push(text(x0 + 20, y0 + 56, 14, `단위: cm · ≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`, 'fill="#6b7280"'));
+  }
 
   const width = Math.round(w * EXPORT_PX_PER_CM);
   const height = Math.round(h * EXPORT_PX_PER_CM);
