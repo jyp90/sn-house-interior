@@ -12,6 +12,7 @@ export const WallSchema = z.object({
   b: Vec2Schema,
   thickness: positiveCm,
   height: positiveCm,
+  verified: z.boolean().optional(),
 });
 
 export const OpeningSchema = z.object({
@@ -24,6 +25,7 @@ export const OpeningSchema = z.object({
   sill: cm.nonnegative(),
   hinge: z.enum(['start', 'end']),
   swingIn: z.boolean(), // true: 벽 방향 u를 +90° 돌린 쪽(-uy, ux)으로 열림
+  verified: z.boolean().optional(),
 });
 
 export const RoomSchema = z.object({ id, name: z.string(), label: Vec2Schema });
@@ -36,6 +38,8 @@ export const ItemSchema = z.object({
   y: cm,
   rotation: z.number(),
   label: z.string().optional(),
+  locked: z.boolean().optional(),
+  verified: z.boolean().optional(),
 });
 
 export const FixtureSchema = z.object({
@@ -99,13 +103,23 @@ export const PlanInfoSchema = z.object({
   notes: z.string().optional(),
 });
 
+// 배경 이미지 안의 픽셀 좌표(실수)
+const PxSchema = z.object({ x: z.number(), y: z.number() });
+
+const CalibrationLineSchema = z.object({ a: PxSchema, b: PxSchema, lengthCm: positiveCm });
+
+export const CalibrationSchema = CalibrationLineSchema.extend({ check: CalibrationLineSchema.optional() });
+
 export const BackgroundSchema = z.object({
   imageRef: z.string(),
+  widthPx: z.number().int().positive(),
+  heightPx: z.number().int().positive(),
   cmPerPx: z.number().positive(),
   offsetX: z.number(),
   offsetY: z.number(),
   rotation: z.number(),
   opacity: z.number().min(0).max(1),
+  calibration: CalibrationSchema.optional(),
 });
 
 export const PlanSchema = z.object({
@@ -132,4 +146,6 @@ export type Variant = z.infer<typeof VariantSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type BuilderId = z.infer<typeof BuilderIdSchema>;
+export type Background = z.infer<typeof BackgroundSchema>;
+export type Calibration = z.infer<typeof CalibrationSchema>;
 export type Plan = z.infer<typeof PlanSchema>;

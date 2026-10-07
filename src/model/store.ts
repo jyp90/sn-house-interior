@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { activeItems, withActiveItems } from './layout';
+import { newId } from './ids';
 import type { Item, Plan, Product, Vec2 } from './schema';
 
 export const HISTORY_LIMIT = 100;
@@ -26,7 +27,6 @@ export type PlanState = {
   redo(): void;
 };
 
-const newId = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
 const normalizeDeg = (d: number) => ((Math.round(d) % 360) + 360) % 360;
 
 function normalizeItem(item: Item): Item {
