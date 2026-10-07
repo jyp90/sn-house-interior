@@ -49,12 +49,16 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     store.getState().dragItem(item.id, snapped.cx, snapped.cy);
   };
 
-  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (!grab.current) return;
+  const finishDrag = () => {
+    if (!grab.current) return false;
     grab.current = null;
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     store.getState().endDrag();
     setDragging(false);
+    return true;
+  };
+
+  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
+    if (finishDrag()) (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
   const y = product ? mountHeightCm(product) / 100 : 0;
@@ -65,6 +69,7 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={finishDrag}
     >
       {object ? (
         <primitive object={object} />

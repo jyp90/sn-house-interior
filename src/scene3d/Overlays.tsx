@@ -10,10 +10,11 @@ import { useValidation } from '../model/useValidation';
 import { sectorToCircleArgs, toWorld } from './units';
 
 const Y = 0.004;
+const OUTLINE_Y = 0.02;
 
 function outline(o: OBB): [number, number, number][] {
   const c = corners(o);
-  return [...c, c[0]].map((p) => [p.x / 100, Y * 2, p.y / 100]);
+  return [...c, c[0]].map((p) => [p.x / 100, OUTLINE_Y, p.y / 100]);
 }
 
 function Shape({ shape, color }: { shape: ClearanceShape; color: string }) {
@@ -62,7 +63,7 @@ export function Overlays() {
             {itemClearances(item, product).map((s, i) => (
               <Shape key={i} shape={s} color={st?.clearanceBlocked ? '#f5a524' : '#4f9dde'} />
             ))}
-            {color && <Line points={outline(fp)} color={color} lineWidth={2} />}
+            {color && <Line points={outline(fp)} color={color} lineWidth={2} depthTest={false} renderOrder={10} />}
           </group>
         );
       })}
