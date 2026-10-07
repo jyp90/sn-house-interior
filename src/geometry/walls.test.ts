@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Opening, Wall } from '../model/schema';
-import { wallObb, wallPieces, wallSolidObbs } from './walls';
+import { openingObb, wallObb, wallPieces, wallSolidObbs } from './walls';
 
 const wall: Wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 };
 const opening = (o: Partial<Opening>): Opening => ({
@@ -53,5 +53,11 @@ describe('wallPieces', () => {
     const pieces = wallPieces(wall, [opening({})]);
     expect(pieces).toHaveLength(3);
     expect(pieces.some((p) => p.y0 === 210 && p.y1 === 230)).toBe(true);
+  });
+});
+
+describe('openingObb', () => {
+  it('개구부 구간을 벽 두께의 사각형으로', () => {
+    expect(openingObb(wall, opening({}))).toMatchObject({ cx: 140, cy: 0, hw: 40, hd: 5 });
   });
 });

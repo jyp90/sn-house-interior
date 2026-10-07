@@ -82,3 +82,7 @@ export function wallPieces(w: Wall, openings: Opening[]): WallPiece[] {
 export function planWallObbs(plan: Plan): OBB[] {
   return plan.walls.flatMap((w) => wallSolidObbs(w, plan.openings.filter((o) => o.wallId === w.id)));
 }
+
+export function openingObb(w: Wall, o: Opening): OBB {
+  return segmentObb(w, o.offset, o.offset + o.width);
+}
