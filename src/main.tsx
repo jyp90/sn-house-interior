@@ -5,7 +5,7 @@ import { App } from './App';
 import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
-import { loadFromStorage, startAutosave } from './persistence/storage';
+import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
 import { useUi } from './ui/uiStore';
 import './styles.css';
 
@@ -15,7 +15,21 @@ declare global {
   }
 }
 
-const store = createPlanStore(loadFromStorage() ?? SAMPLE_PLAN);
+const stored = readStoredPlan();
+let initialPlan = SAMPLE_PLAN;
+if (stored.status === 'ok') {
+  initialPlan = stored.plan;
+} else if (stored.status === 'invalid') {
+  const backupKey = backupInvalidPlan(stored.raw);
+  useUi.getState().showBanner({
+    kind: 'error',
+    text: backupKey
+      ? `저장된 평면을 읽을 수 없어 샘플 평면으로 시작합니다. 기존 데이터는 브라우저에 "${backupKey}" 키로 백업해 두었습니다.`
+      : '저장된 평면을 읽을 수 없어 샘플 평면으로 시작합니다. 백업도 실패했습니다. 기존 데이터가 필요하면 지금은 편집하지 마세요.',
+  });
+}
+
+const store = createPlanStore(initialPlan);
 let saveFailedShown = false;
 startAutosave(store, {
   onResult: (ok) => {
