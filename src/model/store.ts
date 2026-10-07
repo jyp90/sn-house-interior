@@ -53,13 +53,17 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         return item.id;
       },
 
-      updateItem: (id, patch) =>
-        commit(withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, ...patch }) : i)))),
+      updateItem: (id, patch) => {
+        if (!get().plan.items.some((i) => i.id === id)) return;
+        commit(withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, ...patch }) : i))));
+      },
 
-      removeItem: (id) =>
+      removeItem: (id) => {
+        if (!get().plan.items.some((i) => i.id === id)) return;
         commit(withItems((items) => items.filter((i) => i.id !== id)), {
           selectedId: get().selectedId === id ? null : get().selectedId,
-        }),
+        });
+      },
 
       duplicateItem: (id) => {
         const src = get().plan.items.find((i) => i.id === id);
@@ -107,12 +111,18 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       },
 
       undo: () => {
+        const { dragOrigin } = get();
+        if (dragOrigin) {
+          set({ plan: dragOrigin, dragOrigin: null });
+          return;
+        }
         const { past, plan, future } = get();
         if (past.length === 0) return;
         set({ plan: past[past.length - 1], past: past.slice(0, -1), future: [plan, ...future] });
       },
 
       redo: () => {
+        if (get().dragOrigin) return;
         const { past, plan, future } = get();
         if (future.length === 0) return;
         set({ plan: future[0], past: [...past, plan], future: future.slice(1) });

@@ -91,4 +91,42 @@ describe('createPlanStore', () => {
     for (let i = 0; i < HISTORY_LIMIT + 20; i++) s.getState().updateItem(id, { x: i + 1 });
     expect(s.getState().past.length).toBe(HISTORY_LIMIT);
   });
+
+  it('드래그 중 실행 취소는 드래그만 취소하고 히스토리를 건드리지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().updateItem(id, { x: 10 });
+    const pastLen = s.getState().past.length;
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 50, 50);
+    s.getState().undo();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 10, y: 0 });
+    s.getState().endDrag();
+    expect(s.getState().past.length).toBe(pastLen);
+    expect(s.getState().future).toEqual([]);
+    s.getState().undo();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it('드래그 중 다시 실행은 무시한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().updateItem(id, { x: 10 });
+    s.getState().undo();
+    s.getState().beginDrag();
+    s.getState().dragItem(id, 50, 50);
+    s.getState().redo();
+    expect(s.getState().plan.items[0]).toMatchObject({ x: 50, y: 50 });
+    s.getState().endDrag();
+    expect(s.getState().future).toEqual([]);
+  });
+
+  it('없는 아이템 수정·삭제는 히스토리를 남기지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().addItem(P, V, { x: 0, y: 0 });
+    const n = s.getState().past.length;
+    s.getState().updateItem('nope', { x: 1 });
+    s.getState().removeItem('nope');
+    expect(s.getState().past.length).toBe(n);
+  });
 });
