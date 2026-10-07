@@ -5,6 +5,7 @@ import { usePlanStore } from '../model/StoreContext';
 import { DND_MIME } from '../ui/dnd';
 import { useUi } from '../ui/uiStore';
 import { CameraRig } from './CameraRig';
+import { CaptureBridge } from './CaptureBridge';
 import { DropBridge, screenToFloor } from './DropBridge';
 import { Floor } from './Floor';
 import { Items3D } from './Items3D';
@@ -67,6 +68,7 @@ export function Viewport({ active }: { active: boolean }) {
         <Items3D />
         <Overlays />
         <DropBridge />
+        <CaptureBridge />
       </Canvas>
     </div>
   );

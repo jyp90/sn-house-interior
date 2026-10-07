@@ -132,7 +132,7 @@ test('배경 도면을 불러와 축척을 보정하고 새로고침 후에도 �
 });
 
 test('2D 배치에서 드래그·실행 취소·잠금이 동작한다', async ({ page }) => {
-  await page.getByRole('button', { name: '2D' }).click();
+  await page.getByRole('button', { name: '2D', exact: true }).click();
   const editor = page.getByTestId('editor2d');
   await expect(editor).toBeVisible();
   const box = (await editor.boundingBox())!;
@@ -155,7 +155,7 @@ test('2D 배치에서 드래그·실행 취소·잠금이 동작한다', async (
 });
 
 test('겹친 물체는 클릭하면 후보 목록에서 고른다', async ({ page }) => {
-  await page.getByRole('button', { name: '2D' }).click();
+  await page.getByRole('button', { name: '2D', exact: true }).click();
   const add = page.getByTestId('catalog-card-sofa-3seat').getByRole('button', { name: '추가' });
   await add.click();
   await add.click();

@@ -15,11 +15,15 @@ export async function readPlanFile(file: Blob): Promise<ParseResult> {
   return parsePlan(raw);
 }
 
-export function downloadText(text: string, filename: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function downloadText(text: string, filename: string): void {
+  downloadBlob(new Blob([text], { type: 'application/json' }), filename);
 }

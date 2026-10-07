@@ -2,6 +2,7 @@ import { useRef, type ChangeEvent } from 'react';
 import { findEntity } from '../model/entities';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { downloadText, planToJson, readPlanFile } from '../persistence/file';
+import { ExportButtons } from './ExportButtons';
 import { saveLabel } from './saveLabel';
 import { useUi, type Mode, type View } from './uiStore';
 
@@ -64,6 +65,7 @@ export function Toolbar() {
       <button type="button" onClick={() => fileRef.current?.click()}>JSON 열기</button>
       <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="open-json" onChange={onOpen} />
       <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'homefit-plan.json')}>JSON 저장</button>
+      {mode === 'place' && <ExportButtons />}
       <span className="sep" />
       <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
       <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
