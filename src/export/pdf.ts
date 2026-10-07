@@ -115,7 +115,7 @@ function drawViews(doc: jsPDF, page: ViewsPage): void {
   page.views.forEach((v, i) => {
     const x = PAGE.margin + (i % 2) * (w + gap);
     const y = PAGE.top + Math.floor(i / 2) * (h + gap + 6);
-    doc.addImage(v.dataUrl, 'JPEG', x, y, w, h);
+    doc.addImage(v.dataUrl, 'PNG', x, y, w, h);
     setFont(doc, 'normal', NOTE_FONT_PT, MUTED);
     doc.text(v.label, x, y + h + 4.5);
   });

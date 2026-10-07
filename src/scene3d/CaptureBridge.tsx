@@ -33,11 +33,11 @@ export function CaptureBridge() {
           cam.lookAt(...fit.target);
           cam.updateProjectionMatrix();
           gl.render(scene, cam);
-          // 투명 배경이 JPEG에서 검게 나오지 않게 흰 바탕 위에 옮긴다
+          // 흰 바탕 위에 옮겨 PNG를 불투명하게 만든다
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(gl.domElement, 0, 0, width, height);
-          return out.toDataURL('image/jpeg', 0.9);
+          return out.toDataURL('image/png');
         });
       } finally {
         gl.setPixelRatio(ratio);
