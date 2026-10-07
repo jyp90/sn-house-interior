@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
+import { refitFixtures } from '../electrical/fixtures';
 import { wallLength } from '../geometry/walls';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
@@ -157,7 +158,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         if (moved.some((w) => wallLength(w) < w.thickness)) return;
         const fit = refitOpenings(walls, origin.openings);
         if (!fit.ok) return;
-        set({ plan: { ...get().plan, walls, openings: fit.openings } });
+        set({ plan: { ...get().plan, walls, openings: fit.openings, fixtures: refitFixtures(origin.walls, walls, origin.fixtures) } });
       },
 
       endDrag: () => {
@@ -199,7 +200,8 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       updateWall: (id, patch) => {
         const plan = get().plan;
         if (!plan.walls.some((w) => w.id === id)) return;
-        commit({ ...plan, walls: plan.walls.map((w) => (w.id === id ? { ...w, ...patch } : w)) });
+        const walls = plan.walls.map((w) => (w.id === id ? { ...w, ...patch } : w));
+        commit({ ...plan, walls, fixtures: refitFixtures(plan.walls, walls, plan.fixtures) });
       },
 
       resizeWall: (id, length) => {
@@ -211,7 +213,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const walls = moveEndpoint(plan.walls, wall.b, setWallLength(wall, length).b);
         const fit = refitOpenings(walls, plan.openings);
         if (!fit.ok) return openingError(plan, fit.openingId);
-        commit({ ...plan, walls, openings: fit.openings });
+        commit({ ...plan, walls, openings: fit.openings, fixtures: refitFixtures(plan.walls, walls, plan.fixtures) });
         return null;
       },
 

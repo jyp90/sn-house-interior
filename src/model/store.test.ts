@@ -479,6 +479,41 @@ describe('배치안', () => {
       s.getState().removeWall('w1');
       expect(s.getState().plan.fixtures).toEqual([{ id, kind: 'outlet', pos: { x: 100, y: 10 }, height: 30 }]);
     });
+
+    const onW1 = { kind: 'outlet' as const, pos: { x: 300, y: 10 }, wallId: 'w1', height: 30 };
+
+    it('벽 길이를 바꾸면 붙은 설비가 비율대로 따라가고 벽면에 남으며 실행 취소된다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture(onW1);
+      expect(s.getState().resizeWall('w1', 300)).toBeNull();
+      expect(s.getState().plan.fixtures).toEqual([{ id, kind: 'outlet', pos: { x: 150, y: 10 }, wallId: 'w1', height: 30 }]);
+      s.getState().undo();
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 300, y: 10 });
+    });
+
+    it('벽 두께를 바꾸면 벽면까지 거리가 바뀌고 실행 취소된다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      s.getState().addFixture(onW1);
+      s.getState().updateWall('w1', { thickness: 30 });
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 300, y: 15 });
+      s.getState().updateWall('w1', { verified: true });
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 300, y: 15 });
+      s.getState().undo();
+      s.getState().undo();
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 300, y: 10 });
+    });
+
+    it('벽 끝점을 끌면 붙은 설비가 따라가고 실행 취소 한 번으로 돌아간다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      s.getState().addFixture(onW1);
+      s.getState().beginDrag();
+      s.getState().dragEndpoint({ x: 600, y: 0 }, { x: 650, y: 0 });
+      s.getState().dragEndpoint({ x: 600, y: 0 }, { x: 700, y: 0 });
+      s.getState().endDrag();
+      expect(s.getState().plan.fixtures[0]).toMatchObject({ pos: { x: 350, y: 10 }, wallId: 'w1' });
+      s.getState().undo();
+      expect(s.getState().plan.fixtures[0].pos).toEqual({ x: 300, y: 10 });
+    });
   });
 });
 

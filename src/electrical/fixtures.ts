@@ -1,4 +1,4 @@
-import { nearestWall } from '../geometry/structure';
+import { distanceToWall, nearestWall } from '../geometry/structure';
 import { wallDir, wallLength } from '../geometry/walls';
 import { activeItems } from '../model/layout';
 import type { Fixture, Plan, Product, Vec2, Wall } from '../model/schema';
@@ -67,4 +67,54 @@ export function fixtureSummary(fixtures: Fixture[]): string {
     .filter(([, n]) => n > 0)
     .map(([k, n]) => `${FIXTURE_LABEL[k]} ${n}개`)
     .join(', ');
+}
+
+// 도면 표기 E{n}과 전기 설비 목록 번호: plan.fixtures 순서, 1부터
+export function fixtureNumbers(plan: Plan): Map<string, number> {
+  return new Map(plan.fixtures.map((f, i) => [f.id, i + 1]));
+}
+
+const sameWall = (a: Wall, b: Wall) =>
+  a.a.x === b.a.x && a.a.y === b.a.y && a.b.x === b.b.x && a.b.y === b.b.y && a.thickness === b.thickness;
+
+// 벽이 바뀌면 벽에 붙은 설비를 같은 쪽 벽면, 같은 비율 위치로 옮긴다. 벽이 사라지면 wallId만 지운다
+export function refitFixtures(oldWalls: Wall[], newWalls: Wall[], fixtures: Fixture[]): Fixture[] {
+  const oldById = new Map(oldWalls.map((w) => [w.id, w]));
+  const newById = new Map(newWalls.map((w) => [w.id, w]));
+  return fixtures.map((f) => {
+    if (!f.wallId) return f;
+    const before = oldById.get(f.wallId);
+    const after = newById.get(f.wallId);
+    if (!after) {
+      const { wallId: _gone, ...rest } = f;
+      return rest;
+    }
+    if (!before || sameWall(before, after)) return f;
+    const oldLen = wallLength(before);
+    const ou = wallDir(before);
+    const t = Math.max(0, Math.min(oldLen, (f.pos.x - before.a.x) * ou.x + (f.pos.y - before.a.y) * ou.y));
+    const normalOff = (f.pos.x - before.a.x) * -ou.y + (f.pos.y - before.a.y) * ou.x;
+    const side = normalOff < 0 ? -1 : 1;
+    const newLen = wallLength(after);
+    const nt = Math.max(0, Math.min(newLen, newLen !== oldLen && oldLen > 0 ? (t * newLen) / oldLen : t));
+    const u = wallDir(after);
+    const n = { x: -u.y, y: u.x };
+    const off = (after.thickness / 2) * side;
+    return { ...f, pos: { x: r0(after.a.x + u.x * nt + n.x * off), y: r0(after.a.y + u.y * nt + n.y * off) } };
+  });
+}
+
+// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 뗀다
+export function kindChangePatch(fixture: Fixture, kind: FixtureKind): Partial<Omit<Fixture, 'id'>> {
+  const patch: Partial<Omit<Fixture, 'id'>> = { kind };
+  if (fixture.height === FIXTURE_DEFAULT_HEIGHT[fixture.kind]) patch.height = FIXTURE_DEFAULT_HEIGHT[kind];
+  if (kind === 'light') patch.wallId = undefined;
+  return patch;
+}
+
+// 좌표를 직접 고친 뒤에도 그 벽면에 있으면(중심선에서 두께/2+1cm 이내) wallId를 유지한다
+export function keepWallIdAfterMove(walls: Wall[], fixture: Fixture, pos: Vec2): string | undefined {
+  const wall = walls.find((w) => w.id === fixture.wallId);
+  if (!wall) return undefined;
+  return distanceToWall(wall, pos) <= wall.thickness / 2 + 1 ? wall.id : undefined;
 }

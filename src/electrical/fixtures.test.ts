@@ -2,8 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { findProduct } from '../catalog/products';
 import { withActiveItems } from '../model/layout';
 import { SAMPLE_PLAN } from '../model/samplePlan';
-import type { Fixture, Plan } from '../model/schema';
-import { DEDICATED_RADIUS_CM, fixtureSummary, missingDedicatedCircuit, snapFixture } from './fixtures';
+import type { Fixture, Plan, Wall } from '../model/schema';
+import {
+  DEDICATED_RADIUS_CM,
+  fixtureNumbers,
+  fixtureSummary,
+  keepWallIdAfterMove,
+  kindChangePatch,
+  missingDedicatedCircuit,
+  refitFixtures,
+  snapFixture,
+} from './fixtures';
 
 const walls = SAMPLE_PLAN.walls;
 const washer = { id: 'wa', productId: 'samsung-grande-washer-sample', variantId: 'white', x: 300, y: 200, rotation: 0 };
@@ -70,5 +79,92 @@ describe('fixtureSummary', () => {
   it('종류별 개수를 정해진 순서로, 없는 종류는 빼고', () => {
     expect(fixtureSummary([fixture('light', 1, 1), fixture('outlet', 2, 2), fixture('outlet', 3, 3)])).toBe('콘센트 2개, 조명 1개');
     expect(fixtureSummary([])).toBe('');
+  });
+});
+
+describe('fixtureNumbers', () => {
+  it('plan.fixtures 순서대로 1부터', () => {
+    const plan = withFixtures(SAMPLE_PLAN, [fixture('light', 1, 1), fixture('outlet', 2, 2)]);
+    expect(fixtureNumbers(plan)).toEqual(new Map([['f-light-1', 1], ['f-outlet-2', 2]]));
+  });
+});
+
+describe('refitFixtures', () => {
+  const onW1: Fixture = { id: 'a', kind: 'outlet', pos: { x: 300, y: 10 }, wallId: 'w1', height: 30 };
+  const outside: Fixture = { id: 'b', kind: 'outlet', pos: { x: 150, y: -10 }, wallId: 'w1', height: 30 };
+  const free: Fixture = { id: 'c', kind: 'light', pos: { x: 200, y: 200 }, height: 230 };
+  const onW4: Fixture = { id: 'd', kind: 'switch', pos: { x: 10, y: 200 }, wallId: 'w4', height: 120 };
+  const replace = (id: string, patch: Partial<Wall>) => walls.map((w) => (w.id === id ? { ...w, ...patch } : w));
+
+  it('벽 길이가 바뀌면 비율대로 옮기고 같은 쪽 벽면에 둔다', () => {
+    const next = replace('w1', { b: { x: 300, y: 0 } });
+    expect(refitFixtures(walls, next, [onW1, outside])).toEqual([
+      { ...onW1, pos: { x: 150, y: 10 } },
+      { ...outside, pos: { x: 75, y: -10 } },
+    ]);
+  });
+
+  it('두께가 바뀌면 벽면까지 거리를 새 두께에 맞춘다', () => {
+    const next = replace('w1', { thickness: 30 });
+    expect(refitFixtures(walls, next, [onW1, outside])).toEqual([
+      { ...onW1, pos: { x: 300, y: 15 } },
+      { ...outside, pos: { x: 150, y: -15 } },
+    ]);
+  });
+
+  it('벽이 기울면 따라 돈다', () => {
+    const next = replace('w1', { b: { x: 600, y: -100 } });
+    const [moved] = refitFixtures(walls, next, [onW1]);
+    // 길이 608.3 → t = 300×608.3/600 = 304.1, 벽면 법선 쪽 10cm
+    expect(moved.pos).toEqual({ x: 302, y: -40 });
+    expect(moved.wallId).toBe('w1');
+  });
+
+  it('바뀌지 않은 벽·벽 없는 설비는 같은 객체, 사라진 벽은 wallId만 지운다', () => {
+    const next = replace('w1', { thickness: 30 });
+    const out = refitFixtures(walls, next, [free, onW4]);
+    expect(out[0]).toBe(free);
+    expect(out[1]).toBe(onW4);
+    const gone = refitFixtures(walls, walls.filter((w) => w.id !== 'w1'), [onW1]);
+    expect(gone).toEqual([{ id: 'a', kind: 'outlet', pos: { x: 300, y: 10 }, height: 30 }]);
+    expect(gone[0]).not.toHaveProperty('wallId');
+  });
+});
+
+describe('kindChangePatch', () => {
+  const outlet: Fixture = { id: 'a', kind: 'outlet', pos: { x: 300, y: 10 }, wallId: 'w1', height: 30 };
+
+  it('높이가 이전 종류 기본값이면 새 종류 기본값으로', () => {
+    expect(kindChangePatch(outlet, 'switch')).toEqual({ kind: 'switch', height: 120 });
+    expect(kindChangePatch(outlet, 'outlet-dedicated')).toEqual({ kind: 'outlet-dedicated', height: 30 });
+  });
+
+  it('높이를 바꿔 둔 설비는 높이를 유지한다', () => {
+    expect(kindChangePatch({ ...outlet, height: 45 }, 'switch')).toEqual({ kind: 'switch' });
+  });
+
+  it('조명으로 바꾸면 벽에서 뗀다', () => {
+    const patch = kindChangePatch(outlet, 'light');
+    expect(patch).toEqual({ kind: 'light', height: 230, wallId: undefined });
+    expect(patch).toHaveProperty('wallId');
+  });
+});
+
+describe('keepWallIdAfterMove', () => {
+  const outlet: Fixture = { id: 'a', kind: 'outlet', pos: { x: 300, y: 10 }, wallId: 'w1', height: 30 };
+
+  it('벽 중심선에서 두께/2+1cm 이내면 wallId를 유지한다', () => {
+    expect(keepWallIdAfterMove(walls, outlet, { x: 400, y: 10 })).toBe('w1');
+    expect(keepWallIdAfterMove(walls, outlet, { x: 400, y: -11 })).toBe('w1');
+  });
+
+  it('벗어나면 wallId를 지운다', () => {
+    expect(keepWallIdAfterMove(walls, outlet, { x: 400, y: 12 })).toBeUndefined();
+    expect(keepWallIdAfterMove(walls, outlet, { x: 620, y: 10 })).toBeUndefined();
+  });
+
+  it('벽에 붙지 않았거나 벽이 없으면 undefined', () => {
+    expect(keepWallIdAfterMove(walls, { ...outlet, wallId: undefined }, { x: 300, y: 10 })).toBeUndefined();
+    expect(keepWallIdAfterMove(walls, { ...outlet, wallId: 'nope' }, { x: 300, y: 10 })).toBeUndefined();
   });
 });
