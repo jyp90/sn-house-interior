@@ -38,4 +38,29 @@ describe('buildProduct', () => {
     expect(mountHeightCm(CATALOG.find((p) => p.mount === 'wall')!)).toBe(90);
     expect(mountHeightCm(CATALOG[0])).toBe(0);
   });
+
+  const countNamed = (o: THREE.Object3D, name: string) => {
+    let n = 0;
+    o.traverse((c) => {
+      if (c.name === name) n++;
+    });
+    return n;
+  };
+
+  it('냉장고는 도어 행이 만나는 곳마다 손잡이 홈이 있고 경계 상자는 그대로다', () => {
+    const base = CATALOG.find((p) => p.builder === 'fridge')!;
+    for (const [split, count] of [['4door', 4], ['2door', 2], ['1door', 1]] as const) {
+      const p: Product = { ...base, builderParams: { ...base.builderParams, split } };
+      const size = bounds(p).getSize(new THREE.Vector3());
+      expect(countNamed(buildProduct(p, p.variants[0].id), 'handle-groove')).toBe(count);
+      expect(size.x).toBeCloseTo(p.dims.w / 100, 4);
+      expect(size.y).toBeCloseTo(p.dims.h / 100, 4);
+      expect(size.z).toBeCloseTo(p.dims.d / 100, 4);
+    }
+  });
+
+  it('드럼세탁기는 상단 조작부가 있다', () => {
+    const p = CATALOG.find((x) => x.builder === 'front-loader')!;
+    expect(countNamed(buildProduct(p, p.variants[0].id), 'control-panel')).toBe(1);
+  });
 });
