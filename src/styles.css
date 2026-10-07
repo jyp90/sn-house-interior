@@ -41,3 +41,19 @@ button:disabled { opacity: 0.4; cursor: default; }
 button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .save-status { margin-left: auto; font-size: 12px; color: #6b7280; }
 .save-error { color: #b42318; }
+.editor2d { position: absolute; inset: 0; }
+.editor2d-svg { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
+.editor2d-bg { fill: #faf8f4; }
+.wall { fill: #3f3a33; stroke: #3f3a33; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.wall-selected { fill: var(--accent); stroke: var(--accent); }
+.dim { fill: #3f3a33; pointer-events: none; }
+.dim-unverified { fill: #9a8f7f; font-style: italic; }
+.endpoint-handle { fill: #fff; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: move; }
+.opening-gap { fill: #faf8f4; stroke: #3f3a33; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.opening-window { stroke: #4f9dde; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.opening-open { stroke: #9a8f7f; stroke-dasharray: 4 3; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.opening-swing { fill: rgba(139, 139, 139, 0.15); stroke: #8b8b8b; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
+.room-name { fill: #6b5e4b; }
+.room-selected { fill: var(--accent); font-weight: 600; }
+.muted-svg { fill: #6b7280; }
