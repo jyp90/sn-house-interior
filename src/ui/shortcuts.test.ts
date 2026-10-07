@@ -74,3 +74,34 @@ describe('applyShortcut', () => {
     expect(store.getState().plan.items).toHaveLength(1);
   });
 });
+
+describe('구조 단축키', () => {
+  it('선택한 개구부·벽·방 이름은 Delete/Backspace로 지운다', () => {
+    const store = createPlanStore(SAMPLE_PLAN);
+    const press = (key: string) => applyShortcut(store.getState(), { key, shiftKey: false, mod: false });
+    store.getState().select('o1');
+    expect(press('Delete')).toBe(true);
+    expect(store.getState().plan.openings.some((o) => o.id === 'o1')).toBe(false);
+    store.getState().select('w1');
+    expect(press('Backspace')).toBe(true);
+    expect(store.getState().plan.walls.some((w) => w.id === 'w1')).toBe(false);
+    store.getState().select('r1');
+    expect(press('Delete')).toBe(true);
+    expect(store.getState().plan.rooms.some((r) => r.id === 'r1')).toBe(false);
+  });
+
+  it('벽 선택 중 R과 방향키는 처리하지 않는다', () => {
+    const store = createPlanStore(SAMPLE_PLAN);
+    store.getState().select('w1');
+    expect(applyShortcut(store.getState(), { key: 'r', shiftKey: false, mod: false })).toBe(false);
+    expect(applyShortcut(store.getState(), { key: 'ArrowLeft', shiftKey: false, mod: false })).toBe(false);
+  });
+});
+
+it('잠긴 아이템은 방향키와 R을 무시한다', () => {
+  const { store, id, press } = setup();
+  store.getState().updateItem(id, { locked: true });
+  expect(press('ArrowRight')).toBe(false);
+  expect(press('r')).toBe(false);
+  expect(store.getState().plan.items[0]).toMatchObject({ x: 100, y: 100, rotation: 0 });
+});

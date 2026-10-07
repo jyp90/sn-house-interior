@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { StoreApi } from 'zustand/vanilla';
-import { activeItems } from '../model/layout';
+import { findEntity } from '../model/entities';
 import type { PlanState } from '../model/store';
 
 export type KeyInput = { key: string; shiftKey: boolean; mod: boolean; targetTag?: string };
@@ -23,16 +23,31 @@ export function applyShortcut(s: PlanState, k: KeyInput): boolean {
   }
   // 패널 버튼을 누른 직후 포커스가 남아 있어도 Backspace로 지워지지 않게 한다
   if (k.targetTag === 'BUTTON') return false;
-  const item = activeItems(s.plan).find((i) => i.id === s.selectedId);
-  if (!item) return false;
+  const entity = findEntity(s.plan, s.selectedId);
+  if (!entity) return false;
+  const isDelete = k.key === 'Delete' || k.key === 'Backspace';
+  if (entity.kind === 'wall') {
+    if (isDelete) s.removeWall(entity.wall.id);
+    return isDelete;
+  }
+  if (entity.kind === 'opening') {
+    if (isDelete) s.removeOpening(entity.opening.id);
+    return isDelete;
+  }
+  if (entity.kind === 'room') {
+    if (isDelete) s.removeRoom(entity.room.id);
+    return isDelete;
+  }
+  const item = entity.item;
   if (k.mod && key === 'd') {
     s.duplicateItem(item.id);
     return true;
   }
-  if (k.key === 'Delete' || k.key === 'Backspace') {
+  if (isDelete) {
     s.removeItem(item.id);
     return true;
   }
+  if (item.locked) return false;
   if (!k.mod && key === 'r') {
     s.rotateItem(item.id, 90);
     return true;
