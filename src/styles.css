@@ -54,7 +54,7 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .opening-gap { fill: #faf8f4; stroke: #3f3a33; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .opening-window { stroke: #4f9dde; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .opening-open { stroke: #9a8f7f; stroke-dasharray: 4 3; stroke-width: 1; vector-effect: non-scaling-stroke; }
-.opening-swing { fill: rgba(139, 139, 139, 0.15); stroke: #8b8b8b; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.opening-swing { fill: rgba(139, 139, 139, 0.15); stroke: #8b8b8b; stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
 .room-name { fill: #6b5e4b; }
 .room-selected { fill: var(--accent); font-weight: 600; }

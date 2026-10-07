@@ -63,7 +63,7 @@ test('구조 모드에서 방을 만들고 문을 달면 내측 치수가 유지
 
   const door = (await getPlan(page)).openings.at(-1)!;
   await page.getByRole('button', { name: '선택', exact: true }).click();
-  await dragBy(page, await centerOf(page, `opening-${door.id}`), 40);
+  await dragBy(page, await centerOf(page, `opening-gap-${door.id}`), 40);
   await expect.poll(async () => (await getPlan(page)).openings.find((o) => o.id === door.id)!.offset).toBeGreaterThan(door.offset);
   await page.keyboard.press('Control+z');
   await expect.poll(async () => (await getPlan(page)).openings.find((o) => o.id === door.id)!.offset).toBe(door.offset);
