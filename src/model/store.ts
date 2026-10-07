@@ -132,6 +132,9 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const origin = get().dragOrigin;
         if (!origin) return;
         const walls = moveEndpoint(origin.walls, from, roundVec(to));
+        // 끝점이 실제로 움직인 벽만 최소 길이(두께 이상)를 검사한다
+        const moved = walls.filter((w, i) => w !== origin.walls[i]);
+        if (moved.some((w) => wallLength(w) < w.thickness)) return;
         const fit = refitOpenings(walls, origin.openings);
         if (!fit.ok) return;
         set({ plan: { ...get().plan, walls, openings: fit.openings } });
@@ -184,6 +187,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const wall = plan.walls.find((w) => w.id === id);
         if (!wall) return null;
         if (!(length >= 1)) return '길이는 1cm 이상이어야 합니다.';
+        if (length < wall.thickness) return `길이는 벽 두께(${wall.thickness}cm) 이상이어야 합니다.`;
         const walls = moveEndpoint(plan.walls, wall.b, setWallLength(wall, length).b);
         const fit = refitOpenings(walls, plan.openings);
         if (!fit.ok) return openingError(plan, fit.openingId);

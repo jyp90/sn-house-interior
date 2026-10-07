@@ -240,6 +240,24 @@ describe('구조 편집', () => {
     expect(s.getState().plan.walls[0].b).toEqual({ x: 350, y: 0 });
   });
 
+  it('끝점을 같은 벽의 반대쪽 끝점 위로 드래그하면 거부하고 그대로 둔다', () => {
+    const s = twoWalls();
+    s.getState().beginDrag();
+    // v: a=(400,0) b=(400,300), 두께 10. b를 a 위로 끌면 길이 0이 돼 거부돼야 한다
+    s.getState().dragEndpoint({ x: 400, y: 300 }, { x: 400, y: 0 });
+    expect(s.getState().plan.walls[1].b).toEqual({ x: 400, y: 300 });
+    s.getState().endDrag();
+    expect(s.getState().past.length).toBe(0);
+  });
+
+  it('resizeWall은 벽 두께보다 짧은 길이를 거부하고 그대로 둔다', () => {
+    const s = twoWalls();
+    const pastLen = s.getState().past.length;
+    expect(s.getState().resizeWall('w', 5)).toBe('길이는 벽 두께(10cm) 이상이어야 합니다.');
+    expect(s.getState().plan.walls[0].b).toEqual({ x: 400, y: 0 });
+    expect(s.getState().past.length).toBe(pastLen);
+  });
+
   it('removeWall은 그 벽의 개구부도 지우고 선택을 푼다', () => {
     const s = twoWalls();
     s.getState().select('o');

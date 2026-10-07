@@ -9,7 +9,7 @@ import { pointsAttr } from './svg';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 
-function EndpointHandle({ point, px }: { point: Vec2; px: number }) {
+function EndpointHandle({ point, otherEnd, px }: { point: Vec2; otherEnd: Vec2; px: number }) {
   const store = usePlanStore();
   const svgRef = useContext(SvgContext);
   const setDragging = useUi((s) => s.setDragging);
@@ -27,7 +27,10 @@ function EndpointHandle({ point, px }: { point: Vec2; px: number }) {
     if (!start || !svgRef.current) return;
     const raw = clientToPlan(svgRef.current, e.clientX, e.clientY);
     const s = store.getState();
-    const others = (s.dragOrigin ?? s.plan).walls.flatMap((w) => [w.a, w.b]).filter((p) => p.x !== start.x || p.y !== start.y);
+    // 선택한 벽의 반대쪽 끝점으로는 스냅하지 않는다 — 벽이 길이 0으로 붕괴하는 것을 막는다
+    const others = (s.dragOrigin ?? s.plan).walls
+      .flatMap((w) => [w.a, w.b])
+      .filter((p) => (p.x !== start.x || p.y !== start.y) && (p.x !== otherEnd.x || p.y !== otherEnd.y));
     const to = useUi.getState().snap ? (snapToEndpoint(raw, others) ?? raw) : raw;
     s.dragEndpoint(start, to);
   };
@@ -93,8 +96,8 @@ export function Walls2D({ px }: { px: number }) {
       })}
       {interactive && selected && (
         <>
-          <EndpointHandle key="a" point={selected.a} px={px} />
-          <EndpointHandle key="b" point={selected.b} px={px} />
+          <EndpointHandle key="a" point={selected.a} otherEnd={selected.b} px={px} />
+          <EndpointHandle key="b" point={selected.b} otherEnd={selected.a} px={px} />
         </>
       )}
     </g>
