@@ -81,3 +81,4 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## scripts/ (Node, outside the app bundle)
 - `check-dist.ts` — post-build Pages bundle guard: no images, no home-preset markers, all index.html refs under `/sn-house-interior/` (deploy design §7). `npm run check:dist`.
 - Base path `/sn-house-interior/` applies to build and preview only (`vite.config.ts`); `npm run e2e:preview` (`playwright.preview.config.ts`, `e2e-preview/`) checks fonts and the license link under that base on port 5181.
+- `.github/workflows/pages.yml` — on `main` push: typecheck → unit → build → `check:dist` → `deploy-pages`. No e2e in CI.
