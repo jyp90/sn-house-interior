@@ -38,7 +38,7 @@ test('기본 정보를 넣고 PDF를 내려받으면 쪽수가 맞는 PDF가 저
   const downloading = page.waitForEvent('download');
   await view.getByRole('button', { name: 'PDF 내려받기' }).click();
   const download = await downloading;
-  expect(download.suggestedFilename()).toBe('homefit-샘플-평면-A안.pdf');
+  expect(download.suggestedFilename()).toBe('sn-house-interior-샘플-평면-A안.pdf');
   await expect(view.getByTestId('pdf-status')).toContainText('PDF를 저장했습니다');
   const pages = Number((await view.getByTestId('pdf-status').textContent())!.match(/\((\d+)쪽\)/)![1]);
   expect(pages).toBeGreaterThanOrEqual(8);

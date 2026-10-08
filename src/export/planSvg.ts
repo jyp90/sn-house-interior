@@ -3,7 +3,7 @@ import { itemColor, MISSING_COLOR } from '../editor2d/itemColor';
 import { pointsAttr, sectorPath } from '../editor2d/svg';
 import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, fixtureNumbers, type FixtureKind } from '../electrical/fixtures';
 import { planBounds } from '../geometry/bounds';
-import { doorSwing } from '../geometry/clearance';
+import { doorLeaves } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
 import { openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
 import { activeItems, activeLayout } from '../model/layout';
@@ -18,6 +18,10 @@ const LEGEND_STEP = 150;
 const HIGHLIGHT = '#c2410c';
 // 개구부 폭 글자(font 11)와 위치 글자(font 9) 사이 간격: half-heights 5.5+4.5 + halo 1.5+1.5 + 여유
 const OPENING_LABEL_GAP_CM = 16;
+// 「중문」 글자: 벽 면에서 열리는 쪽으로, 벽 길이 글자(14)와 겹치지 않는 거리
+const MIDDLE_LABEL_OFF_CM = 30;
+
+const r2 = (n: number) => Math.round(n * 100) / 100 + 0;
 
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
 
@@ -42,11 +46,11 @@ export function unverifiedCount(plan: Plan): number {
 const safeFilePart = (s: string) => s.replace(/[\\/:*?"<>|\s\u0000-\u001F]+/g, '-');
 
 export function exportFileName(title: string, layoutName: string, kind: '2d' | '3d'): string {
-  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}-${kind}.png`;
+  return `sn-house-interior-${safeFilePart(title)}-${safeFilePart(layoutName)}-${kind}.png`;
 }
 
 export function pdfFileName(title: string, layoutName: string): string {
-  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
+  return `sn-house-interior-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
 }
 
 export type PlanSvgOptions = {
@@ -109,13 +113,30 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
   }
 
   const wallById = new Map(plan.walls.map((x) => [x.id, x]));
+  const middleLabels: string[] = [];
   for (const o of plan.openings) {
     const wall = wallById.get(o.wallId);
     if (!wall) continue;
     parts.push(`<polygon points="${pointsAttr(corners(openingObb(wall, o)))}" fill="#ffffff" stroke="#3f3a33" stroke-width="1"/>`);
     if (o.kind === 'door') {
-      const s = doorSwing(wall, o);
-      if (s.kind === 'sector') parts.push(`<path d="${sectorPath(s.center, s.radius, s.start, s.end)}" fill="none" stroke="#8b8b8b" stroke-width="1"/>`);
+      const leaves = doorLeaves(wall, o);
+      for (const { swing: s } of leaves) {
+        parts.push(`<path d="${sectorPath(s.center, s.radius, s.start, s.end)}" fill="none" stroke="#8b8b8b" stroke-width="1"/>`);
+      }
+      if (o.middle) {
+        // 중문: 유리 문짝(하늘색 굵은 선 + 흰 심) 과 「중문」 글자
+        for (const l of leaves) {
+          const tip = { x: l.hinge.x + l.open.x * l.width, y: l.hinge.y + l.open.y * l.width };
+          const seg = `x1="${r2(l.hinge.x)}" y1="${r2(l.hinge.y)}" x2="${r2(tip.x)}" y2="${r2(tip.y)}"`;
+          parts.push(`<line ${seg} stroke="#4f9dde" stroke-width="3"/>`, `<line ${seg} stroke="#ffffff" stroke-width="1"/>`);
+        }
+        // 글자는 열리는 쪽(부채꼴 안)에, 폭 글자와 겹치지 않게. 다른 글자처럼 도형 뒤에 그린다
+        const u = wallDir(wall);
+        const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
+        const mid = { x: wall.a.x + u.x * (o.offset + o.width / 2), y: wall.a.y + u.y * (o.offset + o.width / 2) };
+        const d = wall.thickness / 2 + MIDDLE_LABEL_OFF_CM;
+        middleLabels.push(label(r2(mid.x + n.x * d), r2(mid.y + n.y * d), 9, '중문', '#2b6cb0', center));
+      }
     }
   }
 
@@ -177,6 +198,7 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
     }
   }
 
+  parts.push(...middleLabels);
   for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
 
   for (const { item, product } of placed) {

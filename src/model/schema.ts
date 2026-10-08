@@ -25,6 +25,8 @@ export const OpeningSchema = z.object({
   sill: cm.nonnegative(),
   hinge: z.enum(['start', 'end']),
   swingIn: z.boolean(), // true: 벽 방향 u를 +90° 돌린 쪽(-uy, ux)으로 열림
+  middle: z.boolean().optional(), // 현관 중문 (door만 의미)
+  leaves: z.enum(['single', 'double', 'asym']).optional(), // 외여닫이 / 양여닫이 / 비대칭 양개, 없으면 single
   verified: z.boolean().optional(),
 });
 
@@ -131,7 +133,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(2),
+    version: z.literal(3),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),
@@ -151,6 +153,7 @@ export const PlanSchema = z
 export type Vec2 = z.infer<typeof Vec2Schema>;
 export type Wall = z.infer<typeof WallSchema>;
 export type Opening = z.infer<typeof OpeningSchema>;
+export type DoorLeaves = NonNullable<Opening['leaves']>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type Layout = z.infer<typeof LayoutSchema>;

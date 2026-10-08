@@ -142,7 +142,7 @@ export function Editor2D() {
           <Overlays2D px={px} />
           <Items2D px={px} />
           <Walls2D px={px} />
-          <Openings2D />
+          <Openings2D px={px} />
           <Fixtures2D />
           <ToolPreview px={px} wallPoints={wallPoints} cursor={cursor} />
         </svg>

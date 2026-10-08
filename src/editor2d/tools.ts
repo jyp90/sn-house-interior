@@ -15,6 +15,11 @@ export const OPENING_DEFAULTS: Record<'door' | 'window' | 'opening', Omit<Openin
   opening: { width: 90, height: 210, sill: 0, hinge: 'start', swingIn: false },
 };
 
+// 현관 중문: 문과 같은 방식으로 벽에 붙이고 기본은 비대칭 양개, 실내 쪽 열림
+export const MIDDLE_DOOR_DEFAULTS: Omit<Opening, 'id' | 'wallId' | 'kind' | 'offset'> = {
+  width: 120, height: 210, sill: 0, hinge: 'start', swingIn: true, middle: true, leaves: 'asym',
+};
+
 const round = (p: Vec2): Vec2 => ({ x: Math.round(p.x), y: Math.round(p.y) });
 
 type ToolContext = { store: StoreApi<PlanState>; wallPoints: Vec2[]; setWallPoints(points: Vec2[]): void };
@@ -36,6 +41,7 @@ export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
       return;
     }
     case 'door':
+    case 'middle-door':
     case 'window':
     case 'opening': {
       const wall = nearestWall(s.plan.walls, raw, OPENING_PICK_CM);
@@ -43,9 +49,10 @@ export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
         ui.showBanner({ kind: 'error', text: '벽 가까이(30cm 이내)를 클릭하세요.' });
         return;
       }
-      const defaults = OPENING_DEFAULTS[tool];
+      const kind = tool === 'middle-door' ? 'door' : tool;
+      const defaults = tool === 'middle-door' ? MIDDLE_DOOR_DEFAULTS : OPENING_DEFAULTS[tool];
       const offset = openingAtPoint(wall, raw, defaults.width);
-      const id = offset === null ? null : s.addOpening({ wallId: wall.id, kind: tool, offset, ...defaults });
+      const id = offset === null ? null : s.addOpening({ wallId: wall.id, kind, offset, ...defaults });
       if (!id) {
         ui.showBanner({ kind: 'error', text: '벽이 개구부 폭보다 짧습니다.' });
         return;

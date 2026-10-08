@@ -5,6 +5,7 @@ import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, mis
 import { wallReferenceText } from '../geometry/wallReference';
 import { activeItems, activeLayout } from '../model/layout';
 import type { Item, Plan, Product } from '../model/schema';
+import { PHOTO_REQUESTS, QUOTE_GROUPS, QUOTE_QUESTIONS, QUOTE_SPECS } from '../quote/request';
 import { itemNumbers, pdfFileName, planSvg, unverifiedCount } from './planSvg';
 
 export const PDF_FONT_FAMILY = 'Pretendard';
@@ -162,6 +163,43 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
 
   const pages: PdfPage[] = [
     { kind: 'cover', title: plan.info.title, rows: coverRows(plan, input.now) },
+    ...tablePages(
+      '견적 요청 — 공정별 항목',
+      [
+        { label: '공정', width: 40 },
+        { label: '세부 항목 (항목별 자재비+시공비 합산, 해당 없으면 비움)', width: 227 },
+      ],
+      QUOTE_GROUPS.map((g) => [g.name, g.items.join(' · ')]),
+      '항목이 없습니다',
+    ),
+    ...tablePages(
+      '견적서에 함께 적어주실 내용',
+      [
+        { label: '번호', width: 15 },
+        { label: '내용', width: 252 },
+      ],
+      QUOTE_QUESTIONS.map((q, i) => [String(i + 1), q]),
+      '항목이 없습니다',
+    ),
+    ...tablePages(
+      '사양 결정사항',
+      [
+        { label: '항목', width: 40 },
+        { label: '현재 생각', width: 120 },
+        { label: '견적 방식', width: 107 },
+      ],
+      QUOTE_SPECS.map((r) => [r.item, r.current, r.method]),
+      '항목이 없습니다',
+    ),
+    ...tablePages(
+      '사진 기록 요청',
+      [
+        { label: '공정', width: 40 },
+        { label: '마감 후 확인할 수 없어 남겨주셨으면 하는 사진', width: 227 },
+      ],
+      PHOTO_REQUESTS.map((r) => [r.phase, r.photo]),
+      '항목이 없습니다',
+    ),
     drawing('치수 평면도', planSvg(plan, { ...base, items: 'none', dimensionLines: true }), [
       '단위: cm · 벽 길이는 벽 중심선 기준',
       `≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`,

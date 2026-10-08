@@ -17,7 +17,7 @@ const products: Record<string, Product> = {
 const resolve = (id: string) => products[id];
 const item = (id: string, productId: string, x: number, y: number, rotation = 0): Item => ({ id, productId, variantId: 'v', x, y, rotation });
 const plan = ({ items = [], ...over }: Partial<Plan> & { items?: Item[] }): Plan =>
-  withActiveItems({ version: 2, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over }, items);
+  withActiveItems({ version: 3, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over }, items);
 
 describe('validatePlan', () => {
   it('겹친 두 아이템은 둘 다 충돌', () => {

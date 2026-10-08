@@ -53,13 +53,13 @@ test('B안에서 옮겨도 A안은 그대로이고, 같은 시점에서 겹쳐 �
 test('2D·3D PNG를 내보낸다', async ({ page }) => {
   await addSofa(page);
   const [d2] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '2D PNG' }).click()]);
-  expect(d2.suggestedFilename()).toBe('homefit-샘플-평면-A안-2d.png');
+  expect(d2.suggestedFilename()).toBe('sn-house-interior-샘플-평면-A안-2d.png');
   const png2 = readFileSync((await d2.path())!);
   expect([...png2.subarray(0, 8)]).toEqual(PNG_SIGNATURE);
   expect(png2.length).toBeGreaterThan(5000);
 
   const [d3] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '3D PNG' }).click()]);
-  expect(d3.suggestedFilename()).toBe('homefit-샘플-평면-A안-3d.png');
+  expect(d3.suggestedFilename()).toBe('sn-house-interior-샘플-평면-A안-3d.png');
   const png3 = readFileSync((await d3.path())!);
   expect([...png3.subarray(0, 8)]).toEqual(PNG_SIGNATURE);
   expect(png3.length).toBeGreaterThan(5000);

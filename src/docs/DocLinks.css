@@ -1,0 +1,7 @@
+.doc-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+.doc-links-title { font-size: 12px; color: #6b7280; margin-right: 2px; }
+.doc-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid #e5e1d8; border-radius: 999px; background: #fff; color: #1f2328; font-size: 12px; text-decoration: none; transition: border-color 0.15s, background 0.15s; }
+.doc-link:hover { border-color: #c9c2b4; background: #faf9f6; }
+.doc-link-label { font-weight: 600; }
+.doc-link-note { color: #9a9488; }
+.doc-link-arrow { color: #9a9488; }

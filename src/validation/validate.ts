@@ -1,4 +1,4 @@
-import { doorSwing, itemClearances } from '../geometry/clearance';
+import { doorLeaves, itemClearances } from '../geometry/clearance';
 import { itemObb, obbOverlap, type OBB } from '../geometry/obb';
 import { planWallObbsWithIds } from '../geometry/walls';
 import { activeItems } from '../model/layout';
@@ -24,7 +24,7 @@ export function validatePlan(plan: Plan, resolve: (productId: string) => Product
   const wallById = new Map(plan.walls.map((w) => [w.id, w]));
   const doors: Obstacle[] = plan.openings.flatMap((o) => {
     const w = wallById.get(o.wallId);
-    return w && o.kind === 'door' ? [{ target: { kind: 'door' as const, id: o.id }, obb: doorSwing(w, o).obb }] : [];
+    return w && o.kind === 'door' ? doorLeaves(w, o).map((l) => ({ target: { kind: 'door' as const, id: o.id }, obb: l.swing.obb })) : [];
   });
   const placed = activeItems(plan).flatMap((item) => {
     const product = resolve(item.productId);

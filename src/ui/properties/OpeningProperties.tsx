@@ -1,8 +1,14 @@
 import { OPENING_DEFAULTS } from '../../editor2d/tools';
-import type { Opening } from '../../model/schema';
+import type { DoorLeaves, Opening } from '../../model/schema';
 import { usePlanStore } from '../../model/StoreContext';
 import { CheckboxField, NumberField } from '../fields';
 import { useUi } from '../uiStore';
+
+const LEAVES: [DoorLeaves, string][] = [
+  ['single', '외여닫이'],
+  ['double', '양여닫이'],
+  ['asym', '비대칭 양개'],
+];
 
 const KINDS: [Opening['kind'], string][] = [
   ['door', '문'],
@@ -40,10 +46,27 @@ export function OpeningProperties({ opening }: { opening: Opening }) {
       <NumberField key={`${opening.id}-h`} label="높이" unit="cm" value={opening.height} onCommit={(v) => update({ height: v })} />
       <NumberField key={`${opening.id}-s`} label="창턱 높이" unit="cm" value={opening.sill} onCommit={(v) => update({ sill: v })} />
       {opening.kind === 'door' && (
-        <div className="row">
-          <button type="button" onClick={() => update({ hinge: opening.hinge === 'start' ? 'end' : 'start' })}>경첩 반대로</button>
-          <button type="button" onClick={() => update({ swingIn: !opening.swingIn })}>열림 방향 반대로</button>
-        </div>
+        <>
+          <div className="row">
+            <button type="button" onClick={() => update({ hinge: opening.hinge === 'start' ? 'end' : 'start' })}>경첩 반대로</button>
+            <button type="button" onClick={() => update({ swingIn: !opening.swingIn })}>열림 방향 반대로</button>
+          </div>
+          <CheckboxField label="중문" checked={!!opening.middle} onChange={(v) => update({ middle: v })} />
+          <label className="field">
+            문짝
+            <select
+              value={opening.leaves ?? 'single'}
+              onChange={(e) => {
+                const leaves = LEAVES.find(([k]) => k === e.target.value)?.[0];
+                if (leaves) update({ leaves });
+              }}
+            >
+              {LEAVES.map(([k, name]) => (
+                <option key={k} value={k}>{name}</option>
+              ))}
+            </select>
+          </label>
+        </>
       )}
       <CheckboxField label="실측 확인" checked={!!opening.verified} onChange={(v) => update({ verified: v })} />
       <button type="button" className="danger" onClick={() => s.removeOpening(opening.id)}>{label} 삭제</button>
