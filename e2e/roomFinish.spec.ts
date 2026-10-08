@@ -63,3 +63,33 @@ test('영역 도구로 방을 그리고 바닥재를 바꾸면 2D 패턴과 3D�
   await expect(page.getByText('영역은 꼭짓점 3개 이상이어야 합니다.')).toBeVisible();
   await page.keyboard.press('Escape');
 });
+
+async function drawArea(page: Page, pts: P[]) {
+  await page.getByRole('button', { name: '구조' }).click();
+  await page.getByRole('button', { name: '영역', exact: true }).click();
+  for (const p of pts) await clickPlan(page, p);
+  await clickPlan(page, pts[0]);
+  const plan = await getPlan(page);
+  return plan.rooms[plan.rooms.length - 1];
+}
+
+const SQUARE: P[] = [
+  { x: 40, y: 40 },
+  { x: 300, y: 40 },
+  { x: 300, y: 340 },
+  { x: 40, y: 340 },
+];
+
+test('선택 도구로 방 영역 안을 끌면 방 선택은 유지되고 화면이 이동한다', async ({ page }) => {
+  const room = await drawArea(page, SQUARE);
+  const svg = page.getByTestId('editor2d');
+  const before = await svg.getAttribute('viewBox');
+  const a = await planToClient(page, { x: 170, y: 190 });
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(a.x + 60, a.y + 40, { steps: 5 });
+  await page.mouse.up();
+  expect(await svg.getAttribute('viewBox')).not.toBe(before);
+  expect(await page.evaluate(() => window.__homefit!.store.getState().selectedId)).toBe(room.id);
+  await expect(page.getByTestId(`room-area-${room.id}`)).toHaveClass(/room-area-selected/);
+});

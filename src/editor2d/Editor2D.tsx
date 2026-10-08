@@ -10,6 +10,7 @@ import { Items2D } from './Items2D';
 import { Openings2D } from './Openings2D';
 import { Overlays2D } from './Overlays2D';
 import { Rooms2D } from './Rooms2D';
+import { isRoomPress } from './roomPress';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 import { ToolPreview } from './ToolPreview';
@@ -94,8 +95,11 @@ export function Editor2D() {
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
     if (tool === 'select') {
-      store.getState().select(null);
-      useUi.getState().clearCandidates();
+      // 방을 눌렀으면 그 선택은 유지하고, 빈 곳이면 선택 해제. 어느 쪽이든 끌면 화면 이동
+      if (!isRoomPress(e.nativeEvent)) {
+        store.getState().select(null);
+        useUi.getState().clearCandidates();
+      }
       pan.current = { x: e.clientX, y: e.clientY, vb };
       e.currentTarget.setPointerCapture(e.pointerId);
       return;

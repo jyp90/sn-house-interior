@@ -8,6 +8,7 @@ import { pointsAttr } from './svg';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 import { FloorPatternDefs, floorFill } from './floorPattern';
+import { markRoomPress } from './roomPress';
 
 function VertexHandle({ roomId, index, point, px }: { roomId: string; index: number; point: Vec2; px: number }) {
   const store = usePlanStore();
@@ -75,7 +76,8 @@ export function Rooms2D({ px }: { px: number }) {
           onPointerDown={
             interactive
               ? (e) => {
-                  e.stopPropagation();
+                  // 전파를 막지 않는다: svg가 선택 해제 없이 pan을 시작한다
+                  markRoomPress(e.nativeEvent);
                   store.getState().select(r.id);
                 }
               : undefined
@@ -95,7 +97,8 @@ export function Rooms2D({ px }: { px: number }) {
           onPointerDown={
             interactive
               ? (e) => {
-                  e.stopPropagation();
+                  // 전파를 막지 않는다: svg가 선택 해제 없이 pan을 시작한다
+                  markRoomPress(e.nativeEvent);
                   store.getState().select(r.id);
                 }
               : undefined
