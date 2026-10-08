@@ -36,7 +36,7 @@ function homePreset(): Plugin {
 export default defineConfig({
   plugins: [react(), homePreset()],
   test: {
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/**/*.test.ts'],
     environment: 'node',
   },
 });

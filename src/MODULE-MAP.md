@@ -76,3 +76,6 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `modes.ts` — mode list and per-mode rules; `shortcuts.ts` keyboard shortcuts (undo works while a button has focus).
 - Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors), `CandidatePicker`, `Banner`.
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME.
+
+## scripts/ (Node, outside the app bundle)
+- `check-dist.ts` — post-build Pages bundle guard: no images, no home-preset markers, all index.html refs under `/sn-house-interior/` (deploy design §7). `npm run check:dist`.
