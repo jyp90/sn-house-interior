@@ -67,7 +67,7 @@ export function finishArea(store: StoreApi<PlanState>, points: Vec2[]): boolean 
   if (!isValidPolygon(pts)) {
     ui.showBanner({
       kind: 'error',
-      text: pts.length >= 3 ? '영역이 겹치거나 면적이 0입니다.' : '영역은 꼭짓점 3개 이상이어야 합니다.',
+      text: pts.length >= 3 ? '영역의 면적이 0입니다.' : '영역은 꼭짓점 3개 이상이어야 합니다.',
     });
     return false;
   }

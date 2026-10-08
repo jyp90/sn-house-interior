@@ -108,6 +108,14 @@ describe('area tool', () => {
     expect(useUi.getState().tool).toBe('area');
   });
 
+  it('일직선 위의 점 3개처럼 면적이 0이면 닫지 않고 면적 배너를 띄운다', () => {
+    useUi.setState({ tool: 'area', areaTarget: null, banner: null });
+    const c = ctx();
+    expect(finishArea(c.store, [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 200, y: 0 }])).toBe(false);
+    expect(useUi.getState().banner?.text).toBe('영역의 면적이 0입니다.');
+    expect(useUi.getState().tool).toBe('area');
+  });
+
   it('더블클릭의 두 번째 pointerdown처럼 같은 점을 다시 클릭해도 점이 늘지 않는다', () => {
     useUi.setState({ tool: 'area', areaTarget: null, snap: false });
     const c = ctx();
