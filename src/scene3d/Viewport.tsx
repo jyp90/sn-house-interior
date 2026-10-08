@@ -61,8 +61,9 @@ export function Viewport({ active }: { active: boolean }) {
         )}
         <OrbitControls makeDefault enabled={!dragging} enableRotate={view === 'persp'} />
         <CameraRig />
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[5, 10, 5]} intensity={1.1} />
+        <color attach="background" args={['#efeae2']} />
+        <ambientLight intensity={0.75} color="#fff4e6" />
+        <directionalLight position={[5, 10, 5]} intensity={1.0} />
         <Floor />
         <Walls3D />
         <Items3D />

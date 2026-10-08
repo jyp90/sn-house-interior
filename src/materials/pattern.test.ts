@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { patternSpec, shade } from './pattern';
+import { patternSpec, shade, wallPatternSpec } from './pattern';
 
 describe('floor pattern', () => {
   it('마루는 120×15 널판 4줄, 줄마다 엇갈림', () => {
@@ -24,5 +24,9 @@ describe('floor pattern', () => {
     expect(shade('#808080', 0.1)).toBe('#8d8d8d');
     expect(shade('#808080', -0.1)).toBe('#737373');
     expect(shade('#ffffff', 0.5)).toBe('#ffffff');
+  });
+  it('벽지는 2cm 격자, 페인트는 없음', () => {
+    expect(wallPatternSpec({ material: 'paint', color: '#ffffff' })).toBeNull();
+    expect(wallPatternSpec({ material: 'wallpaper', color: '#e8dcc8' })!.w).toBe(2);
   });
 });

@@ -1,4 +1,4 @@
-import type { FloorFinish } from '../model/schema';
+import type { FloorFinish, WallFinish } from '../model/schema';
 
 export type PatternShape = { x: number; y: number; w: number; h: number; shade: number };
 export type PatternSpec = { w: number; h: number; shapes: PatternShape[] };
@@ -30,4 +30,17 @@ export function patternSpec(finish: FloorFinish): PatternSpec | null {
     }
   }
   return { w: PLANK_W * 2, h: PLANK_H * 4, shapes };
+}
+
+// 벽지: 2cm마다 옅은 가로·세로 줄(리넨 결). 페인트는 무늬 없음
+export function wallPatternSpec(finish: WallFinish): PatternSpec | null {
+  if (finish.material === 'paint') return null;
+  return {
+    w: 2,
+    h: 2,
+    shapes: [
+      { x: 0, y: 0, w: 2, h: 0.4, shade: -0.04 },
+      { x: 0, y: 0, w: 0.4, h: 2, shade: -0.04 },
+    ],
+  };
 }
