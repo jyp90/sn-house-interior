@@ -73,5 +73,5 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 - Past rounds (decisions, deferred minors): `archive/*/HANDOFF.md` (local only).
 
 ## Work in progress (2026-10-08)
-- Round 3 (spec §15: local-only home preset, on-site checklist, PDF quote pages): branch `feat/quote-docs-home-preset`, not merged to `main`.
+- Round 3 (spec §15: local-only home preset, on-site checklist, PDF quote pages): branch `feat/quote-docs-home-preset`, checks + QA done, PR open, waits for the user to merge.
 - Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, Pages deploy with Pretendard OFL notice, exploratory QA): not started, waits for the user's model list.
