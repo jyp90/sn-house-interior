@@ -26,7 +26,7 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
 ## Non-negotiable rules
 - Privacy: the repo and Pages build will be public. Address, complex name, listing URL, floor-plan images and our home preset live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. `virtual:home-preset` (`vite.config.ts`) is `null` for build, tests and `HOMEFIT_SAMPLE=1`.
 - Never `git add -A` / `git add .`; add explicit paths. Never stage `private/`, `handoff/`, `archive/`, `.superpowers/`, `dist/`, `test-results/`, `playwright-report/`, or the root `Planner 5D …md` (user's file — do not touch).
-- Remote `origin` = `jyp90/sn-house-interior` (**private**). Pushing feature branches and opening PRs is the default (see Workflow). Making the repo public, Pages deploy, force-push and pushing straight to `main` still need the user's OK; going public first needs a history rewrite (`f3726c0` carries preset coordinates).
+- Remote `origin` = `jyp90/sn-house-interior` (**private**). Feature branch → PR → merge into `main` is the default (see Workflow). Making the repo public, Pages deploy, pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK; going public first needs a history rewrite (`f3726c0` carries preset coordinates).
 - No new dependency without the user's OK.
 - Checklist and PDF copy is written fresh; never copy wording from reference PDFs or the user's private consultation notes. Budget amounts and contractor-judging criteria never go into the PDF or app data (spec §15.3).
 - Never edit expected values, skip tests or replace a real user action in e2e with a direct store call to get green.
@@ -34,13 +34,21 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
 
 ## Workflow
 - Main session: brainstorming, spec and plan with the user. After approval, implementation is delegated to subagents (`superpowers:subagent-driven-development`); every subagent reads the spec section and plan task first and reviews treat spec drift as a defect.
-- Several sessions share this checkout. Never commit another session's uncommitted changes; for parallel work use a worktree (`git worktree add ../homefit-<topic> -b <branch>`) and `merge --ff-only`.
-- Commits: Conventional Commits, one feature branch per plan/round. Merging the PR into `main` waits for the user.
-- **Default finish for every development request** (no need to ask): local checks → PR.
+- **Every development request starts in its own worktree** (no need to ask; skip only for questions/research with no file change). Several sessions share `~/Projects/homefit`; never edit or commit there.
+  ```bash
+  git -C ~/Projects/homefit fetch origin
+  git -C ~/Projects/homefit worktree add ../homefit-<topic> -b <type>/<topic> origin/main   # type: feat|fix|docs|chore|refactor
+  cd ~/Projects/homefit-<topic> && npm install
+  ```
+  `private/` is not in worktrees: dev/QA/e2e use the sample plan; `scan.sh` reads terms from the main checkout. Before `npm run e2e`, check `lsof -i :5180` is free — Playwright reuses an existing server, which may belong to another worktree.
+- Commits: Conventional Commits, one branch + one PR per request.
+- **Default finish for every development request** (no need to ask): local checks → PR → merge.
   1. `npm run typecheck && npm test && npm run e2e` all green, then exploratory QA in a real browser (spec §11: reviews alone missed runtime bugs before). Any failure → fix and rerun; never open a PR on red.
-  2. Docs synced, privacy scan clean, commit on the feature branch (`committing-safely`).
-  3. `git push -u origin <branch>` and `gh pr create --base main` (Korean title/body: 변경 요약, 테스트 결과 수치, QA 결과, 스펙 §). If a PR for the branch exists, push updates it.
-  4. Report the PR URL. Don't merge.
+  2. Docs synced, privacy scan clean, commit on the branch (`committing-safely`).
+  3. `git push -u origin <branch>` and `gh pr create --base main` (Korean title/body: 변경 요약, 테스트 결과 수치, QA 결과, 스펙 §).
+  4. `main` moved meanwhile → `git rebase origin/main`, rerun step 1, `git push --force-with-lease` (own branch only). Conflict you can't resolve without guessing intent → ask.
+  5. `gh pr merge <n> --merge --delete-branch`, then clean up: `git -C ~/Projects/homefit worktree remove ../homefit-<topic>`, `git -C ~/Projects/homefit branch -D <branch>`, `git -C ~/Projects/homefit fetch origin`.
+  6. Report the PR URL and merge commit.
 - Handoffs: `handoff/{yyyyMMdd}-{issue}/HANDOFF.md` + `MESSAGE.md` while open, moved to `archive/` when done (both gitignored). Format: `~/Projects/claude-command-center/.claude/skills/handoff/SKILL.md`.
 
 ## Project skills (`.claude/skills/`)
@@ -48,7 +56,7 @@ Invoke with the Skill tool (or `/name`) at the trigger below; they carry the exa
 
 | Trigger | Skill |
 |---|---|
-| Before any `git add`/commit/push/PR, finishing any development request, or when the tree has changes you didn't make | `committing-safely` (calls the next two) |
+| Before any `git add`/commit/push/PR, finishing any development request, or when the tree has changes you didn't make | `committing-safely` (worktree check, then calls the next two) |
 | Commit, docs, commit message, PNG/PDF export, build, push, deploy, anything near `private/` | `checking-privacy` — `bash .claude/skills/checking-privacy/scan.sh [--staged\|--tracked\|--log <range>\|--dist]`; terms in `private/privacy-terms.txt` |
 | Finishing any development request | `syncing-docs` (the 「Docs are part of done」 table with exact sections) |
 | Any change to `src/model/schema.ts` | `migrating-plan-schema` |

@@ -7,7 +7,7 @@
 - `feat/quote-docs-home-preset`(main 미병합): 스펙 §15 3차 반영 — 현장 검수 체크리스트 교체 `e12f103`, PDF 견적 요청 4쪽 `9b5f3de`, 로컬 전용 우리 집 프리셋 `54cb00b`, 체크리스트 재설계 `a4614c6`, 탭별 참고 문서 링크 `1c74385`, 스펙 §16 중문 도구 `f8c4d82`.
 - 테스트(`ff40b36`): typecheck 통과, `npm test` 313 통과·0 skip, e2e 19 통과. 탐색 QA(샘플 평면, 5181) 통과: 중문 배치·실행 취소/다시 실행, 2D↔3D, 체크리스트 필터·공정 이동·메모·새로고침 유지, 기본 정보 경계값, PDF 15쪽(Pretendard·견적 4쪽·중문 표시), 1200px 폭.
 - PR 열림(main 병합은 사용자 확인 대기).
-- 원격 `origin` = `jyp90/sn-house-interior`(비공개). 작업 완료 시 로컬 검증 → PR이 기본(`CLAUDE.md` Workflow). 공개 전환·Pages 배포 전(Pages 작업은 워크트리 `../homefit-pages-deploy` `feat/pages-deploy`).
+- 원격 `origin` = `jyp90/sn-house-interior`(비공개). 요청마다 워크트리·새 브랜치 → 로컬 검증 → PR → `main` 병합이 기본(`CLAUDE.md` Workflow). 공개 전환·Pages 배포 전(Pages 작업은 워크트리 `../homefit-pages-deploy` `feat/pages-deploy`).
 - 프로젝트 스킬 6개 `.claude/skills/`, 사용 가이드는 `CLAUDE.md` 「Project skills」. 개인정보 검색어는 `private/privacy-terms.txt`.
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 

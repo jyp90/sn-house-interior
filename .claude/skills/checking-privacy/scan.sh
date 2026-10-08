@@ -4,7 +4,9 @@
 # 사용: bash .claude/skills/checking-privacy/scan.sh [--staged | --tracked | --log <range> | --dist]
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
+# 워크트리에는 private/가 없으므로 메인 체크아웃의 것을 쓴다
 TERMS=private/privacy-terms.txt
+[[ -s $TERMS ]] || TERMS="$(dirname "$(cd "$(git rev-parse --git-common-dir)" && pwd)")/private/privacy-terms.txt"
 mode=${1:---staged}
 fail=0
 
