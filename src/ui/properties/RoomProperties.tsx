@@ -10,6 +10,7 @@ export function RoomProperties({ room }: { room: Room }) {
   const s = usePlanStore().getState();
   const finish = usePlan((st) => st.plan.finish);
   const plan = { finish };
+  const mode = useUi((st) => st.mode);
   return (
     <>
       <h3>방 이름</h3>
@@ -22,9 +23,11 @@ export function RoomProperties({ room }: { room: Room }) {
       ) : (
         <p className="muted">영역이 없습니다. 바닥재·벽지를 보려면 영역을 그리세요.</p>
       )}
-      <button type="button" onClick={() => useUi.getState().startArea(room.id)}>
-        {room.polygon ? '영역 다시 그리기' : '영역 그리기'}
-      </button>
+      {mode === 'structure' && (
+        <button type="button" onClick={() => useUi.getState().startArea(room.id)}>
+          {room.polygon ? '영역 다시 그리기' : '영역 그리기'}
+        </button>
+      )}
       <FinishPicker label="바닥재" value={roomFloor(room, plan)} presets={FLOOR_PRESETS} materials={FLOOR_MATERIALS} onChange={(floor) => s.setRoomFinish(room.id, { floor })} />
       <FinishPicker label="벽 마감" value={roomWall(room, plan)} presets={WALL_PRESETS} materials={WALL_MATERIALS} onChange={(wall) => s.setRoomFinish(room.id, { wall })} />
       <button type="button" className="danger" onClick={() => s.removeRoom(room.id)}>방 삭제</button>
