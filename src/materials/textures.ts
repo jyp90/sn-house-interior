@@ -4,13 +4,6 @@ import { patternSpec, shade, wallPatternSpec, type PatternSpec } from './pattern
 
 export type FinishTexture = { texture: THREE.Texture; sizeCm: { w: number; h: number } };
 
-// 무늬 한 장의 실제 크기(cm). 메시 쪽에서 1 반복 = 이 크기(m)가 되도록 repeat를 맞춘다
-export const TEXTURE_CM = {
-  wood: { w: 240, h: 60 },
-  tile: { w: 60, h: 60 },
-  wallpaper: { w: 2, h: 2 },
-} as const;
-
 const cache = new Map<string, THREE.Texture>();
 const PX_PER_CM = 4;
 

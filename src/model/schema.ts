@@ -174,7 +174,6 @@ export type FloorMaterial = z.infer<typeof FloorMaterialSchema>;
 export type WallMaterial = z.infer<typeof WallMaterialSchema>;
 export type FloorFinish = z.infer<typeof FloorFinishSchema>;
 export type WallFinish = z.infer<typeof WallFinishSchema>;
-export type Finish = FloorFinish | WallFinish;
 export type PlanFinish = z.infer<typeof PlanFinishSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type Layout = z.infer<typeof LayoutSchema>;

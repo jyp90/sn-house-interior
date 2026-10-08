@@ -33,7 +33,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §19.1).
 - `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
   `wallPatternSpec(finish)` — wallpaper: 2cm faint linen cross-hatch; paint: null.
-- `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`. `TEXTURE_CM` sizes.
+- `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`.
 - `wallFaces.ts` — `wallFaceSegments(obb, rooms)` → `{ front, back }: FaceSegment[]` (`{ s, e, room }`, cm on local u, −hw..+hw): probe line `± v·(hd+1)` cut where it crosses room edges, each interval → room containing its midpoint (first in plan order wins, else null), adjacent equal rooms merged; front = +v = `axes()[1]`. `WALL_TOP_COLOR` `#3f3a33`.
 
 ## persistence/
