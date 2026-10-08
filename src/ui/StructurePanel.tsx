@@ -16,6 +16,7 @@ const TOOLS: [Tool, string][] = [
   ['window', '창'],
   ['opening', '개구부'],
   ['label', '방 이름'],
+  ['area', '영역'],
 ];
 
 function DraftNumber({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -99,6 +100,7 @@ export function StructurePanel() {
   const calibration = useUi((s) => s.calibration);
   const wallDraft = useUi((s) => s.wallDraft);
   const roomDraft = useUi((s) => s.roomDraft);
+  const areaTarget = useUi((s) => s.areaTarget);
   const ui = useUi.getState();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -179,6 +181,11 @@ export function StructurePanel() {
         <p className="muted">벽 위를 클릭하면 놓입니다. 크기와 위치는 오른쪽 속성창에서 바꿉니다.</p>
       )}
       {tool === 'label' && <p className="muted">방 이름을 놓을 곳을 클릭하세요.</p>}
+      {tool === 'area' && (
+        <p className="muted">
+          {areaTarget ? '이 방의 바닥 꼭짓점을 차례로 클릭하세요.' : '바닥 꼭짓점을 차례로 클릭하세요.'} 첫 점을 다시 클릭하거나 Enter로 닫고, Esc로 취소합니다.
+        </p>
+      )}
 
       <h3>배경 도면</h3>
       <button type="button" onClick={() => fileRef.current?.click()}>이미지 불러오기</button>

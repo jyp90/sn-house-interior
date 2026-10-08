@@ -41,9 +41,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `homePreset.ts` — applies `virtual:home-preset` (dev-only, `private/`) as the initial plan + background (`HOME_IMAGE_REF`).
 
 ## editor2d/ (SVG, coordinates = plan cm)
-- `Editor2D.tsx` — the 2D editor root; layers `Walls2D`, `Openings2D` (per-leaf swings, glass leaf + 「중문」 label for middle doors), `Rooms2D`, `Items2D`, `Fixtures2D`, `Overlays2D`, `ToolPreview`, `BackgroundImage`.
-- `tools.ts` — tool click handling (wall, opening, room, fixture) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle).
-- `snapping.ts` — angle and endpoint snap for wall drawing.
+- `Editor2D.tsx` — the 2D editor root; layers `Walls2D`, `Openings2D` (per-leaf swings, glass leaf + 「중문」 label for middle doors), `Rooms2D`, `Items2D`, `Fixtures2D`, `Overlays2D`, `ToolPreview` (incl. `areaPoints` for the area tool), `BackgroundImage`.
+- `tools.ts` — tool click handling (wall, opening, room, fixture, area) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices.
+- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §18.1 inner-corner snap for the area tool).
 - `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%).
 - `viewBox.ts` — fit, zoom, pan; `svgPoint.ts` client → plan coords; `svg.ts` path helpers; `itemColor.ts` item fill.
 - `useBackgroundUrl.ts` — object URL for the stored background image.
@@ -79,7 +79,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `selfUpdate.ts` — 「업데이트」 server logic: upstream check, dirty refusal, `fetch` + `merge --ff-only`, `npm install` on package changes, same-origin + header guard; wired as the `homefit-self-update` plugin in `vite.config.ts` (`/__homefit/update`, then `server.restart()`).
 
 ## ui/
-- `uiStore.ts` — screen state (mode, view, tool, drafts, candidates, save status, banner).
+- `uiStore.ts` — screen state (mode, view, tool, drafts, candidates, save status, banner). `area` tool: `areaTarget` (room id or null) + `startArea(roomId)`; cleared to `null` by `setMode`/`setTool`/`setFixtureTool`/`cancelCalibration`.
 - `modes.ts` — mode list and per-mode rules; `shortcuts.ts` keyboard shortcuts (undo works while a button has focus).
 - Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors), `CandidatePicker`, `Banner`, `UpdateButton` (dev only).
 - `Toolbar` ends with the `글꼴 라이선스` link → `public/licenses/Pretendard-OFL.txt` via `import.meta.env.BASE_URL` (deploy design §9).

@@ -1,11 +1,14 @@
 import type { StoreApi } from 'zustand/vanilla';
 import { FIXTURE_DEFAULT_HEIGHT, snapFixture } from '../electrical/fixtures';
+import { corners } from '../geometry/obb';
+import { closesPolygon, isValidPolygon } from '../geometry/polygon';
 import { nearestWall, openingAtPoint } from '../geometry/structure';
-import type { Opening, Vec2 } from '../model/schema';
+import { wallObb } from '../geometry/walls';
+import type { Opening, Vec2, Wall } from '../model/schema';
 import type { PlanState } from '../model/store';
 import { useUi, type Tool } from '../ui/uiStore';
 import { planToImagePx } from './calibration';
-import { wallSegments, wallToolPoint } from './snapping';
+import { wallFaceCorners, wallSegments, wallToolPoint } from './snapping';
 
 export const OPENING_PICK_CM = 30;
 
@@ -22,7 +25,40 @@ export const MIDDLE_DOOR_DEFAULTS: Omit<Opening, 'id' | 'wallId' | 'kind' | 'off
 
 const round = (p: Vec2): Vec2 => ({ x: Math.round(p.x), y: Math.round(p.y) });
 
-type ToolContext = { store: StoreApi<PlanState>; wallPoints: Vec2[]; setWallPoints(points: Vec2[]): void };
+type ToolContext = {
+  store: StoreApi<PlanState>;
+  wallPoints: Vec2[];
+  setWallPoints(points: Vec2[]): void;
+  areaPoints: Vec2[];
+  setAreaPoints(points: Vec2[]): void;
+};
+
+export const AREA_CLOSE_CM = 15;
+
+export function areaSnapPoints(walls: Wall[]): Vec2[] {
+  return [...walls.flatMap((w) => [w.a, w.b, ...corners(wallObb(w)).map(round)]), ...wallFaceCorners(walls)];
+}
+
+export function areaToolPoint(raw: Vec2, points: Vec2[], walls: Wall[], snap: boolean): Vec2 {
+  return wallToolPoint(raw, points.at(-1) ?? null, [...areaSnapPoints(walls), ...points], snap);
+}
+
+export function finishArea(store: StoreApi<PlanState>, points: Vec2[]): boolean {
+  const ui = useUi.getState();
+  const s = store.getState();
+  if (!isValidPolygon(points)) {
+    ui.showBanner({ kind: 'error', text: '영역은 꼭짓점 3개 이상이어야 합니다.' });
+    return false;
+  }
+  const ok = ui.areaTarget ? s.setRoomPolygon(ui.areaTarget, points) : s.addRoomArea(points) !== null;
+  if (!ok) {
+    ui.showBanner({ kind: 'error', text: '영역을 저장하지 못했습니다.' });
+    return false;
+  }
+  if (ui.areaTarget) s.select(ui.areaTarget);
+  ui.setTool('select');
+  return true;
+}
 
 export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
   const ui = useUi.getState();
@@ -74,6 +110,15 @@ export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
     case 'calibrate': {
       const bg = s.plan.background;
       if (bg) ui.addCalibrationPoint(planToImagePx(bg, raw));
+      return;
+    }
+    case 'area': {
+      const first = ctx.areaPoints[0];
+      if (first && ctx.areaPoints.length >= 3 && closesPolygon(raw, first, AREA_CLOSE_CM)) {
+        if (finishArea(ctx.store, ctx.areaPoints)) ctx.setAreaPoints([]);
+        return;
+      }
+      ctx.setAreaPoints([...ctx.areaPoints, areaToolPoint(raw, ctx.areaPoints, s.plan.walls, ui.snap)]);
       return;
     }
     case 'select':

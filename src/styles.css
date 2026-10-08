@@ -73,11 +73,12 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .unit { font-size: 12px; color: #6b7280; }
 .calib { margin-top: 8px; }
 .editor2d-svg.tool-wall, .editor2d-svg.tool-room, .editor2d-svg.tool-door, .editor2d-svg.tool-window,
-.editor2d-svg.tool-opening, .editor2d-svg.tool-middle-door, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture { cursor: crosshair; }
+.editor2d-svg.tool-opening, .editor2d-svg.tool-middle-door, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture, .editor2d-svg.tool-area { cursor: crosshair; }
 .tool-preview polyline { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .tool-preview circle { fill: var(--accent); }
 .tool-preview text { fill: var(--accent); }
 .tool-preview-room { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.tool-preview-area { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tool-preview .calib-point { fill: var(--danger); }
 .calib-line { stroke: var(--danger); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .item2d { stroke: #6b5e4b; stroke-width: 1.5; vector-effect: non-scaling-stroke; fill-opacity: 0.85; cursor: grab; }

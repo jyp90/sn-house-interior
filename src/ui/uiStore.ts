@@ -6,7 +6,7 @@ import type { Vec2 } from '../model/schema';
 export type Banner = { kind: 'error' | 'info'; text: string };
 export type Mode = 'structure' | 'place' | 'electric' | 'checklist' | 'export';
 export type View = '2d' | 'persp' | 'top';
-export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture';
+export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture' | 'area';
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };
 export type Candidates = { ids: string[]; clientX: number; clientY: number };
 export type WallDraft = { thickness: number; height: number };
@@ -28,10 +28,12 @@ type UiState = {
   roomDraft: RoomDraft;
   historyOpen: boolean;
   compareLayoutId: string | null;
+  areaTarget: string | null;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
   setFixtureTool(kind: FixtureKind): void;
+  startArea(roomId: string | null): void;
   toggleSnap(): void;
   setDragging(dragging: boolean): void;
   showBanner(banner: Banner): void;
@@ -65,10 +67,12 @@ export const useUi = create<UiState>()((set, get) => ({
   roomDraft: { w: 400, d: 300, thickness: 12, height: 230, name: '방' },
   historyOpen: false,
   compareLayoutId: null,
-  setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null }),
+  areaTarget: null,
+  setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null }),
   setView: (view) => set({ view, candidates: null }),
-  setTool: (tool) => set({ tool, candidates: null, calibration: null }),
-  setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null }),
+  setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null }),
+  setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null, areaTarget: null }),
+  startArea: (roomId) => set({ tool: 'area', areaTarget: roomId, candidates: null, calibration: null }),
   toggleSnap: () => set({ snap: !get().snap }),
   setDragging: (dragging) => set({ dragging }),
   showBanner: (banner) => set({ banner }),
@@ -83,7 +87,7 @@ export const useUi = create<UiState>()((set, get) => ({
     if (!c || c.points.length >= 2) return;
     set({ calibration: { ...c, points: [...c.points, p] } });
   },
-  cancelCalibration: () => set({ calibration: null, tool: 'select' }),
+  cancelCalibration: () => set({ calibration: null, tool: 'select', areaTarget: null }),
   setWallDraft: (patch) => set({ wallDraft: { ...get().wallDraft, ...patch } }),
   setRoomDraft: (patch) => set({ roomDraft: { ...get().roomDraft, ...patch } }),
   setHistoryOpen: (open) => set({ historyOpen: open }),
