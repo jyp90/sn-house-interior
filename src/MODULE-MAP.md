@@ -49,7 +49,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `Rooms2D.tsx` — draws `room.polygon` floors (`floorFill`/`FloorPatternDefs` from `floorPattern.tsx`) under the room name labels, selected-room outline, and draggable `VertexHandle`s per polygon point (structure mode + select tool only; snaps via `snapToEndpoint`/`areaSnapPoints`, commits through `dragRoomVertex`).
 - `floorPattern.tsx` — React layer over `materials/pattern.ts`: `floorPatternId(roomId)`, `FloorPatternDefs({ rooms, plan })` (one `<pattern>` per room with a polygon), `floorFill(room, plan)` → pattern url or flat color for `plain`.
 - `tools.ts` — tool click handling (wall, opening, room, fixture, area) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices.
-- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.1 inner-corner snap for the area tool).
+- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.2 inner-corner snap for the area tool).
 - `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%).
 - `viewBox.ts` — fit, zoom, pan; `svgPoint.ts` client → plan coords; `svg.ts` path helpers; `itemColor.ts` item fill.
 - `useBackgroundUrl.ts` — object URL for the stored background image.
@@ -92,6 +92,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」; 「기본 마감」 section at the bottom uses `FinishPicker` for `planFinish`), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors; `RoomProperties` has 바닥 영역 (`areaM2`, 「영역 그리기/다시 그리기」 → `setTool('select')` then `startArea(room.id)` to discard a stale draft) + `FinishPicker` for room floor/wall), `CandidatePicker`, `Banner`, `UpdateButton` (dev only).
 - `Toolbar` ends with the `글꼴 라이선스` link → `public/licenses/Pretendard-OFL.txt` via `import.meta.env.BASE_URL` (deploy design §9).
 - `FinishPicker.tsx` — generic preset-chip + material `<select>` + color `<input type="color">` picker for `FloorFinish`/`WallFinish`; used by `RoomProperties` (room floor/wall) and `StructurePanel` (plan defaults). Exports `FLOOR_MATERIALS`/`WALL_MATERIALS` option lists.
+- `styles.css` (src root) — wood-tone design tokens on `:root` (spec §19.4); colors only via tokens, 2D selection accent stays blue (`--accent`).
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
 
 ## scripts/ (Node, outside the app bundle)
