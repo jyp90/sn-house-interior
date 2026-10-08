@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import { wallPieces, type WallPiece } from '../geometry/walls';
 import { planFinish, roomWall } from '../materials/presets';
 import { wallTexture } from '../materials/textures';
-import { WALL_TOP_COLOR, wallFaceRooms } from '../materials/wallFaces';
+import { WALL_TOP_COLOR, wallFaceSegments, type FaceSegment } from '../materials/wallFaces';
 import { usePlan, usePlanStore } from '../model/StoreContext';
-import type { WallFinish } from '../model/schema';
+import type { Room, WallFinish } from '../model/schema';
 import { cmToM } from '../model/units';
 import { useUi } from '../ui/uiStore';
 
@@ -47,7 +47,25 @@ function wallGeometry(w: number, h: number, d: number): THREE.BoxGeometry {
   return g;
 }
 
-function WallMesh({ piece, front, back, base }: { piece: WallPiece; front: WallFinish; back: WallFinish; base: WallFinish }) {
+// 측면 띠가 벽 상자 면에서 떨어지는 거리(m). 0.1cm면 겹침 깜빡임(z-fighting) 없이 보이지 않을 만큼 얇다
+const STRIP_OFFSET_M = cmToM(0.1);
+
+// 측면 한 구간을 덮는 얇은 판. u0 = 상자 면 UV와 이어지도록 맞춘 시작 위치(m)
+function FaceStrip({ w, h, x, z, back, u0, material }: { w: number; h: number; x: number; z: number; back: boolean; u0: number; material: THREE.Material }) {
+  const geometry = useMemo(() => {
+    const g = new THREE.PlaneGeometry(w, h);
+    const uv = g.getAttribute('uv') as THREE.BufferAttribute;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, u0 + uv.getX(i) * w, uv.getY(i) * h);
+    uv.needsUpdate = true;
+    return g;
+  }, [w, h, u0]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return <mesh geometry={geometry} position={[x, 0, z]} rotation={[0, back ? Math.PI : 0, 0]} material={material} />;
+}
+
+type Side = { segs: FaceSegment[]; finishOf: (r: Room) => WallFinish };
+
+function WallMesh({ piece, front, back, base }: { piece: WallPiece; front: Side; back: Side; base: WallFinish }) {
   const { obb, y0, y1 } = piece;
   const w = cmToM(obb.hw * 2);
   const h = cmToM(y1 - y0);
@@ -55,16 +73,36 @@ function WallMesh({ piece, front, back, base }: { piece: WallPiece; front: WallF
   const geometry = useMemo(() => wallGeometry(w, h, d), [w, h, d]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const baseMat = wallMaterial(base);
-  // 회전 -angle 후 로컬 +z = 평면 +v(axes()[1]) = wallFaceRooms의 front 쪽
-  const matFront = wallMaterial(front);
-  const matBack = wallMaterial(back);
+  const baseKey = `${base.material}:${base.color}`;
+  // 회전 -angle 후 로컬 +x = 평면 u, 로컬 +z = 평면 +v = wallFaceSegments의 front 쪽.
+  // 상자 측면은 기본 마감이고, 기본과 다른 방 마감 구간만 얇은 띠로 덮는다
+  const strips = ([[front, false], [back, true]] as const).flatMap(([side, isBack]) =>
+    side.segs.flatMap((seg, k) => {
+      if (!seg.room) return [];
+      const f = side.finishOf(seg.room);
+      if (`${f.material}:${f.color}` === baseKey) return [];
+      const sw = cmToM(seg.e - seg.s);
+      // 상자 +z 면의 u는 -hw 쪽에서, -z 면의 u는 +hw 쪽에서 시작한다
+      const u0 = isBack ? cmToM(obb.hw - seg.e) : cmToM(seg.s + obb.hw);
+      return [
+        <FaceStrip
+          key={`${isBack ? 'b' : 'f'}${k}`}
+          w={sw}
+          h={h}
+          x={cmToM((seg.s + seg.e) / 2)}
+          z={(isBack ? -1 : 1) * (d / 2 + STRIP_OFFSET_M)}
+          back={isBack}
+          u0={u0}
+          material={wallMaterial(f)}
+        />,
+      ];
+    }),
+  );
   return (
-    <mesh
-      geometry={geometry}
-      position={[cmToM(obb.cx), cmToM((y0 + y1) / 2), cmToM(obb.cy)]}
-      rotation={[0, -obb.angle, 0]}
-      material={[baseMat, baseMat, TOP, baseMat, matFront, matBack]}
-    />
+    <group position={[cmToM(obb.cx), cmToM((y0 + y1) / 2), cmToM(obb.cy)]} rotation={[0, -obb.angle, 0]}>
+      <mesh geometry={geometry} material={[baseMat, baseMat, TOP, baseMat, baseMat, baseMat]} />
+      {strips}
+    </group>
   );
 }
 
@@ -78,8 +116,9 @@ export function Walls3D() {
     () => walls.flatMap((w) => wallPieces(w, openings.filter((o) => o.wallId === w.id))),
     [walls, openings],
   );
-  const faces = useMemo(() => pieces.map((p) => wallFaceRooms(p.obb, rooms)), [pieces, rooms]);
+  const faces = useMemo(() => pieces.map((p) => wallFaceSegments(p.obb, rooms)), [pieces, rooms]);
   const base = planFinish({ finish }).wall;
+  const finishOf = (r: Room) => roomWall(r, { finish });
   return (
     <group
       onClick={() => {
@@ -87,18 +126,15 @@ export function Walls3D() {
         useUi.getState().clearCandidates();
       }}
     >
-      {pieces.map((p, i) => {
-        const { front, back } = faces[i];
-        return (
-          <WallMesh
-            key={i}
-            piece={p}
-            base={base}
-            front={front ? roomWall(front, { finish }) : base}
-            back={back ? roomWall(back, { finish }) : base}
-          />
-        );
-      })}
+      {pieces.map((p, i) => (
+        <WallMesh
+          key={i}
+          piece={p}
+          base={base}
+          front={{ segs: faces[i].front, finishOf }}
+          back={{ segs: faces[i].back, finishOf }}
+        />
+      ))}
     </group>
   );
 }

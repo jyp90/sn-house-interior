@@ -34,7 +34,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
   `wallPatternSpec(finish)` — wallpaper: 2cm faint linen cross-hatch; paint: null.
 - `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`. `TEXTURE_CM` sizes.
-- `wallFaces.ts` — `wallFaceRooms(obb, rooms)` → `{ front, back }`: room whose polygon contains the probe point `center ± v·(hd+1)` (front = +v = `axes()[1]`, first room in plan order wins); `WALL_TOP_COLOR` `#3f3a33`.
+- `wallFaces.ts` — `wallFaceSegments(obb, rooms)` → `{ front, back }: FaceSegment[]` (`{ s, e, room }`, cm on local u, −hw..+hw): probe line `± v·(hd+1)` cut where it crosses room edges, each interval → room containing its midpoint (first in plan order wins, else null), adjacent equal rooms merged; front = +v = `axes()[1]`. `WALL_TOP_COLOR` `#3f3a33`.
 
 ## persistence/
 - `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 4; v2→v3, v3→v4 bump only).
@@ -57,7 +57,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## scene3d/ (R3F, 1 unit = 1 m)
 - `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3).
 - `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
-- `Walls3D.tsx` — one box per `wallPieces` piece, material array `[+x, -x, top, -y, +z=front, -z=back]`: side faces take `roomWall` of the room they face (`wallFaceRooms`, browser-verified), else plan default; ends/bottom plan default; dark shared `TOP`. Materials cached module-wide by `material:color` (wallpaper map cloned, repeat 1/m); box UVs rescaled to metres per face.
+- `Walls3D.tsx` — one group per `wallPieces` piece: box with `[base, base, TOP, base, base, base]` (plan default sides/ends/bottom, dark shared `TOP`) plus `FaceStrip` planes 0.1 cm off each side for `wallFaceSegments` intervals whose room's `roomWall` differs from the default (browser-verified: finish changes at the partition). Materials cached module-wide by `material:color` (wallpaper map cloned, repeat 1/m); box and strip UVs in metres, strips offset to continue the box face's u.
 - `CameraRig.tsx` + `cameraFit.ts` — perspective/top views, fit, fixed PDF poses (`pdfViewPoses`).
 - `DropBridge.tsx` — catalog drag → floor point; `pick3d.ts` intersections → item ids.
 - `CaptureBridge.tsx` — 3D PNG captures for PNG/PDF export.

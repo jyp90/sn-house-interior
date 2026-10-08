@@ -337,7 +337,7 @@ A4 가로, 도면은 SVG 벡터로 삽입한다.
 ### 19.3 3D 표현
 
 - 바닥: 방 polygon마다 `ShapeGeometry` 메시(y = +0.2cm)에 프로시저럴 텍스처(`src/materials/textures.ts`, 캔버스로 생성, `material+color`를 키로 캐시). 실척 반복: 널판 120×15cm, 타일 60×60cm, 타일 줄눈 3mm. 기본 바닥판은 중립색 `#e8e2d6`(§19.1).
-- 벽: 벽 조각 `boxGeometry`에 재질 배열 6개. 두 측면은 면 중심에서 법선 방향으로 벽 두께 절반 + 1cm 떨어진 점이 속한 방의 `wall` 마감(없으면 `plan.finish.wall`). 윗면은 2D 벽 색과 같은 짙은 색 `#3f3a33`(Archisketch 탑뷰와 같은 인상). 끝면·밑면은 기본 벽 마감. 면→방 배정은 `src/materials/wallFaces.ts`(순수 함수, 테스트).
+- 벽: 벽 조각 `boxGeometry`(측면·끝면·밑면은 `plan.finish.wall`)에 측면 띠를 덧댄다. 각 측면에서 법선 방향으로 벽 두께 절반 + 1cm 떨어진 탐침선을 방 경계와 만나는 곳마다 잘라, 구간 중점이 속한 방의 `wall` 마감을 그 구간 띠(면에서 0.1cm 바깥)에 입힌다. 그래서 여러 방에 걸친 벽은 칸막이 위치에서 마감이 바뀐다(2026-10-09 최종 리뷰 수정). 윗면은 2D 벽 색과 같은 짙은 색 `#3f3a33`(Archisketch 탑뷰와 같은 인상). 끝면·밑면은 기본 벽 마감. 면→방 배정은 `src/materials/wallFaces.ts`(순수 함수, 테스트).
 - 조명·배경: ambient를 약간 따뜻하게, 3D 배경은 웜 그레이(`#efeae2`).
 
 ### 19.4 우드톤 UI 테마
