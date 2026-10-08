@@ -18,6 +18,8 @@ test('자동 항목이 배치에서 만들어지고, 체크와 메모가 새로�
 
   const row = list.getByTestId('checklist-i-demo-1');
   await row.getByRole('checkbox').check();
+  await row.hover();
+  await row.getByRole('button', { name: '+ 메모' }).click();
   await row.getByLabel('메모').fill('거실 붙박이장 포함');
   await row.getByLabel('메모').press('Enter');
   await expect.poll(async () => (await getPlan(page)).checklist).toEqual([{ itemId: 'i-demo-1', checked: true, memo: '거실 붙박이장 포함' }]);
