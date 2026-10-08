@@ -107,6 +107,24 @@ describe('area tool', () => {
     expect(useUi.getState().banner?.kind).toBe('error');
     expect(useUi.getState().tool).toBe('area');
   });
+
+  it('더블클릭의 두 번째 pointerdown처럼 같은 점을 다시 클릭해도 점이 늘지 않는다', () => {
+    useUi.setState({ tool: 'area', areaTarget: null, snap: false });
+    const c = ctx();
+    applyToolClick('area', { x: 50, y: 50 }, { ...c.ctx, areaPoints: c.get() });
+    applyToolClick('area', { x: 50, y: 50 }, { ...c.ctx, areaPoints: c.get() });
+    expect(c.get()).toEqual([{ x: 50, y: 50 }]);
+  });
+
+  it('마지막 점이 중복으로 남아 있어도 finishArea가 정리하고 방을 만든다', () => {
+    useUi.setState({ tool: 'area', areaTarget: null, snap: false });
+    const c = ctx();
+    const pts = [{ x: 20, y: 20 }, { x: 300, y: 20 }, { x: 300, y: 300 }];
+    expect(finishArea(c.store, [...pts, { x: 300, y: 300 }])).toBe(true);
+    const rooms = c.store.getState().plan.rooms;
+    expect(rooms).toHaveLength(3);
+    expect(rooms[2].polygon).toEqual(pts);
+  });
 });
 
 describe('finishWall', () => {

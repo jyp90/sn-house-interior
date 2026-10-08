@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { areaM2 } from '../geometry/polygon';
 import type { Vec2 } from '../model/schema';
 import { usePlan } from '../model/StoreContext';
@@ -5,7 +6,7 @@ import { useUi } from '../ui/uiStore';
 import { imagePxToPlan } from './calibration';
 import { wallToolPoint } from './snapping';
 import { pointsAttr } from './svg';
-import { areaToolPoint } from './tools';
+import { areaSnapPoints } from './tools';
 
 export function ToolPreview({
   px,
@@ -24,6 +25,7 @@ export function ToolPreview({
   const calibration = useUi((s) => s.calibration);
   const walls = usePlan((s) => s.plan.walls);
   const bg = usePlan((s) => s.plan.background);
+  const areaSnap = useMemo(() => areaSnapPoints(walls), [walls]);
 
   if (tool === 'wall' && wallPoints.length > 0) {
     const endpoints = [...walls.flatMap((w) => [w.a, w.b]), ...wallPoints];
@@ -45,7 +47,7 @@ export function ToolPreview({
     );
   }
   if (tool === 'area' && (areaPoints.length > 0 || cursor)) {
-    const next = cursor ? areaToolPoint(cursor, areaPoints, walls, snap) : null;
+    const next = cursor ? wallToolPoint(cursor, areaPoints.at(-1) ?? null, [...areaSnap, ...areaPoints], snap) : null;
     const pts = next ? [...areaPoints, next] : areaPoints;
     return (
       <g className="tool-preview">
