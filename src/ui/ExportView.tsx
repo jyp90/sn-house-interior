@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DocLinks } from '../docs/DocLinks';
 import { exportPdf } from '../export/exportPdf';
 import { PdfFontError } from '../export/pdfFont';
 import { activeLayout } from '../model/layout';
@@ -56,6 +57,7 @@ export function ExportView() {
   return (
     <div className="export-view" data-testid="export-view">
       <h2>업체 전달 자료 (PDF)</h2>
+      <DocLinks mode="export" />
       <section>
         <h3>기본 정보</h3>
         <div className="info-grid">
