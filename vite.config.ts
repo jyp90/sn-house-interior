@@ -33,10 +33,12 @@ function homePreset(): Plugin {
   };
 }
 
-export default defineConfig({
+// Pages 주소가 https://jyp90.github.io/sn-house-interior/ 라서 build·preview만 base를 붙인다. dev·Vitest·e2e(5180)는 '/'(배포 설계 §6)
+export default defineConfig(({ command, isPreview }) => ({
+  base: command === 'build' || isPreview ? '/sn-house-interior/' : '/',
   plugins: [react(), homePreset()],
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/**/*.test.ts'],
     environment: 'node',
   },
-});
+}));

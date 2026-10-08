@@ -73,6 +73,7 @@ export function Toolbar() {
       <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
       <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
       <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
+      <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
     </header>
   );
 }

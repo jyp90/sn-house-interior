@@ -75,7 +75,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `uiStore.ts` — screen state (mode, view, tool, drafts, candidates, save status, banner).
 - `modes.ts` — mode list and per-mode rules; `shortcuts.ts` keyboard shortcuts (undo works while a button has focus).
 - Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors), `CandidatePicker`, `Banner`.
+- `Toolbar` ends with the `글꼴 라이선스` link → `public/licenses/Pretendard-OFL.txt` via `import.meta.env.BASE_URL` (deploy design §9).
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME.
 
 ## scripts/ (Node, outside the app bundle)
 - `check-dist.ts` — post-build Pages bundle guard: no images, no home-preset markers, all index.html refs under `/sn-house-interior/` (deploy design §7). `npm run check:dist`.
+- Base path `/sn-house-interior/` applies to build and preview only (`vite.config.ts`); `npm run e2e:preview` (`playwright.preview.config.ts`, `e2e-preview/`) checks fonts and the license link under that base on port 5181.
