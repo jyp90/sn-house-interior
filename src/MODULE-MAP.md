@@ -3,7 +3,7 @@
 One or two lines per module; grep, never read whole. Tests sit next to the module as `*.test.ts`.
 
 ## model/
-- `schema.ts` — zod schemas for `Plan` (version 3) and every entity (walls, openings incl. door `middle`/`leaves`, rooms, items, layouts, fixtures, checklist state); types derive from here.
+- `schema.ts` — zod schemas for `Plan` (version 4) and every entity (walls, openings incl. door `middle`/`leaves`, rooms incl. optional `polygon`/`floor`/`wall` finish, items, layouts, fixtures, checklist state, plan-level `finish`); types derive from here.
 - `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step.
 - `StoreContext.tsx` — `usePlanStore` / `usePlan` React bindings.
 - `layout.ts` — `activeItems` / `withActiveItems` (only item access path), layout naming, `compareItems` for the A/B overlay.
@@ -28,8 +28,11 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `validate.ts` — `validatePlan` → per-item status (`collides`, `clearanceBlocked`, `blocksDoor`) with `conflicts` reasons.
 - `describe.ts` — `conflictLines`: Korean text for the warning detail.
 
+## materials/
+- `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §18.1).
+
 ## persistence/
-- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 3; v2→v3 bumps only).
+- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 4; v2→v3, v3→v4 bump only).
 - `storage.ts` — localStorage read/save, invalid-plan backup, `startAutosave` (debounced).
 - `revisions.ts` — local revision snapshots (max 20, auto interval).
 - `images.ts` — background image store (IndexedDB, memory fallback), downscale to `MAX_IMAGE_PX`.

@@ -15,6 +15,7 @@
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 
 ## 다음 할 일
+0. 스키마 v4(방 영역·마감, `feat/room-finish` task 1 완료): `private/make-our-home.mjs`가 `version: 4`를 내보내도록 사용자가 다시 실행해야 한다(영역은 앱에서 그린다).
 1. 계획 5a Task 4(설계 §11): 히스토리 정리 → repo 재생성 → 공개·Pages. 단계마다 사용자 확인.
 1a. `feat/self-update` PR #2 검토 후 `main` 병합(사용자 확인).
 2. 계획 5(스펙 §14.5-5): 삼성 모델 목록(사용자 제공) → 카탈로그·나머지 builder(`stand-ac`, `built-in-appliance`, `cabinet-run`, `chair`, `wardrobe`), 탐색 QA.

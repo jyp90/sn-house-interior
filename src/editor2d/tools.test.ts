@@ -5,7 +5,7 @@ import { useUi } from '../ui/uiStore';
 import { applyToolClick, finishWall } from './tools';
 
 const plan = () => ({
-  version: 3 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
+  version: 4 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
   walls: [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 }],
 });
 
