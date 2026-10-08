@@ -26,24 +26,27 @@
 
 ## 3. 공개 범위(사용자 결정)
 
-- 히스토리에서 지우는 것: plan 1 문서의 `private/make-our-home.mjs` 코드 블록(프리셋 좌표)만.
+- 히스토리에서 지우는 것: plan 1 문서의 `private/make-our-home.mjs` 코드 블록(프리셋 좌표)과, 같은 문서 안의 비공개 평면도 이미지 파일명(일반 이름으로 치환, 내용은 그대로 비공개 유지).
 - 그대로 공개하는 것: 스펙 §3의 평면도 치수, 공급·전용 면적, 평면 형태 설명. 단지명·주소·URL·이미지는 원래부터 tracked 파일에 없다.
 - 커밋 작성자 이메일도 그대로 공개된다(이번 범위에서 바꾸지 않음).
 
 ## 4. 히스토리 정리
 
-plan 1 문서(`docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md`)를 바꾼 커밋은 `f3726c0`(추가)와 `7db3d06`(코드 블록을 한 줄 안내로 교체) 두 개뿐이다. 그래서 `f3726c0`부터 `7db3d06` 직전까지 모든 커밋에서 이 파일 blob을 `7db3d06` 버전으로 바꾸면 된다. 이렇게 하면 `7db3d06`은 빈 커밋이 되어 빠지고, 이후 커밋의 tree는 전혀 바뀌지 않는다.
+plan 1 문서(`docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md`)를 바꾼 커밋은 `f3726c0`(추가)와 `7db3d06`(코드 블록을 한 줄 안내로 교체) 두 개뿐이다. 그래서 `f3726c0`부터 `7db3d06` 직전까지 모든 커밋에서 이 파일 blob을 `7db3d06` 버전으로 바꾸면 된다. 이렇게 하면 `7db3d06`은 빈 커밋이 되어 빠지고, 이후 커밋의 tree는 전혀 바뀌지 않는다. 좌표 코드 블록뿐 아니라 같은 파일 안의 비공개 평면도 이미지 파일명도 매 커밋에서 일반 이름으로 치환한다. tip(`7db3d06` 이후)은 이미 일반 커밋으로 고쳤으므로(스텝 1) tip 트리는 그대로 유지된다.
 
 도구: 새 도구를 설치하지 않도록 내장 `git filter-branch --index-filter`를 쓴다(`git filter-repo` 미설치).
 
 ```bash
 FILE=docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md
 BLOB=$(git rev-parse 7db3d06:$FILE)
-git filter-branch --prune-empty --index-filter "
-  if git ls-files --error-unmatch $FILE >/dev/null 2>&1 && \
-     git cat-file -p :$FILE | grep -q 'const EXT = 20'; then
-    git update-index --cacheinfo 100644,$BLOB,$FILE
-  fi" -- main feat/quote-docs-home-preset
+SED=$PWD/private/plan1-redact.sed   # git 제외. 비공개 이미지 파일명을 일반 이름으로 바꾸는 sed 규칙
+FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --prune-empty --index-filter "
+  if git ls-files --error-unmatch $FILE >/dev/null 2>&1; then
+    src=\$(git rev-parse :$FILE)
+    git cat-file -p \$src | grep -q 'const EXT = 20' && src=$BLOB
+    new=\$(git cat-file -p \$src | sed -f $SED | git hash-object -w --stdin)
+    git update-index --cacheinfo 100644,\$new,$FILE
+  fi" -- $(git for-each-ref --format='%(refname:short)' refs/heads)
 ```
 
 진행 순서와 검증:
@@ -53,10 +56,11 @@ git filter-branch --prune-empty --index-filter "
 4. 검증:
    - 두 브랜치의 tree 해시가 정리 전과 같다(최종 코드는 그대로).
    - `git log --all --oneline -S'const EXT = 20' -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md`과 `git log --all --oneline -S"wall('e-top'" -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` 결과가 비어 있다. 검색은 plan 1 파일로 한정한다(이 설계와 계획 5a 문서 자체에 같은 문자열이 있다). 단, `refs/original/`과 reflog는 지운 다음에 확인한다.
-   - 커밋 수가 1 줄었다(`7db3d06`만 빠짐).
+   - `7db3d06`과 tip 수정 커밋이 빈 커밋으로 빠진다(커밋 수 2 감소 — tip 수정 커밋이 rewrite 대상 브랜치에 있을 때).
+   - `bash .claude/skills/checking-privacy/scan.sh --log --all`과 `bash .claude/skills/checking-privacy/scan.sh --tracked` 둘 다 `OK`.
 5. 정리: `rm -rf .git/refs/original && git reflog expire --expire=now --all && git gc --prune=now`. HEAD와 모든 worktree가 정리된 브랜치를 가리키고 있어야 하고, stash가 비어 있어야 한다. 옛 커밋을 가리키는 HEAD가 하나라도 남아 있으면 gc가 옛 커밋을 지우지 못한다. 그 시점에 남아 있는 다른 브랜치(예: `feat/pages-deploy`)는 filter-branch 대상에 함께 넣는다.
 
-2026-10-08 임시 clone에서 미리 실행해 봄: 두 브랜치 tree 동일, 커밋 77→76, `-S` 검색 결과 0건, `f3726c0` 객체 사라짐.
+2026-10-08 임시 clone에서 확장 스크립트로 다시 실행: tip tree 동일, 좌표 `-S` 0건, `scan.sh --log --all`·`--tracked` clean.
 
 ## 5. 원격 교체
 

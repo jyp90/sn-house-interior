@@ -489,10 +489,13 @@ git rev-parse 'main^{tree}' > ../homefit-tree-before.txt
 n0=$(git rev-list --count main)
 FILE=docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md
 BLOB=$(git rev-parse 7db3d06:$FILE)
+SED=$PWD/private/plan1-redact.sed   # git 제외. 비공개 이미지 파일명을 일반 이름으로 바꾸는 sed 규칙
 FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --prune-empty --index-filter "
-  if git ls-files --error-unmatch $FILE >/dev/null 2>&1 && \
-     git cat-file -p :$FILE | grep -q 'const EXT = 20'; then
-    git update-index --cacheinfo 100644,$BLOB,$FILE
+  if git ls-files --error-unmatch $FILE >/dev/null 2>&1; then
+    src=\$(git rev-parse :$FILE)
+    git cat-file -p \$src | grep -q 'const EXT = 20' && src=$BLOB
+    new=\$(git cat-file -p \$src | sed -f $SED | git hash-object -w --stdin)
+    git update-index --cacheinfo 100644,\$new,$FILE
   fi" -- $(git for-each-ref --format='%(refname:short)' refs/heads)
 git checkout main
 rm -rf .git/refs/original
@@ -506,9 +509,10 @@ echo "$n0 -> $(git rev-list --count main)"
 git log --all --oneline -S'const EXT = 20' -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md | wc -l
 git log --all --oneline -S"wall('e-top'" -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md | wc -l
 bash .claude/skills/checking-privacy/scan.sh --log --all
+bash .claude/skills/checking-privacy/scan.sh --tracked
 git cat-file -e f3726c0 2>/dev/null && echo STILL-PRESENT || echo gone
 ```
-Expected: `tree-same`, 커밋 수 1 감소, `0`, `0`, `OK: privacy scan clean (--log)`, `gone`. `-S` 검색은 plan 1 파일로 한정한다(설계·계획 5a 문서 자체에 같은 문자열이 있다). 미해결(2026-10-08): plan 1 문서에는 `7db3d06` 이후에도 `scan.sh` 검색어 하나(평면도 파일명, `HANDOFF.md` 다음 할 일 3)가 남아 있어 위 filter만으로는 `scan.sh --log --all`이 깨끗해지지 않는다. 실행 전에 그 줄을 지우는 방법(BLOB 교체 범위, tree 동일 검사 기준)을 사용자와 정한다. 하나라도 다르면 멈추고 `git clone ../homefit-before-rewrite.bundle`로 복구 방법을 사용자와 정한다.
+Expected: `tree-same`, `7db3d06`과 tip 수정 커밋이 빈 커밋으로 빠진다(커밋 수 2 감소 — tip 수정 커밋이 rewrite 대상 브랜치에 있을 때), `0`, `0`, `OK: privacy scan clean (--log)`, `OK: privacy scan clean (--tracked)`, `gone`. `-S` 검색은 plan 1 파일로 한정한다(설계·계획 5a 문서 자체에 같은 문자열이 있다). 하나라도 다르면 멈추고 `git clone ../homefit-before-rewrite.bundle`로 복구 방법을 사용자와 정한다.
 
 - [ ] **Step 4: repo 재생성 (확인 — 되돌릴 수 없음)**
 
