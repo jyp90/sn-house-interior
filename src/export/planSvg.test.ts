@@ -71,7 +71,7 @@ describe('planSvg', () => {
 
   it('제어 문자는 SVG와 파일명에서 지운다', () => {
     expect(escapeXml('a\u0001b')).toBe('ab');
-    expect(exportFileName('a\u0001b', 'A안', '2d')).toBe('homefit-a-b-A안-2d.png');
+    expect(exportFileName('a\u0001b', 'A안', '2d')).toBe('sn-house-interior-a-b-A안-2d.png');
   });
 });
 
@@ -82,8 +82,8 @@ describe('unverifiedCount / exportFileName', () => {
   });
 
   it('파일명에 못 쓰는 문자와 공백은 -', () => {
-    expect(exportFileName('샘플 평면', 'A안', '2d')).toBe('homefit-샘플-평면-A안-2d.png');
-    expect(exportFileName('a/b:c', 'B "안"', '3d')).toBe('homefit-a-b-c-B-안--3d.png');
+    expect(exportFileName('샘플 평면', 'A안', '2d')).toBe('sn-house-interior-샘플-평면-A안-2d.png');
+    expect(exportFileName('a/b:c', 'B "안"', '3d')).toBe('sn-house-interior-a-b-c-B-안--3d.png');
   });
 });
 
@@ -208,6 +208,6 @@ describe('planSvg 옵션', () => {
   });
 
   it('pdfFileName', () => {
-    expect(pdfFileName('샘플 평면', 'A안')).toBe('homefit-샘플-평면-A안.pdf');
+    expect(pdfFileName('샘플 평면', 'A안')).toBe('sn-house-interior-샘플-평면-A안.pdf');
   });
 });

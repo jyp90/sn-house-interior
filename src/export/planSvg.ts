@@ -42,11 +42,11 @@ export function unverifiedCount(plan: Plan): number {
 const safeFilePart = (s: string) => s.replace(/[\\/:*?"<>|\s\u0000-\u001F]+/g, '-');
 
 export function exportFileName(title: string, layoutName: string, kind: '2d' | '3d'): string {
-  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}-${kind}.png`;
+  return `sn-house-interior-${safeFilePart(title)}-${safeFilePart(layoutName)}-${kind}.png`;
 }
 
 export function pdfFileName(title: string, layoutName: string): string {
-  return `homefit-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
+  return `sn-house-interior-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
 }
 
 export type PlanSvgOptions = {

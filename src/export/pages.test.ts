@@ -34,7 +34,7 @@ describe('buildPdf', () => {
   it('쪽 순서와 제목, 머리글, 파일명', () => {
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [washer]), input);
     expect(doc.header).toBe('샘플 평면 · A안');
-    expect(doc.fileName).toBe('homefit-샘플-평면-A안.pdf');
+    expect(doc.fileName).toBe('sn-house-interior-샘플-평면-A안.pdf');
     expect(doc.pages.slice(0, 12).map((p) => [p.kind, p.title])).toEqual([
       ['cover', '샘플 평면'],
       ['table', '견적 요청 — 공정별 항목'],

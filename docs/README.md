@@ -1,4 +1,4 @@
-# homefit docs index
+# sn-house-interior docs index
 
 Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.md`. Module notes: `src/MODULE-MAP.md`.
 

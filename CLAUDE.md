@@ -1,4 +1,4 @@
-# homefit
+# sn-house-interior (구 homefit)
 
 Personal (family-only) interior planner: rebuild our home in 3D from a floor plan, place real-size furniture and appliances (Samsung-first) by drag, check collisions / wall gaps / door swings, and export a contractor PDF. Single-package Vite + TypeScript + React 19 + react-three-fiber + zustand + zod SPA. No backend: localStorage + IndexedDB + JSON files.
 

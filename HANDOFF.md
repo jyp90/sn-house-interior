@@ -1,4 +1,4 @@
-# homefit HANDOFF
+# sn-house-interior HANDOFF
 
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 

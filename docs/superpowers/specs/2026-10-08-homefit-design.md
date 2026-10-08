@@ -1,4 +1,4 @@
-# homefit 설계 문서
+# sn-house-interior 설계 문서 (구 homefit)
 
 - 작성일: 2026-10-08
 - 상태: 승인(2026-10-08, §14 포함)
@@ -26,7 +26,7 @@
 | 검증 | 충돌(OBB) + 벽까지 거리 + 문 열림 반경 |
 | 스택 | Vite + TypeScript + React + react-three-fiber + drei + zustand |
 | 내보내기 | PDF(A4 가로) 직접 다운로드: jsPDF + svg2pdf.js |
-| 배포 | GitHub `jyp90/homefit`(public) → GitHub Pages |
+| 배포 | GitHub `jyp90/sn-house-interior`(현재 private, 2026-10-08 이름 변경) → GitHub Pages |
 
 ## 3. 우리 집 프리셋
 

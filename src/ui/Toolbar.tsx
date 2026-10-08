@@ -48,7 +48,7 @@ export function Toolbar() {
 
   return (
     <header className="toolbar">
-      <strong className="brand">homefit</strong>
+      <strong className="brand">sn-house-interior</strong>
       <div className="segmented" role="group" aria-label="모드">
         {MODES.map(([m, label]) => (
           <button key={m} type="button" aria-pressed={mode === m} onClick={() => changeMode(m)}>{label}</button>
@@ -66,7 +66,7 @@ export function Toolbar() {
       <span className="sep" />
       <button type="button" onClick={() => fileRef.current?.click()}>JSON 열기</button>
       <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="open-json" onChange={onOpen} />
-      <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'homefit-plan.json')}>JSON 저장</button>
+      <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'sn-house-interior-plan.json')}>JSON 저장</button>
       {mode === 'place' && <ExportButtons />}
       <span className="sep" />
       <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
