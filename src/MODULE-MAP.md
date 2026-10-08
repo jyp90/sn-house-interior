@@ -84,8 +84,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## ui/
 - `uiStore.ts` — screen state (mode, view, tool, drafts, candidates, save status, banner). `area` tool: `areaTarget` (room id or null) + `startArea(roomId)`; cleared to `null` by `setMode`/`setTool`/`setFixtureTool`/`cancelCalibration`.
 - `modes.ts` — mode list and per-mode rules; `shortcuts.ts` keyboard shortcuts (undo works while a button has focus).
-- Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors), `CandidatePicker`, `Banner`, `UpdateButton` (dev only).
+- Panels: `Toolbar`, `LayoutBar`, `StructurePanel` (tools incl. 「중문」; 「기본 마감」 section at the bottom uses `FinishPicker` for `planFinish`), `CatalogPanel`, `CustomBoxForm`, `ElectricPanel`, `HistoryPanel`, `ChecklistView`, `ExportView`, `ExportButtons`, `PropertiesPanel` (+ `properties/*Properties.tsx`; `OpeningProperties` has 중문 checkbox + 문짝 select for doors; `RoomProperties` has 바닥 영역 (`areaM2`, 「영역 그리기/다시 그리기」 → `setTool('select')` then `startArea(room.id)` to discard a stale draft) + `FinishPicker` for room floor/wall), `CandidatePicker`, `Banner`, `UpdateButton` (dev only).
 - `Toolbar` ends with the `글꼴 라이선스` link → `public/licenses/Pretendard-OFL.txt` via `import.meta.env.BASE_URL` (deploy design §9).
+- `FinishPicker.tsx` — generic preset-chip + material `<select>` + color `<input type="color">` picker for `FloorFinish`/`WallFinish`; used by `RoomProperties` (room floor/wall) and `StructurePanel` (plan defaults). Exports `FLOOR_MATERIALS`/`WALL_MATERIALS` option lists.
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
 
 ## scripts/ (Node, outside the app bundle)

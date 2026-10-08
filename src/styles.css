@@ -75,6 +75,12 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .field-input input { flex: 1; }
 .unit { font-size: 12px; color: #6b7280; }
 .calib { margin-top: 8px; }
+.finish { border: 1px solid #e5e1d8; border-radius: 6px; margin: 8px 0; padding: 8px; }
+.finish legend { font-size: 12px; color: #6b5e4b; padding: 0 4px; }
+.finish-presets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.finish-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.15); }
+.finish input[type='color'] { width: 36px; height: 28px; padding: 0; border: 1px solid #d6d0c4; border-radius: 4px; background: none; }
 .editor2d-svg.tool-wall, .editor2d-svg.tool-room, .editor2d-svg.tool-door, .editor2d-svg.tool-window,
 .editor2d-svg.tool-opening, .editor2d-svg.tool-middle-door, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture, .editor2d-svg.tool-area { cursor: crosshair; }
 .tool-preview polyline { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }

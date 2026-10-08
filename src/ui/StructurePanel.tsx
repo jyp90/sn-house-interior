@@ -1,6 +1,8 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import homePreset from 'virtual:home-preset';
 import { calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
+import { FLOOR_MATERIALS, FinishPicker, WALL_MATERIALS } from './FinishPicker';
+import { FLOOR_PRESETS, planFinish, WALL_PRESETS } from '../materials/presets';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { prepareHomePreset } from '../persistence/homePreset';
 import { getDefaultImageStore, saveBackgroundImage } from '../persistence/images';
@@ -96,6 +98,7 @@ function CalibrationForm() {
 export function StructurePanel() {
   const store = usePlanStore();
   const bg = usePlan((s) => s.plan.background);
+  const finish = usePlan((s) => s.plan.finish);
   const tool = useUi((s) => s.tool);
   const calibration = useUi((s) => s.calibration);
   const wallDraft = useUi((s) => s.wallDraft);
@@ -230,6 +233,10 @@ export function StructurePanel() {
           <CalibrationForm key={`${calibration?.target ?? 'none'}-${calibration?.points.length === 0}`} />
         </>
       )}
+
+      <h3>기본 마감</h3>
+      <FinishPicker label="기본 바닥재" value={planFinish({ finish }).floor} presets={FLOOR_PRESETS} materials={FLOOR_MATERIALS} onChange={(floor) => store.getState().setPlanFinish({ floor })} />
+      <FinishPicker label="기본 벽 마감" value={planFinish({ finish }).wall} presets={WALL_PRESETS} materials={WALL_MATERIALS} onChange={(wall) => store.getState().setPlanFinish({ wall })} />
     </div>
   );
 }
