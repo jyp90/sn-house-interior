@@ -185,9 +185,16 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       },
 
       endDrag: () => {
-        const { dragOrigin, plan, past } = get();
+        const { dragOrigin, past } = get();
+        let plan = get().plan;
         if (dragOrigin && dragOrigin !== plan) {
-          set({ past: [...past, dragOrigin].slice(-HISTORY_LIMIT), future: [], dragOrigin: null });
+          // 꼭짓점을 끌어 이름표가 영역 밖에 남은 방은 이름표를 영역 가운데로 옮긴다(같은 되돌리기 단계)
+          const before = new Map(dragOrigin.rooms.map((r) => [r.id, r.polygon]));
+          const stray = (r: Room) => !!r.polygon && r.polygon !== before.get(r.id) && !pointInPolygon(r.label, r.polygon);
+          if (plan.rooms.some(stray)) {
+            plan = { ...plan, rooms: plan.rooms.map((r) => (stray(r) ? { ...r, label: polygonCentroid(r.polygon!) } : r)) };
+          }
+          set({ plan, past: [...past, dragOrigin].slice(-HISTORY_LIMIT), future: [], dragOrigin: null });
         } else {
           set({ dragOrigin: null });
         }

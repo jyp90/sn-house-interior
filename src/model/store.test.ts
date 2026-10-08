@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findProduct } from '../catalog/products';
+import { pointInPolygon, polygonCentroid } from '../geometry/polygon';
 import { DEFAULT_FINISH } from '../materials/presets';
 import { activeItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
@@ -616,5 +617,31 @@ describe('room areas and finishes', () => {
     s.getState().dragRoomVertex('r1', 1, { x: 10, y: 10 }); // 첫 점과 겹침 → 무시
     s.getState().endDrag();
     expect(s.getState().plan.rooms[0].polygon![1]).toEqual({ x: 320, y: 30 });
+  });
+
+  it('꼭짓점 드래그 후 이름표가 영역 밖이면 endDrag가 무게중심으로 옮기고, 한 번에 되돌린다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomPolygon('r1', sq);
+    const label = s.getState().plan.rooms[0].label;
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 2, { x: 100, y: 120 });
+    const poly = s.getState().plan.rooms[0].polygon!;
+    expect(pointInPolygon(label, poly)).toBe(false);
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].label).toEqual(polygonCentroid(poly));
+    expect(pointInPolygon(s.getState().plan.rooms[0].label, poly)).toBe(true);
+    s.getState().undo();
+    expect(s.getState().plan.rooms[0].label).toEqual(label);
+    expect(s.getState().plan.rooms[0].polygon).toEqual(sq);
+  });
+
+  it('이름표가 영역 안에 남으면 endDrag가 옮기지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomPolygon('r1', sq);
+    const label = s.getState().plan.rooms[0].label;
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 2, { x: 360, y: 400 });
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].label).toEqual(label);
   });
 });
