@@ -16,6 +16,8 @@ const HEADER = 70;
 const LEGEND = 50;
 const LEGEND_STEP = 150;
 const HIGHLIGHT = '#c2410c';
+// 개구부 폭 글자(font 11)와 위치 글자(font 9) 사이 간격: half-heights 5.5+4.5 + halo 1.5+1.5 + 여유
+const OPENING_LABEL_GAP_CM = 16;
 
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
 
@@ -166,11 +168,12 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const u = wallDir(wall);
       const mid = o.offset + o.width / 2;
       const off = -(wall.thickness / 2 + 14);
-      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
+      // 위치 글자를 먼저 그려서, 두 글자가 닿아도 더 중요한 폭 글자가 항상 위에 오도록 한다
       if (dimensionLines) {
-        const off2 = off - 12; // 폭 글자 바깥쪽 한 줄 아래
+        const off2 = off - OPENING_LABEL_GAP_CM;
         parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
       }
+      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
     }
   }
 

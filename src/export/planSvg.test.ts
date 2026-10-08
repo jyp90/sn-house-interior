@@ -187,6 +187,17 @@ describe('planSvg 옵션', () => {
     expect(off).not.toContain('>250–340<');
   });
 
+  it('개구부 위치 글자는 폭 글자보다 16cm 더 바깥쪽이고, 폭 글자가 나중에 그려져 항상 위에 보인다', () => {
+    // o1: wallId w5 (350,0)→(350,400) 수직, offset 250, width 90 → mid 295, 법선 바깥쪽
+    const on = planSvg(plan, { dimensionLines: true }).svg;
+    // 폭 글자(font-size 11): off = -(thickness/2 + 14) = -20 → x = 350 + 20 = 370
+    expect(on).toContain('<text x="370" y="295" font-size="11"');
+    // 위치 글자(font-size 9): off2 = off - 16 = -36 → x = 350 + 36 = 386 (폭 글자보다 16cm 바깥)
+    expect(on).toContain('<text x="386" y="295" font-size="9"');
+    // 위치 글자를 먼저 그리고 폭 글자를 나중에 그려, 겹치더라도 폭 글자가 항상 위에 보인다
+    expect(on.indexOf('>250–340<')).toBeLessThan(on.indexOf('<text x="370" y="295" font-size="11"'));
+  });
+
   it('제품을 찾을 수 없는 가구는 번호를 매기지 않는다', () => {
     const ghost = { id: 'g', productId: 'no-such-product', variantId: 'x', x: 100, y: 100, rotation: 0 };
     const p = withActiveItems(SAMPLE_PLAN, [ghost, sofa, washer]);
