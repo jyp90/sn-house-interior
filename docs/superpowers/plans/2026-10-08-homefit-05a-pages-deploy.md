@@ -8,13 +8,13 @@
 
 **Tech Stack:** Vite 8, TypeScript(Node 22 type stripping으로 `.ts` 스크립트 직접 실행), Vitest 5, Playwright 1.63, GitHub Actions(`actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`).
 
-**Spec:** `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` (요약 `docs/superpowers/specs/2026-10-08-homefit-design.md` §16)
+**Spec:** `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` (요약 `docs/superpowers/specs/2026-10-08-homefit-design.md` §17)
 
 ## Global Constraints
 
 - base 경로: `/sn-house-interior/`. dev 서버·Vitest·기존 e2e(포트 5180)는 `/` 그대로.
 - 새 npm 의존성 없음. 새 도구 설치 없음(`git filter-repo` 쓰지 않음).
-- 번들 금지 문자열: `our-home.local`, `make-our-home`, `home-floorplan.jpg`, `private/`. 금지 확장자: `.jpg`, `.jpeg`, `.png`, `.webp`.
+- 번들 금지 문자열: `our-home.local`, `make-our-home`, `home-floorplan.jpg`, `private/`. 금지 확장자: `.jpg`, `.jpeg`, `.png`, `.webp`, `.heic`, `.gif`, `.avif`, `.bmp`.
 - 프리셋 차단은 기존 `virtual:home-preset` 규칙(build → `null`)을 바꾸지 않는다.
 - UI 문구는 한국어. 링크 이름 `글꼴 라이선스`, 새 탭(`target="_blank" rel="noreferrer"`).
 - `git add`는 경로를 명시. `private/`, `handoff/`, `archive/`, `.superpowers/`, `dist/`, 루트 `Planner 5D …md`는 stage 금지.
@@ -460,9 +460,15 @@ subagent에게 맡기지 않는다. 각 Step의 **확인** 표시가 있는 곳�
 
 - [ ] **Step 1: 브랜치 마무리와 실제 체크아웃 빌드 검사(Review Focus 1)**
 
-1. `feat/quote-docs-home-preset`: e2e 재확인, 탐색 QA 후 **확인** → `git checkout main && git merge --ff-only feat/quote-docs-home-preset`.
-2. `feat/pages-deploy`를 `main` 위로 맞춘다. 이 브랜치는 `29505ca`에서 갈라졌으므로 `main`이 그 커밋을 포함하면 ff 가능하다. 전체 리뷰 후 **확인** → `git merge --ff-only feat/pages-deploy`.
-3. `private/`가 있는 메인 체크아웃(`/Users/jypark/Projects/homefit`)에서 `npm run build && npm run check:dist`. Expected: 통과(이미지 0, 금지 문자열 0).
+1. 브랜치는 PR로 들어간다(`CLAUDE.md` Workflow). `feat/quote-docs-home-preset`: e2e 재확인, 탐색 QA 후 `gh pr create --base main` → 사용자가 병합한다.
+2. `feat/pages-deploy`는 `feat/quote-docs-home-preset` 위에 쌓여 있다. PR base를 그 브랜치로 열거나, 그 브랜치가 `main`에 병합된 뒤 `main` 위로 rebase해서 `gh pr create --base main`. 전체 리뷰 후 사용자가 병합한다. Step 3의 히스토리 정리는 두 브랜치가 모두 `main`에 병합된 뒤, repo를 공개하기 전에 한다.
+3. `private/`가 있는 메인 체크아웃(`/Users/jypark/Projects/homefit`)에서:
+   ```bash
+   npm run build && npm run check:dist
+   bash .claude/skills/checking-privacy/scan.sh --dist
+   ```
+   Expected: `dist 검사 통과`, `OK: privacy scan clean (--dist)`.
+   음성 대조: repo가 아닌 임시 복사본(예: `cp -R` 후 `node_modules`·`private` symlink)에서 `vite.config.ts`의 프리셋·문서 링크 플러그인을 build에서도 켜지게(`enabled = true`) 바꿔 build한 뒤 `npm run check:dist` 또는 `scan.sh --dist`가 0이 아닌 코드로 끝나는지 확인한다. 끝나면 임시 복사본을 지운다.
 
 - [ ] **Step 2: 히스토리 정리 사전 점검** — 다른 세션의 미커밋 변경과 worktree를 확인한다.
 
@@ -497,11 +503,12 @@ git reflog expire --expire=now --all && git gc --prune=now
 ```bash
 [ "$(git rev-parse 'main^{tree}')" = "$(cat ../homefit-tree-before.txt)" ] && echo tree-same
 echo "$n0 -> $(git rev-list --count main)"
-git log --all --oneline -S'const EXT = 20' | wc -l
-git log --all --oneline -S"wall('e-top'" | wc -l
+git log --all --oneline -S'const EXT = 20' -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md | wc -l
+git log --all --oneline -S"wall('e-top'" -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md | wc -l
+bash .claude/skills/checking-privacy/scan.sh --log --all
 git cat-file -e f3726c0 2>/dev/null && echo STILL-PRESENT || echo gone
 ```
-Expected: `tree-same`, 커밋 수 1 감소, `0`, `0`, `gone`. 하나라도 다르면 멈추고 `git clone ../homefit-before-rewrite.bundle`로 복구 방법을 사용자와 정한다.
+Expected: `tree-same`, 커밋 수 1 감소, `0`, `0`, `OK: privacy scan clean (--log)`, `gone`. `-S` 검색은 plan 1 파일로 한정한다(설계·계획 5a 문서 자체에 같은 문자열이 있다). 미해결(2026-10-08): plan 1 문서에는 `7db3d06` 이후에도 `scan.sh` 검색어 하나(평면도 파일명, `HANDOFF.md` 다음 할 일 3)가 남아 있어 위 filter만으로는 `scan.sh --log --all`이 깨끗해지지 않는다. 실행 전에 그 줄을 지우는 방법(BLOB 교체 범위, tree 동일 검사 기준)을 사용자와 정한다. 하나라도 다르면 멈추고 `git clone ../homefit-before-rewrite.bundle`로 복구 방법을 사용자와 정한다.
 
 - [ ] **Step 4: repo 재생성 (확인 — 되돌릴 수 없음)**
 
@@ -515,7 +522,7 @@ git push -u origin main
 `gh repo delete`는 `delete_repo` scope가 필요하다. 없으면 `gh auth refresh -h github.com -s delete_repo`를 사용자에게 안내한다.
 검증: 임시 clone으로 Step 3의 `-S` 검색과 `cat-file` 검사를 반복한다.
 ```bash
-C=$(mktemp -d) && git clone -q git@github.com:jyp90/sn-house-interior.git $C && git -C $C log --all --oneline -S'const EXT = 20' | wc -l
+C=$(mktemp -d) && git clone -q git@github.com:jyp90/sn-house-interior.git $C && git -C $C log --all --oneline -S'const EXT = 20' -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md | wc -l
 ```
 Expected: `0`
 
@@ -537,5 +544,5 @@ Expected: run 성공, `curl -sI https://jyp90.github.io/sn-house-interior/ | hea
 
 - `HANDOFF.md` 「지금 상태」: 배포 주소, 마지막 커밋(정리 후 새 SHA), 테스트 수. 「다음 할 일」에서 배포 항목을 빼고 계획 5를 남긴다.
 - `CLAUDE.md`: 「Work in progress」의 Pages 줄 삭제. Non-negotiable의 push 규칙을 "`main` push = 배포, 사용자 확인 후"로 바꾸고 history rewrite 문구는 삭제. Commands에 `npm run check:dist`, `npm run e2e:preview` 추가.
-- `docs/README.md`: Feature map에 `Pages deploy | vite.config.ts base, scripts/check-dist.ts, .github/workflows/pages.yml, public/licenses/ | §16` 추가. spec·plan 표에서 상태를 done으로.
+- `docs/README.md`: Feature map에 `Pages deploy | vite.config.ts base, scripts/check-dist.ts, .github/workflows/pages.yml, public/licenses/ | §17` 추가. spec·plan 표에서 상태를 done으로.
 - Commit(`docs: record Pages deploy`) 후 **확인** → `git push origin main`(자동 재배포).

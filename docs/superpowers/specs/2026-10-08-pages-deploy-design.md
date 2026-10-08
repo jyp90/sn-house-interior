@@ -1,6 +1,6 @@
 # GitHub Pages 배포 설계 (2026-10-08)
 
-스펙 §16의 상세 문서. 결정 요약은 `2026-10-08-homefit-design.md` §16, 이 문서는 절차와 검증을 다룬다.
+스펙 §17의 상세 문서. 결정 요약은 `2026-10-08-homefit-design.md` §17, 이 문서는 절차와 검증을 다룬다.
 
 ## 1. 목표
 
@@ -52,7 +52,7 @@ git filter-branch --prune-empty --index-filter "
 3. filter-branch를 실행한다.
 4. 검증:
    - 두 브랜치의 tree 해시가 정리 전과 같다(최종 코드는 그대로).
-   - `git log --all -S'const EXT = 20'`과 `git log --all -S"wall('e-top'"` 결과가 비어 있다. 단, `refs/original/`과 reflog는 지운 다음에 확인한다.
+   - `git log --all --oneline -S'const EXT = 20' -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md`과 `git log --all --oneline -S"wall('e-top'" -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` 결과가 비어 있다. 검색은 plan 1 파일로 한정한다(이 설계와 계획 5a 문서 자체에 같은 문자열이 있다). 단, `refs/original/`과 reflog는 지운 다음에 확인한다.
    - 커밋 수가 1 줄었다(`7db3d06`만 빠짐).
 5. 정리: `rm -rf .git/refs/original && git reflog expire --expire=now --all && git gc --prune=now`. HEAD와 모든 worktree가 정리된 브랜치를 가리키고 있어야 하고, stash가 비어 있어야 한다. 옛 커밋을 가리키는 HEAD가 하나라도 남아 있으면 gc가 옛 커밋을 지우지 못한다. 그 시점에 남아 있는 다른 브랜치(예: `feat/pages-deploy`)는 filter-branch 대상에 함께 넣는다.
 
@@ -64,7 +64,7 @@ force-push만으로는 부족하다. GitHub는 브랜치에서 떨어진 옛 커
 
 1. (사용자 확인) `gh repo delete jyp90/sn-house-interior`. 이슈·PR·설정이 없는 것을 먼저 확인한다.
 2. `gh repo create jyp90/sn-house-interior --private --source . --remote origin`으로 다시 만들고, 정리된 `main`과 `feat/quote-docs-home-preset`을 push한다.
-3. 원격에서 §4 검증을 한 번 더 한다(clone을 새로 받아 `git log -S`).
+3. 원격에서 §4 검증을 한 번 더 한다(clone을 새로 받아 plan 1 파일로 한정한 `git log --all -S … -- docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md`).
 4. (사용자 확인) 공개로 전환: `gh repo edit jyp90/sn-house-interior --visibility public --accept-visibility-change-consequences`.
 
 ## 6. 빌드 설정
@@ -75,12 +75,14 @@ force-push만으로는 부족하다. GitHub는 브랜치에서 떨어진 옛 커
 
 ## 7. 번들 검사
 
-`scripts/check-dist.mjs`(React 없는 Node 스크립트, 의존성 없음)를 build 후에 실행한다. 아래 중 하나라도 걸리면 exit 1:
-- `dist/`에 `.jpg`, `.jpeg`, `.png`, `.webp` 파일이 있음(현재 앱 번들에는 이미지가 없다. 나중에 정당한 이미지를 추가하면 허용 목록에 넣는다)
-- `dist/` 텍스트 파일에 `our-home`, `home-floorplan`, `private/`, `make-our-home` 문자열이 있음
+`scripts/check-dist.ts`(React 없는 Node 스크립트, 의존성 없음, Node ≥ 22.18 type stripping으로 직접 실행)를 build 후에 실행한다. 아래 중 하나라도 걸리면 exit 1:
+- `dist/`에 `.jpg`, `.jpeg`, `.png`, `.webp`, `.heic`, `.gif`, `.avif`, `.bmp` 파일이 있음(현재 앱 번들에는 이미지가 없다. 나중에 정당한 이미지를 추가하면 허용 목록에 넣는다)
+- `dist/` 텍스트 파일에 `our-home.local`, `make-our-home`, `home-floorplan.jpg`, `private/` 문자열이 있음. 처음 설계의 `our-home`·`home-floorplan`은 앱 코드의 `HOME_IMAGE_REF = 'image-home-floorplan'`과 겹쳐서 좁혔다(구현 시 결정, 2026-10-08)
 - `dist/index.html`이 없거나, 그 안의 asset 경로가 `/sn-house-interior/assets/`로 시작하지 않음
 
-npm script: `"check:dist": "node scripts/check-dist.mjs"`. 로컬에서는 `npm run build && npm run check:dist`.
+npm script: `"check:dist": "node scripts/check-dist.ts"`. 로컬에서는 `npm run build && npm run check:dist`.
+
+`check:dist`는 CI의 구조 검사다. 로컬에서는 추가로 `bash .claude/skills/checking-privacy/scan.sh --dist`를 돌린다(검색어는 `private/privacy-terms.txt`, 문서 링크 URL까지 포함).
 
 ## 8. 배포 워크플로
 
