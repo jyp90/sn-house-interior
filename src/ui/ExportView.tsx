@@ -12,7 +12,7 @@ type Status =
   | { state: 'done'; pages: number }
   | { state: 'error'; message: string };
 
-const PAGE_LIST = '표지, 치수 평면도, 가구·가전 배치도, 전기 계획도, 전기 설비 목록, 빌트인 상세, 제품 목록, 3D 보기, 공사 체크리스트';
+const PAGE_LIST = '표지, 견적 요청(공정별 항목·확인 요청·사양 결정사항·사진 기록 요청), 치수 평면도, 가구·가전 배치도, 전기 계획도, 전기 설비 목록, 빌트인 상세, 제품 목록, 3D 보기, 공사 체크리스트';
 
 function statusText(s: Status): string {
   switch (s.state) {
