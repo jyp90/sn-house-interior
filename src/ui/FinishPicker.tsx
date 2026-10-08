@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { FloorFinish, WallFinish } from '../model/schema';
 
 type AnyFinish = FloorFinish | WallFinish;
@@ -10,6 +11,25 @@ type Props<F extends AnyFinish> = {
 };
 
 export function FinishPicker<F extends AnyFinish>({ label, value, presets, materials, onChange }: Props<F>) {
+  // 색 선택기는 끄는 동안 input 이벤트를 연달아 보낸다. 미리보기는 로컬 상태로만 하고,
+  // 선택을 마칠 때 오는 네이티브 change 이벤트에서 한 번만 저장한다(되돌리기 1단계, 텍스처 1개)
+  const [color, setColor] = useState(value.color);
+  useEffect(() => setColor(value.color), [value.color]);
+  const colorRef = useRef<HTMLInputElement>(null);
+  const latest = useRef({ value, onChange });
+  useEffect(() => {
+    latest.current = { value, onChange };
+  });
+  useEffect(() => {
+    const el = colorRef.current;
+    if (!el) return;
+    const commit = () => {
+      const { value: cur, onChange: save } = latest.current;
+      if (el.value.toLowerCase() !== cur.color.toLowerCase()) save({ ...cur, color: el.value });
+    };
+    el.addEventListener('change', commit);
+    return () => el.removeEventListener('change', commit);
+  }, []);
   return (
     <fieldset className="finish">
       <legend>{label}</legend>
@@ -30,7 +50,7 @@ export function FinishPicker<F extends AnyFinish>({ label, value, presets, mater
             <option key={m} value={m}>{text}</option>
           ))}
         </select>
-        <input type="color" aria-label={`${label} 색`} value={value.color} onChange={(e) => onChange({ ...value, color: e.target.value })} />
+        <input ref={colorRef} type="color" aria-label={`${label} 색`} value={color} onChange={(e) => setColor(e.target.value)} />
       </div>
     </fieldset>
   );

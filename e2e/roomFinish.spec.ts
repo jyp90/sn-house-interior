@@ -93,3 +93,23 @@ test('선택 도구로 방 영역 안을 끌면 방 선택은 유지되고 화�
   expect(await page.evaluate(() => window.__homefit!.store.getState().selectedId)).toBe(room.id);
   await expect(page.getByTestId(`room-area-${room.id}`)).toHaveClass(/room-area-selected/);
 });
+
+test('색 선택기는 선택을 마칠 때 한 번만 저장한다(되돌리기 1단계)', async ({ page }) => {
+  const room = await drawArea(page, SQUARE);
+  const pastLen = () => page.evaluate(() => window.__homefit!.store.getState().past.length);
+  const before = await pastLen();
+  const input = page.getByTestId('properties-panel').getByLabel('바닥재 색');
+  // 색 선택기를 끄는 동안처럼 input 이벤트가 여러 번 온 뒤 change 한 번
+  await input.evaluate((el: HTMLInputElement) => {
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+    for (const c of ['#111111', '#222222', '#333333']) {
+      setValue.call(el, c);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+  expect(await pastLen()).toBe(before);
+  await input.fill('#123456');
+  expect(await pastLen()).toBe(before + 1);
+  const plan = await getPlan(page);
+  expect(plan.rooms.find((r) => r.id === room.id)!.floor!.color).toBe('#123456');
+});
