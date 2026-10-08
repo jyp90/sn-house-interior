@@ -30,7 +30,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `describe.ts` — `conflictLines`: Korean text for the warning detail.
 
 ## materials/
-- `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §18.1).
+- `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §19.1).
 - `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
   `wallPatternSpec(finish)` — wallpaper: 2cm faint linen cross-hatch; paint: null.
 - `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`. `TEXTURE_CM` sizes.
@@ -49,13 +49,13 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `Rooms2D.tsx` — draws `room.polygon` floors (`floorFill`/`FloorPatternDefs` from `floorPattern.tsx`) under the room name labels, selected-room outline, and draggable `VertexHandle`s per polygon point (structure mode + select tool only; snaps via `snapToEndpoint`/`areaSnapPoints`, commits through `dragRoomVertex`).
 - `floorPattern.tsx` — React layer over `materials/pattern.ts`: `floorPatternId(roomId)`, `FloorPatternDefs({ rooms, plan })` (one `<pattern>` per room with a polygon), `floorFill(room, plan)` → pattern url or flat color for `plain`.
 - `tools.ts` — tool click handling (wall, opening, room, fixture, area) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices.
-- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §18.1 inner-corner snap for the area tool).
+- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.1 inner-corner snap for the area tool).
 - `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%).
 - `viewBox.ts` — fit, zoom, pan; `svgPoint.ts` client → plan coords; `svg.ts` path helpers; `itemColor.ts` item fill.
 - `useBackgroundUrl.ts` — object URL for the stored background image.
 
 ## scene3d/ (R3F, 1 unit = 1 m)
-- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §18.3).
+- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3).
 - `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
 - `Walls3D.tsx` — one box per `wallPieces` piece, material array `[+x, -x, top, -y, +z=front, -z=back]`: side faces take `roomWall` of the room they face (`wallFaceRooms`, browser-verified), else plan default; ends/bottom plan default; dark shared `TOP`. Materials cached module-wide by `material:color` (wallpaper map cloned, repeat 1/m); box UVs rescaled to metres per face.
 - `CameraRig.tsx` + `cameraFit.ts` — perspective/top views, fit, fixed PDF poses (`pdfViewPoses`).

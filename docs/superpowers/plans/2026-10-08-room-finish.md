@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, React 19, zustand, zod, react-three-fiber + three (`CanvasTexture`, `ShapeGeometry`), SVG `<pattern>`, Vitest, Playwright.
 
-**Spec:** `docs/superpowers/specs/2026-10-08-homefit-design.md` §18 (also §5 schema rules, §14.4 migration rules).
+**Spec:** `docs/superpowers/specs/2026-10-08-homefit-design.md` §19 (also §5 schema rules, §14.4 migration rules).
 
 ## Global Constraints
 
@@ -18,7 +18,7 @@
 - Store edits only through `model/store.ts` actions (one undo step per user action; drags use `beginDrag`/`endDrag`). Screen-only state in `ui/uiStore.ts`.
 - No new dependency. UI copy Korean; icon buttons need `aria-label`.
 - Never edit expected values or skip tests to get green. Never use a direct store call in e2e in place of the real user action.
-- Colors in `styles.css` only via tokens from §18.4; no new hex literals outside `:root`. 2D selection accent stays blue (`--accent`).
+- Colors in `styles.css` only via tokens from §19.4; no new hex literals outside `:root`. 2D selection accent stays blue (`--accent`).
 - Run from the worktree `~/Projects/homefit-room-finish` on branch `feat/room-finish`. Commit each task with Conventional Commits and the attribution line `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
 
 ## Review Focus
@@ -182,11 +182,11 @@ export function roomWall(room: Room, plan: Pick<Plan, 'finish'>): WallFinish {
 
 - [ ] **Step 8: Run** `npm run typecheck && npm test` — expect all green.
 
-- [ ] **Step 9: Docs + commit.** Add to `src/MODULE-MAP.md` a `materials/` section line: `- presets.ts — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §18.1).` and update the `schema.ts` line to say version 4 + room polygon/finishes. Note in `HANDOFF.md` 「다음 할 일」 that `private/make-our-home.mjs` must emit `version: 4` (user reruns).
+- [ ] **Step 9: Docs + commit.** Add to `src/MODULE-MAP.md` a `materials/` section line: `- presets.ts — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §19.1).` and update the `schema.ts` line to say version 4 + room polygon/finishes. Note in `HANDOFF.md` 「다음 할 일」 that `private/make-our-home.mjs` must emit `version: 4` (user reruns).
 
 ```bash
 git add src/model/schema.ts src/persistence/parse.ts src/persistence/parse.test.ts src/materials/presets.ts src/materials/presets.test.ts src/model/samplePlan.ts src/MODULE-MAP.md HANDOFF.md
-git commit -m "feat: schema v4 with room polygon, floor/wall finishes and presets (spec §18.1)"
+git commit -m "feat: schema v4 with room polygon, floor/wall finishes and presets (spec §19.1)"
 ```
 
 ---
@@ -644,7 +644,7 @@ CSS (`src/styles.css`, next to `.tool-preview-room`): `.tool-preview-area { fill
 
 ```bash
 git add src/ui/uiStore.ts src/editor2d/tools.ts src/editor2d/tools.test.ts src/editor2d/Editor2D.tsx src/editor2d/ToolPreview.tsx src/ui/StructurePanel.tsx src/styles.css src/MODULE-MAP.md
-git commit -m "feat: area tool to draw room floor polygons in the 2D editor (spec §18.2)"
+git commit -m "feat: area tool to draw room floor polygons in the 2D editor (spec §19.2)"
 ```
 
 ---
@@ -890,7 +890,7 @@ git commit -m "feat: finish pickers for rooms and plan defaults, draw-area butto
 
 **Files:**
 - Create: `src/materials/textures.ts` (three + canvas, no React), `src/materials/pattern.ts`, `src/materials/pattern.test.ts`
-- Modify: `src/scene3d/Floor.tsx`, `src/scene3d/Viewport.tsx` (lighting/background per §18.3)
+- Modify: `src/scene3d/Floor.tsx`, `src/scene3d/Viewport.tsx` (lighting/background per §19.3)
 
 **Interfaces:**
 - Consumes: `patternSpec`/`shade` — **move** them from `editor2d/floorPattern.tsx` into `src/materials/pattern.ts` (React-free) and re-export from `floorPattern.tsx` so Task 5's imports keep working; move the tests too.
@@ -994,7 +994,7 @@ In `Floor()` render `{rooms.filter((r) => r.polygon).map((r) => <RoomFloor key={
 
 ```bash
 git add src/materials/pattern.ts src/materials/pattern.test.ts src/materials/textures.ts src/editor2d/floorPattern.tsx src/editor2d/floorPattern.test.ts src/scene3d/Floor.tsx src/scene3d/Viewport.tsx src/MODULE-MAP.md
-git commit -m "feat: per-room 3D floors with procedural wood and tile textures (spec §18.3)"
+git commit -m "feat: per-room 3D floors with procedural wood and tile textures (spec §19.3)"
 ```
 
 (If `src/editor2d/floorPattern.test.ts` becomes empty, delete it and `git add` the deletion.)
@@ -1125,7 +1125,7 @@ git commit -m "feat: wall faces take the finish of the room they face, dark wall
 
 ```bash
 git add src/styles.css src/docs/DocLinks.css
-git commit -m "style: wood-tone design tokens for tabs, buttons, panels and pages (spec §18.4)"
+git commit -m "style: wood-tone design tokens for tabs, buttons, panels and pages (spec §19.4)"
 ```
 
 ---
@@ -1204,6 +1204,6 @@ test('영역 도구로 방을 그리고 바닥재를 바꾸면 2D 패턴과 3D�
 
 - [ ] **Step 4: Exploratory QA** — REQUIRED SUB-SKILL: `exploratory-qa` (sample plan): draw an L-shaped area, drag a vertex, undo/redo, reload (persistence), load an old v3 JSON export, 3D persp + top view, wall colours on both sides of `w5`, PDF export still works, every tab under the new theme.
 
-- [ ] **Step 5: Docs** — REQUIRED SUB-SKILL: `syncing-docs`: `HANDOFF.md` 「지금 상태」/「다음 할 일」 (branch `feat/room-finish`, counts, `make-our-home.mjs` → `version: 4` reminder), `CLAUDE.md` 「Work in progress」 row, `docs/README.md` plan index + Feature map rows (방 영역/바닥·벽 마감 → `geometry/polygon.ts`, `materials/`, `editor2d/Rooms2D.tsx`, `scene3d/Floor.tsx`, `scene3d/Walls3D.tsx` → §18; 우드톤 테마 → `styles.css` → §18.4), `src/MODULE-MAP.md` complete.
+- [ ] **Step 5: Docs** — REQUIRED SUB-SKILL: `syncing-docs`: `HANDOFF.md` 「지금 상태」/「다음 할 일」 (branch `feat/room-finish`, counts, `make-our-home.mjs` → `version: 4` reminder), `CLAUDE.md` 「Work in progress」 row, `docs/README.md` plan index + Feature map rows (방 영역/바닥·벽 마감 → `geometry/polygon.ts`, `materials/`, `editor2d/Rooms2D.tsx`, `scene3d/Floor.tsx`, `scene3d/Walls3D.tsx` → §19; 우드톤 테마 → `styles.css` → §19.4), `src/MODULE-MAP.md` complete.
 
-- [ ] **Step 6: Commit + PR + merge** — REQUIRED SUB-SKILL: `committing-safely` steps 3–9 (privacy scan on staged files and PR body; push; `gh pr create --base main` with Korean body: 변경 요약, 스펙 §18, `npm test` pass/skip, e2e pass count, QA table; rebase on `origin/main` if it moved and rerun checks; `gh pr merge --merge --delete-branch`; remove the worktree). Report the PR URL and merge commit.
+- [ ] **Step 6: Commit + PR + merge** — REQUIRED SUB-SKILL: `committing-safely` steps 3–9 (privacy scan on staged files and PR body; push; `gh pr create --base main` with Korean body: 변경 요약, 스펙 §19, `npm test` pass/skip, e2e pass count, QA table; rebase on `origin/main` if it moved and rerun checks; `gh pr merge --merge --delete-branch`; remove the worktree). Report the PR URL and merge commit.
