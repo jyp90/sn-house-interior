@@ -61,6 +61,9 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
 .room-name { fill: #6b5e4b; }
 .room-selected { fill: var(--accent); font-weight: 600; }
+.room-area { stroke: none; cursor: pointer; }
+.room-area-selected { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.editor2d:not(.mode-structure) .room-area { pointer-events: none; }
 .muted-svg { fill: #6b7280; }
 
 .structure h3 { font-size: 13px; margin: 12px 0 6px; color: #6b5e4b; }

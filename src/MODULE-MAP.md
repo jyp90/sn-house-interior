@@ -31,6 +31,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## materials/
 - `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §18.1).
+- `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
 
 ## persistence/
 - `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 4; v2→v3, v3→v4 bump only).
@@ -42,6 +43,8 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## editor2d/ (SVG, coordinates = plan cm)
 - `Editor2D.tsx` — the 2D editor root; layers `Walls2D`, `Openings2D` (per-leaf swings, glass leaf + 「중문」 label for middle doors), `Rooms2D`, `Items2D`, `Fixtures2D`, `Overlays2D`, `ToolPreview` (incl. `areaPoints` for the area tool), `BackgroundImage`.
+- `Rooms2D.tsx` — draws `room.polygon` floors (`floorFill`/`FloorPatternDefs` from `floorPattern.tsx`) under the room name labels, selected-room outline, and draggable `VertexHandle`s per polygon point (structure mode + select tool only; snaps via `snapToEndpoint`/`areaSnapPoints`, commits through `dragRoomVertex`).
+- `floorPattern.tsx` — React layer over `materials/pattern.ts`: `floorPatternId(roomId)`, `FloorPatternDefs({ rooms, plan })` (one `<pattern>` per room with a polygon), `floorFill(room, plan)` → pattern url or flat color for `plain`.
 - `tools.ts` — tool click handling (wall, opening, room, fixture, area) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices.
 - `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §18.1 inner-corner snap for the area tool).
 - `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%).
