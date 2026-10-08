@@ -9,7 +9,7 @@ import { Fixtures2D } from './Fixtures2D';
 import { Items2D } from './Items2D';
 import { Openings2D } from './Openings2D';
 import { Overlays2D } from './Overlays2D';
-import { Rooms2D } from './Rooms2D';
+import { RoomVertexHandles, Rooms2D } from './Rooms2D';
 import { isRoomPress } from './roomPress';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
@@ -167,6 +167,7 @@ export function Editor2D() {
           <Walls2D px={px} />
           <Openings2D px={px} />
           <Fixtures2D />
+          <RoomVertexHandles px={px} />
           <ToolPreview px={px} wallPoints={wallPoints} areaPoints={areaPoints} cursor={cursor} />
         </svg>
       </SvgContext.Provider>

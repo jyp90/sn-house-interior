@@ -107,16 +107,23 @@ export function Rooms2D({ px }: { px: number }) {
           {r.name}
         </text>
       ))}
-      {interactive &&
-        roomsWithPolygon
-          .filter((r) => r.id === selectedId)
-          .map((r) => (
-            <g key={r.id}>
-              {r.polygon.map((p, i) => (
-                <VertexHandle key={i} roomId={r.id} index={i} point={p} px={px} />
-              ))}
-            </g>
-          ))}
+    </g>
+  );
+}
+
+// 선택한 방의 꼭짓점 손잡이. 벽·개구부 위에서도 잡히도록 Editor2D가 맨 위 층(ToolPreview 바로 아래)에 그린다
+export function RoomVertexHandles({ px }: { px: number }) {
+  const rooms = usePlan((s) => s.plan.rooms);
+  const selectedId = usePlan((s) => s.selectedId);
+  const mode = useUi((s) => s.mode);
+  const tool = useUi((s) => s.tool);
+  const room = rooms.find((r) => r.id === selectedId);
+  if (mode !== 'structure' || tool !== 'select' || !room?.polygon) return null;
+  return (
+    <g className="room-vertex-handles">
+      {room.polygon.map((p, i) => (
+        <VertexHandle key={i} roomId={room.id} index={i} point={p} px={px} />
+      ))}
     </g>
   );
 }

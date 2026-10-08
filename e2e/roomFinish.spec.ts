@@ -113,3 +113,26 @@ test('색 선택기는 선택을 마칠 때 한 번만 저장한다(되돌리기
   const plan = await getPlan(page);
   expect(plan.rooms.find((r) => r.id === room.id)!.floor!.color).toBe('#123456');
 });
+
+async function dragPlan(page: Page, from: P, to: P) {
+  const a = await planToClient(page, from);
+  const b = await planToClient(page, to);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 8 });
+  await page.mouse.up();
+}
+
+test('벽 위에 놓인 꼭짓점 손잡이도 잡아서 옮길 수 있다', async ({ page }) => {
+  const room = await drawArea(page, SQUARE);
+  // 꼭짓점 1을 칸막이 벽(w5, x=350) 한가운데로 옮긴다
+  await dragPlan(page, SQUARE[1], { x: 350, y: 150 });
+  let plan = await getPlan(page);
+  expect(plan.rooms.find((r) => r.id === room.id)!.polygon![1]).toEqual({ x: 350, y: 150 });
+  const wallsBefore = plan.walls;
+  // 벽 위의 손잡이를 다시 잡아 끈다: 벽이 아니라 꼭짓점이 움직여야 한다
+  await dragPlan(page, { x: 350, y: 150 }, { x: 320, y: 120 });
+  plan = await getPlan(page);
+  expect(plan.rooms.find((r) => r.id === room.id)!.polygon![1]).toEqual({ x: 320, y: 120 });
+  expect(plan.walls).toEqual(wallsBefore);
+});
