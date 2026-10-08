@@ -12,6 +12,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | `docs/superpowers/plans/2026-10-08-homefit-03-layouts-export.md` | Plan 3 done |
 | `docs/superpowers/plans/2026-10-08-homefit-04-electrical-checklist-pdf.md` | Plan 4 done |
 | `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17), awaiting user review |
+| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy), awaiting user review |
 | Plan 5 (catalog, builders) | Not written — spec §14.5-5, §13; deploy split out to §17 |
 
 ## Feature map

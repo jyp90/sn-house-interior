@@ -9,11 +9,11 @@
 - PR 열림(main 병합은 사용자 확인 대기).
 - 원격 `origin` = `jyp90/sn-house-interior`(비공개). 요청마다 워크트리·새 브랜치 → 로컬 검증 → PR → `main` 병합이 기본(`CLAUDE.md` Workflow). 공개 전환·Pages 배포 전(Pages 작업은 워크트리 `../homefit-pages-deploy` `feat/pages-deploy`).
 - 프로젝트 스킬 6개 `.claude/skills/`, 사용 가이드는 `CLAUDE.md` 「Project skills」. 개인정보 검색어는 `private/privacy-terms.txt`.
-- `feat/pages-deploy`: Pages 배포 설계 `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`(스펙 §17), 사용자 검토 대기.
+- `feat/pages-deploy`: Pages 배포 설계 `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`(스펙 §17) 승인, 계획 5a `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` 작성, 실행 방식 결정 대기.
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 
 ## 다음 할 일
 1. `feat/quote-docs-home-preset` PR 검토 후 `main` 병합(사용자 확인).
 2. 계획 5(스펙 §14.5-5): 삼성 모델 목록(사용자 제공) → 카탈로그·나머지 builder(`stand-ac`, `built-in-appliance`, `cabinet-run`, `chair`, `wardrobe`), 탐색 QA.
-3. 배포 준비: 저장소 공개 전 히스토리 정리(`f3726c0`에 프리셋 좌표, `scan.sh --log --all` 적중분, 계획 1 문서 3437행 평면도 파일명), Pretendard OFL 고지, Pages base 경로에서 글꼴 URL 확인. Pages 배포 순서는 설계 §11(히스토리 정리, repo 재생성, 공개 전환은 각각 사용자 확인).
+3. 배포 준비: 저장소 공개 전 히스토리 정리(`f3726c0`에 프리셋 좌표, `scan.sh --log --all` 적중분, 계획 1 문서 3437행 평면도 파일명), Pretendard OFL 고지, Pages base 경로에서 글꼴 URL 확인. Pages 배포: 계획 5a 실행(Task 1–3 코드, Task 4는 메인 세션) → 설계 §11 순서(히스토리 정리, repo 재생성, 공개 전환은 각각 사용자 확인).
 4. 보류된 minor(계획 5에서 재검토): 자동 체크리스트 id 재사용으로 "완료" 잔존, 폭 7m 미만 평면 전기 범례 잘림, `missingDedicatedCircuit` 중복 계산, R3F 첫 로드 크기 깜빡임, pdf e2e 쪽수 하한, FixtureProperties/ExportView 컴포넌트 테스트 없음, dev 콘솔 React "synchronously unmount a root" 오류(main에도 있음), PDF 메모의 이모지 누락(Pretendard 미포함), 샘플 평면 PDF 상단 "≈600" 치수 라벨 겹침.
