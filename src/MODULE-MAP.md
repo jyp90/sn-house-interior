@@ -23,6 +23,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `pick.ts` — items under a point (candidate picker).
 - `bounds.ts` — plan bounds/center for view fitting.
 - `wallReference.ts` — "벽 기준 위치" text for PDF/built-in detail.
+- `polygon.ts` — area/centroid/point-in-polygon/validity for room floor polygons.
 
 ## validation/
 - `validate.ts` — `validatePlan` → per-item status (`collides`, `clearanceBlocked`, `blocksDoor`) with `conflicts` reasons.
