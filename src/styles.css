@@ -9,6 +9,7 @@
   --danger-text: #9e2f28; --warn-text: #8a5a00; --brass-bg: #f3e6cc; --brass-text: #6e4f1c;
   --ok: #2f7a4f; --ok-bg: #e6f4ec; --panel-3: #ece5da; --on-accent: #ffffff;
   --shadow-s: 0 1px 2px rgba(43, 37, 32, 0.12);
+  --panel-translucent: rgba(251, 249, 245, 0.8); --border-translucent: rgba(0, 0, 0, 0.15);
 }
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; height: 100%; }
@@ -20,7 +21,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'M
 .layer-hidden { display: none; }
 .viewport { position: absolute; inset: 0; }
 .viewport-fallback { display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text-2); }
-.room-label { font-size: 13px; color: var(--text-2); background: rgba(251, 249, 245, 0.8); padding: 1px 6px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
+.room-label { font-size: 13px; color: var(--text-2); background: var(--panel-translucent); padding: 1px 6px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
 .dist-label { font-size: 11px; background: var(--accent); color: var(--on-accent); padding: 1px 5px; border-radius: 4px; white-space: nowrap; pointer-events: none; }
 
 /* 상단 도구 막대 */
@@ -91,7 +92,7 @@ button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); 
 .finish legend { font-size: 12px; color: var(--text-2); padding: 0 4px; }
 .finish-presets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
 .finish-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
-.swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.15); }
+.swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-translucent); }
 .finish input[type='color'] { width: 36px; height: 28px; padding: 0; border: 1px solid var(--border-strong); border-radius: var(--radius-s); background: none; }
 .candidates { position: fixed; z-index: 20; display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--panel); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow); }
 .candidates p { margin: 0 0 2px; }
@@ -207,7 +208,7 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .tool-preview circle { fill: var(--accent); }
 .tool-preview text { fill: var(--accent); }
 .tool-preview-room { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.tool-preview-area { fill: rgba(59, 130, 246, 0.08); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.tool-preview-area { fill: color-mix(in srgb, var(--accent) 8%, transparent); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tool-preview .calib-point { fill: var(--danger); }
 .calib-line { stroke: var(--danger); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .item2d { stroke: #6b5e4b; stroke-width: 1.5; vector-effect: non-scaling-stroke; fill-opacity: 0.85; cursor: grab; }
