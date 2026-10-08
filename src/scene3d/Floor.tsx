@@ -2,7 +2,7 @@ import { Grid, Html } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { planBounds } from '../geometry/bounds';
-import { planFinish, roomFloor } from '../materials/presets';
+import { roomFloor } from '../materials/presets';
 import { floorTexture } from '../materials/textures';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import type { FloorFinish, Room, Vec2 } from '../model/schema';
@@ -19,9 +19,10 @@ function RoomFloor({ polygon, finish }: { polygon: Vec2[]; finish: FloorFinish }
   }, [polygon]);
   const material = useMemo(() => {
     const tex = floorTexture(finish);
-    const m = new THREE.MeshStandardMaterial({ color: tex ? '#ffffff' : finish.color, roughness: 0.85 });
+    const m = new THREE.MeshStandardMaterial({ color: tex ? '#ffffff' : finish.color, roughness: 0.85, side: THREE.DoubleSide }); // 감김 방향과 무관하게 위에서 보이도록(ShapeGeometry도 정규화하지만 안전하게)
     if (tex) {
-      // ShapeGeometry의 UV는 로컬 좌표(m) 그대로이므로 1 반복 = 무늬 크기(m)
+      // ShapeGeometry의 UV는 로컬 좌표(m) 그대로이므로 1 반복 = 무늬 크기(m).
+      // v = -평면y 이고 flipY 덕에 캔버스 행 = 평면 y 가 되어 2D 무늬와 줄 위상이 같다(repeat.y를 음수로 하면 뒤집힘)
       const t = tex.texture.clone();
       t.needsUpdate = true;
       t.repeat.set(1 / cmToM(tex.sizeCm.w), 1 / cmToM(tex.sizeCm.h));
@@ -56,7 +57,6 @@ export function Floor() {
   const walls = usePlan((s) => s.plan.walls);
   const rooms = usePlan((s) => s.plan.rooms);
   const finish = usePlan((s) => s.plan.finish);
-  const baseColor = planFinish({ finish }).floor.color;
   const b = useMemo(() => planBounds({ walls }), [walls]);
   const margin = 200;
   const w = cmToM(b.maxX - b.minX + margin * 2);
@@ -74,7 +74,8 @@ export function Floor() {
         }}
       >
         <planeGeometry args={[w, d]} />
-        <meshStandardMaterial color={baseColor} />
+        {/* 방 영역 밖 바닥은 중립색 그대로. 기본 바닥재(plan.finish.floor)는 영역에 바닥재가 없는 방에만 쓴다 */}
+        <meshStandardMaterial color="#e8e2d6" />
       </mesh>
       <Grid position={[cx, 0.001, cz]} args={[w, d]} cellSize={0.1} sectionSize={1} cellColor="#d6cfc2" sectionColor="#b9b0a0" fadeDistance={60} />
       {rooms

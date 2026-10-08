@@ -55,7 +55,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## scene3d/ (R3F, 1 unit = 1 m)
 - `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §18.3).
-- `Floor.tsx` — base plane (plan default floor color, no texture) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`; disposes geometry/material/cloned map on unmount.
+- `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
 - `CameraRig.tsx` + `cameraFit.ts` — perspective/top views, fit, fixed PDF poses (`pdfViewPoses`).
 - `DropBridge.tsx` — catalog drag → floor point; `pick3d.ts` intersections → item ids.
 - `CaptureBridge.tsx` — 3D PNG captures for PNG/PDF export.
