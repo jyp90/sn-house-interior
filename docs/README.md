@@ -11,8 +11,8 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
 | `docs/superpowers/plans/2026-10-08-homefit-03-layouts-export.md` | Plan 3 done |
 | `docs/superpowers/plans/2026-10-08-homefit-04-electrical-checklist-pdf.md` | Plan 4 done |
-| `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17); Tasks 1–3 done on `feat/pages-deploy`; Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
-| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy); Tasks 1–3 done on `feat/pages-deploy`; Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
+| `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
+| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
 | Plan 5 (catalog, builders) | Not written — spec §14.5-5, §13; deploy split out to §17 |
 
 ## Feature map
@@ -34,6 +34,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | PNG export | `src/export/planSvg.ts`, `src/export/png.ts`, `src/ui/ExportButtons.tsx` | §14.1 F12 |
 | Contractor PDF (+ quote request pages) | `src/export/pages.ts`, `src/export/pdf.ts`, `src/export/pdfFont.ts`, `src/export/exportPdf.ts`, `src/quote/request.ts`, `src/ui/ExportView.tsx` | §9, §15.3 |
 | Modes, shortcuts | `src/ui/modes.ts`, `src/ui/shortcuts.ts`, `src/ui/uiStore.ts` | §6 |
+| Pages deploy (base path, bundle guard, OFL notice, Actions) | `vite.config.ts` base, `scripts/check-dist.ts`, `public/licenses/`, `.github/workflows/pages.yml`, `playwright.preview.config.ts` | §17 |
 
 ## Task → read this
 | Task | Read |
