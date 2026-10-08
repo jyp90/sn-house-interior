@@ -38,10 +38,11 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 |---|---|
 | Any change | `CLAUDE.md`, `HANDOFF.md` 「지금 상태」/「다음 할 일」 |
 | New feature / product decision | spec §1–2, §14, §15; brainstorm with the user, append a dated spec round |
-| Schema field | spec §5, §14.4; `src/model/schema.ts`, `src/persistence/parse.ts` |
-| Add a catalog product | spec §7, §13; `src/catalog/products.ts`, `src/catalog/builders/index.ts` |
+| Schema field | skill `migrating-plan-schema`; spec §5, §14.4; `src/model/schema.ts`, `src/persistence/parse.ts` |
+| Add a catalog product | skill `adding-catalog-product`; spec §7, §13; `src/catalog/products.ts`, `src/catalog/builders/index.ts` |
 | PDF page or copy | spec §9, §15.3; `src/export/pages.ts` then `src/export/pdf.ts`; svg2pdf pitfalls in `CLAUDE.md` |
 | Checklist items | spec §8, §15.2 (new `i-` ids, fresh wording) |
-| Anything touching `private/` or the home preset | spec §3, §15.1; privacy rule in `CLAUDE.md` |
+| Anything touching `private/` or the home preset | skill `checking-privacy`; spec §3, §15.1; privacy rule in `CLAUDE.md` |
 | Deploy to Pages | spec §2, §14.5-5; user approval and history rewrite first |
+| Commit / finish a round | skills `committing-safely`, `syncing-docs`, `exploratory-qa` |
 | Resume a past round | `archive/*/HANDOFF.md` (local only) |
