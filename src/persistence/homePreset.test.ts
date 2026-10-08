@@ -79,7 +79,7 @@ describe.skipIf(!existsSync(PRESET))('우리 집 프리셋 (private)', () => {
     for (const o of plan.openings) expect(o.offset + o.width).toBeLessThanOrEqual(wallLength(walls.get(o.wallId)!));
     // 욕실만 바깥여닫이(주방 쪽 +y), 중문은 실내(주방 쪽 -x)
     expect(plan.openings.find((o) => o.id === 'bath-door')?.swingIn).toBe(true);
-    expect(plan.openings.find((o) => o.id === 'middle-door')?.swingIn).toBe(true);
+    expect(plan.openings.find((o) => o.id === 'middle-door')).toMatchObject({ swingIn: true, middle: true, leaves: 'single', width: 90 });
 
     for (const f of plan.fixtures) {
       const w = walls.get(f.wallId!)!;

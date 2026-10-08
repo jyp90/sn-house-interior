@@ -51,6 +51,23 @@ describe('planSvg', () => {
     expect(svg).toMatch(/<text[^>]*stroke="#ffffff"[^>]*>3인 소파<\/text><text[^>]*fill="#1f2328"[^>]*>3인 소파<\/text>/);
   });
 
+  it('문짝마다 열림 부채꼴을 그리고, 중문은 유리 문짝과 「중문」 글자를 더한다', () => {
+    const door = SAMPLE_PLAN.openings[0];
+    const plain = planSvg(SAMPLE_PLAN).svg;
+    expect(plain.match(/stroke="#8b8b8b" stroke-width="1"\/>/g)).toHaveLength(1);
+    expect(plain).not.toContain('>중문<');
+
+    const double = planSvg({ ...SAMPLE_PLAN, openings: [{ ...door, leaves: 'double' }] }).svg;
+    expect(double.match(/stroke="#8b8b8b" stroke-width="1"\/>/g)).toHaveLength(2);
+    expect(double).not.toContain('stroke="#4f9dde"');
+
+    const middle = planSvg({ ...SAMPLE_PLAN, openings: [{ ...door, middle: true, leaves: 'asym' }] }, { fontFamily: 'Pretendard' }).svg;
+    expect(middle.match(/<line[^>]*stroke="#4f9dde" stroke-width="3"\/>/g)).toHaveLength(2);
+    expect(middle).toMatch(/<text[^>]*font-family="Pretendard"[^>]*stroke="#ffffff"[^>]*>중문<\/text><text[^>]*fill="#2b6cb0"[^>]*>중문<\/text>/);
+    expect(middle).not.toContain('paint-order');
+    expect(middle.indexOf('>중문<')).toBeGreaterThan(middle.lastIndexOf('<line'));
+  });
+
   it('방 이름표는 마지막 폴리곤보다 뒤에 그린다', () => {
     const { svg } = planSvg(SAMPLE_PLAN);
     const roomName = SAMPLE_PLAN.rooms[0].name;

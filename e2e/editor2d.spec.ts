@@ -183,3 +183,36 @@ test('스냅 토글·저장 상태·3D 시점 초기화', async ({ page }) => {
   await expect(page.locator('.viewport canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('중문 도구는 벽에 비대칭 양개 중문을 놓고, 속성창에서 중문·문짝을 바꿀 수 있다', async ({ page }) => {
+  await page.getByRole('button', { name: '구조' }).click();
+  const before = (await getPlan(page)).openings.length;
+  await page.getByRole('button', { name: '중문', exact: true }).click();
+  // 샘플 평면 위쪽 외벽(w1, y=0)의 창 오른쪽 빈 구간
+  await clickPlan(page, { x: 450, y: 0 });
+  await expect.poll(async () => (await getPlan(page)).openings.length).toBe(before + 1);
+
+  const door = (await getPlan(page)).openings.at(-1)!;
+  expect(door).toMatchObject({ kind: 'door', width: 120, middle: true, leaves: 'asym' });
+  const props = page.getByTestId('properties-panel');
+  await expect(props.getByRole('heading', { name: '문' })).toBeVisible();
+  await expect(props.getByLabel('중문')).toBeChecked();
+  await expect(props.getByLabel('문짝')).toHaveValue('asym');
+  await expect(page.getByTestId(`opening-middle-${door.id}`)).toHaveText('중문');
+  // 비대칭 양개는 문짝 2개 → 열림 부채꼴 2개
+  await expect(page.getByTestId(`opening-${door.id}`).locator('.opening-swing')).toHaveCount(2);
+
+  await props.getByLabel('문짝').selectOption('single');
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.leaves).toBe('single');
+  await expect(page.getByTestId(`opening-${door.id}`).locator('.opening-swing')).toHaveCount(1);
+  await props.getByLabel('중문').uncheck();
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.middle).toBe(false);
+  await expect(page.getByTestId(`opening-middle-${door.id}`)).toHaveCount(0);
+
+  // 속성 편집은 각각 실행 취소 한 단계 (입력란 포커스는 단축키를 막으므로 도구 버튼으로 옮긴다)
+  await page.getByRole('button', { name: '선택', exact: true }).click();
+  await page.keyboard.press('Control+z');
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.middle).toBe(true);
+  await page.keyboard.press('Control+z');
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.leaves).toBe('asym');
+});

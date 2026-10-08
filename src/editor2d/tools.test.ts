@@ -5,7 +5,7 @@ import { useUi } from '../ui/uiStore';
 import { applyToolClick, finishWall } from './tools';
 
 const plan = () => ({
-  version: 2 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
+  version: 3 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
   walls: [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 }],
 });
 
@@ -24,6 +24,14 @@ describe('applyToolClick', () => {
     applyToolClick('door', { x: 200, y: 12 }, { store, wallPoints: [], setWallPoints: () => {} });
     const [door] = store.getState().plan.openings;
     expect(door).toMatchObject({ wallId: 'w', kind: 'door', offset: 155, width: 90, height: 210, sill: 0 });
+    expect(store.getState().selectedId).toBe(door.id);
+  });
+
+  it('중문 도구는 폭 120 비대칭 양개 중문을 놓는다', () => {
+    const store = createPlanStore(plan());
+    applyToolClick('middle-door', { x: 200, y: 12 }, { store, wallPoints: [], setWallPoints: () => {} });
+    const [door] = store.getState().plan.openings;
+    expect(door).toMatchObject({ wallId: 'w', kind: 'door', offset: 140, width: 120, height: 210, sill: 0, hinge: 'start', swingIn: true, middle: true, leaves: 'asym' });
     expect(store.getState().selectedId).toBe(door.id);
   });
 

@@ -12,6 +12,7 @@ const TOOLS: [Tool, string][] = [
   ['wall', '벽 그리기'],
   ['room', '방 만들기'],
   ['door', '문'],
+  ['middle-door', '중문'],
   ['window', '창'],
   ['opening', '개구부'],
   ['label', '방 이름'],
@@ -174,7 +175,7 @@ export function StructurePanel() {
           <p className="muted">방의 왼쪽 위 안쪽 모서리를 클릭하세요.</p>
         </fieldset>
       )}
-      {(tool === 'door' || tool === 'window' || tool === 'opening') && (
+      {(tool === 'door' || tool === 'middle-door' || tool === 'window' || tool === 'opening') && (
         <p className="muted">벽 위를 클릭하면 놓입니다. 크기와 위치는 오른쪽 속성창에서 바꿉니다.</p>
       )}
       {tool === 'label' && <p className="muted">방 이름을 놓을 곳을 클릭하세요.</p>}

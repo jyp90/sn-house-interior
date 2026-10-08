@@ -6,7 +6,7 @@ import type { Vec2 } from '../model/schema';
 export type Banner = { kind: 'error' | 'info'; text: string };
 export type Mode = 'structure' | 'place' | 'electric' | 'checklist' | 'export';
 export type View = '2d' | 'persp' | 'top';
-export type Tool = 'select' | 'wall' | 'room' | 'door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture';
+export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture';
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };
 export type Candidates = { ids: string[]; clientX: number; clientY: number };
 export type WallDraft = { thickness: number; height: number };

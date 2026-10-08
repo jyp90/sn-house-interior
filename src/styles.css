@@ -55,6 +55,8 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .opening-window { stroke: #4f9dde; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .opening-open { stroke: #9a8f7f; stroke-dasharray: 4 3; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .opening-swing { fill: rgba(139, 139, 139, 0.15); stroke: #8b8b8b; stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
+.opening-glass { stroke: #4f9dde; stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
+.opening-middle-label { fill: #2b6cb0; pointer-events: none; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
 .room-name { fill: #6b5e4b; }
 .room-selected { fill: var(--accent); font-weight: 600; }
@@ -70,7 +72,7 @@ button[aria-pressed='true'] { background: #1f2328; color: #fff; }
 .unit { font-size: 12px; color: #6b7280; }
 .calib { margin-top: 8px; }
 .editor2d-svg.tool-wall, .editor2d-svg.tool-room, .editor2d-svg.tool-door, .editor2d-svg.tool-window,
-.editor2d-svg.tool-opening, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture { cursor: crosshair; }
+.editor2d-svg.tool-opening, .editor2d-svg.tool-middle-door, .editor2d-svg.tool-label, .editor2d-svg.tool-calibrate, .editor2d-svg.tool-fixture { cursor: crosshair; }
 .tool-preview polyline { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .tool-preview circle { fill: var(--accent); }
 .tool-preview text { fill: var(--accent); }
