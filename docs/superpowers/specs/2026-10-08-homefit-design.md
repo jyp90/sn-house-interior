@@ -295,3 +295,11 @@ A4 가로, 도면은 SVG 벡터로 삽입한다.
 - 문 열림 영역은 문짝마다 따로 계산한다. 양여닫이는 폭을 반씩 나눠 양 끝에 경첩을 두고, 비대칭 양개는 경첩 쪽 큰 문짝 2/3, 반대쪽 작은 문짝 1/3이다. 충돌·문 열림 검사, 2D, 3D, PDF 평면도가 모두 같은 계산을 쓴다.
 - 중문은 2D·PDF에서 일반 문과 구분되게 그린다(유리 문짝 표시와 「중문」 글자).
 - 우리 집 프리셋: 거실 발코니 확장(거실 앞 발코니 벽 철거, 침실1 앞 발코니는 유지), `middle-door`는 `middle: true`, 현관 폭(105cm)에 맞춰 외여닫이 90cm.
+
+## 17. 5차 반영: GitHub Pages 배포 (2026-10-08)
+
+상세: `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`. §14.5-5의 배포 부분을 계획 5에서 떼어 먼저 한다.
+
+- 주소 `https://jyp90.github.io/sn-house-interior/`. repo는 공개, GitHub Actions(`deploy-pages`)로 `main` push마다 배포한다. typecheck·unit·번들 검사를 통과해야 배포된다.
+- 공개 전 히스토리에서 지우는 것은 plan 1의 프리셋 좌표 코드 블록뿐이다. §3의 치수·면적은 공개해도 된다(사용자 결정). 옛 커밋이 SHA로 남지 않도록 repo를 지우고 다시 만든다.
+- build일 때만 `base: '/sn-house-interior/'`. Pretendard OFL 고지 파일과 화면 링크를 추가한다.

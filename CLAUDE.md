@@ -82,4 +82,5 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 
 ## Work in progress (2026-10-08)
 - Round 3 (spec §15: local-only home preset, on-site checklist, PDF quote pages): branch `feat/quote-docs-home-preset`, checks + QA done, PR open, waits for the user to merge.
-- Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, Pages deploy with Pretendard OFL notice, exploratory QA): not started, waits for the user's model list.
+- Pages deploy (spec §17, `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`): design written on `feat/pages-deploy`, awaiting user review; plan not written.
+- Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, exploratory QA): not started, waits for the user's model list.
