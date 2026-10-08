@@ -11,7 +11,7 @@ Spec §11: reviews alone have missed runtime bugs. Tests green ≠ done until it
 ```bash
 HOMEFIT_SAMPLE=1 npm run dev -- --port 5181 --strictPort   # run_in_background; sample plan, no home preset
 ```
-Port 5180 belongs to Playwright. Use the sample plan for anything that may be screenshotted or exported (checking-privacy). Drive it with the available browser tool (Claude in Chrome / built-in browser skill, or a scratch Playwright script under the scratchpad).
+Port 5180 belongs to Playwright; if 5181 is taken by another worktree, pick the next free port (`lsof -i :<port>`). Use the sample plan for anything that may be screenshotted or exported (checking-privacy). Drive it with the available browser tool (Claude in Chrome / built-in browser skill, or a scratch Playwright script under the scratchpad).
 
 ## Pass (adapt to the change, report each)
 1. Console: no errors/warnings on load and during the flow.
