@@ -50,7 +50,7 @@ FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --prune-empty --index-filter "
 ```
 
 진행 순서와 검증:
-1. 시작 전: 공유 체크아웃을 쓰는 다른 세션에 커밋하지 않은 변경이 없는지 확인한다. 정리 후에는 모든 SHA가 바뀌므로 다른 세션·worktree는 새 브랜치에서 다시 시작해야 한다. 백업으로 `git bundle create ../homefit-before-rewrite.bundle --all`(repo 밖, 공개하지 않음)을 만든다.
+1. 시작 전: 미push 커밋이 있는 브랜치가 없어야 한다(옛 계보를 나중에 push하면 지운 커밋이 되살아남). `gh` 토큰에 `delete_repo` scope가 필요하다. 공유 체크아웃을 쓰는 다른 세션에 커밋하지 않은 변경이 없는지 확인한다. 정리 후에는 모든 SHA가 바뀌므로 다른 세션·worktree는 새 브랜치에서 다시 시작해야 한다. 백업으로 `git bundle create ../homefit-before-rewrite.bundle --all`(repo 밖, 공개하지 않음)을 만든다.
 2. 정리 전에 `git rev-parse main^{tree} feat/quote-docs-home-preset^{tree}`를 기록한다.
 3. filter-branch를 실행한다.
 4. 검증:
