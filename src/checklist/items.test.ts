@@ -13,11 +13,14 @@ const sofa = { id: 'so', productId: 'sofa-3seat', variantId: 'gray', x: 175, y: 
 const clean: Record<string, ItemStatus> = {};
 
 describe('기본 항목', () => {
-  it('공정 6개, 공정마다 4개 이상, id는 겹치지 않는다', () => {
-    expect(PHASES.map((p) => p.label)).toEqual(['철거', '목공·전기', '타일', '도배', '바닥', '주방']);
-    for (const p of PHASES) expect(DEFAULT_CHECKLIST.filter((i) => i.phase === p.id).length).toBeGreaterThanOrEqual(4);
+  it('시공 중 검수 공정 순서, 주방(자동 전용) 외 공정마다 3개 이상, id는 i- 접두어로 겹치지 않는다', () => {
+    expect(PHASES.map((p) => p.label)).toEqual(['공통', '철거', '샷시·창호', '목공·전기', '타일', '도배', '장판', '주방']);
+    for (const p of PHASES.filter((p) => p.id !== 'kitchen')) {
+      expect(DEFAULT_CHECKLIST.filter((i) => i.phase === p.id).length).toBeGreaterThanOrEqual(3);
+    }
+    expect(DEFAULT_CHECKLIST.some((i) => i.phase === 'kitchen')).toBe(false);
     expect(new Set(DEFAULT_CHECKLIST.map((i) => i.id)).size).toBe(DEFAULT_CHECKLIST.length);
-    expect(DEFAULT_CHECKLIST.every((i) => !i.auto && !i.id.startsWith('auto-'))).toBe(true);
+    expect(DEFAULT_CHECKLIST.every((i) => !i.auto && i.id.startsWith('i-'))).toBe(true);
   });
 });
 
@@ -89,7 +92,7 @@ describe('checklistItems / checklistEntry', () => {
   it('공정 순서대로, 공정 안에서는 기본 항목 다음 자동 항목', () => {
     const plan = withActiveItems(SAMPLE_PLAN, [washer]);
     const items = checklistItems(plan, resolve(plan));
-    expect(items[0].phase).toBe('demolition');
+    expect(items[0].phase).toBe('common');
     const phases = items.map((i) => PHASES.findIndex((p) => p.id === i.phase));
     expect(phases).toEqual([...phases].sort((a, b) => a - b));
     const carpentry = items.filter((i) => i.phase === 'carpentry');
@@ -98,8 +101,8 @@ describe('checklistItems / checklistEntry', () => {
   });
 
   it('저장된 상태를 id로 찾는다', () => {
-    const plan: Plan = { ...SAMPLE_PLAN, checklist: [{ itemId: 'demo-1', checked: true }] };
-    expect(checklistEntry(plan, 'demo-1')).toEqual({ itemId: 'demo-1', checked: true });
-    expect(checklistEntry(plan, 'demo-2')).toBeUndefined();
+    const plan: Plan = { ...SAMPLE_PLAN, checklist: [{ itemId: 'i-demo-1', checked: true }] };
+    expect(checklistEntry(plan, 'i-demo-1')).toEqual({ itemId: 'i-demo-1', checked: true });
+    expect(checklistEntry(plan, 'i-demo-2')).toBeUndefined();
   });
 });

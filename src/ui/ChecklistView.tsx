@@ -22,6 +22,7 @@ export function ChecklistView() {
       </p>
       {PHASES.map((phase) => {
         const list = items.filter((i) => i.phase === phase.id);
+        if (list.length === 0) return null;
         return (
           <section key={phase.id}>
             <h3>
