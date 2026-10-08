@@ -4,7 +4,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## model/
 - `schema.ts` — zod schemas for `Plan` (version 4) and every entity (walls, openings incl. door `middle`/`leaves`, rooms incl. optional `polygon`/`floor`/`wall` finish, items, layouts, fixtures, checklist state, plan-level `finish`); types derive from here.
-- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step.
+- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step. Room area/finish actions: `addRoomArea`, `setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, `dragRoomVertex` (uses `beginDrag`/`endDrag` like `dragEndpoint`).
 - `StoreContext.tsx` — `usePlanStore` / `usePlan` React bindings.
 - `layout.ts` — `activeItems` / `withActiveItems` (only item access path), layout naming, `compareItems` for the A/B overlay.
 - `entities.ts` — `findEntity` across walls/openings/rooms/items/fixtures by id.
