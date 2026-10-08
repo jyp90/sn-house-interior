@@ -4,8 +4,10 @@ import { pathToFileURL } from 'node:url';
 
 // 공개 Pages 번들 검사(배포 설계 §7). 우리 집 프리셋·평면도 이미지가 dist에 섞이거나 base 경로가 빠지면 실패한다.
 export const BASE = '/sn-house-interior/';
+// 프리셋 JSON 유출은 src/main.tsx·src/ui/StructurePanel.tsx 배너 문구의 'private/home-floorplan.jpg'로 잡힌다(프리셋이 켜지면 그 코드가 번들에 남음).
+// 그 배너 문구를 바꾸면 이 검사가 약해진다.
 export const FORBIDDEN_TEXT = ['our-home.local', 'make-our-home', 'home-floorplan.jpg', 'private/'];
-const IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
+const IMAGE_EXT = /\.(jpe?g|png|webp|heic|gif|avif|bmp)$/i;
 const TEXT_EXT = /\.(html|js|css|json|txt|svg|map)$/i;
 
 export type DistFile = { path: string; text: string | null };

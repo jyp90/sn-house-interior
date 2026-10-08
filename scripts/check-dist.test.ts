@@ -17,7 +17,7 @@ describe('findDistProblems', () => {
     expect(findDistProblems(ok())).toEqual([]);
   });
 
-  it.each(['photo.jpg', 'assets/plan.JPEG', 'a.png', 'b.webp'])('이미지 파일 %s를 잡는다', (path) => {
+  it.each(['photo.jpg', 'assets/plan.JPEG', 'a.png', 'b.webp', 'c.heic', 'd.gif'])('이미지 파일 %s를 잡는다', (path) => {
     expect(findDistProblems([...ok(), { path, text: null }])).toEqual([`이미지 파일: ${path}`]);
   });
 
