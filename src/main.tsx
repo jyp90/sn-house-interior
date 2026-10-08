@@ -1,10 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import homePreset from 'virtual:home-preset';
 import type { StoreApi } from 'zustand/vanilla';
 import { App } from './App';
 import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
+import { prepareHomePreset } from './persistence/homePreset';
+import { getDefaultImageStore } from './persistence/images';
 import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
 import { useUi } from './ui/uiStore';
@@ -20,6 +23,15 @@ const stored = readStoredPlan();
 let initialPlan = SAMPLE_PLAN;
 if (stored.status === 'ok') {
   initialPlan = stored.plan;
+} else if (stored.status === 'empty' && homePreset) {
+  // 로컬 dev 전용: 저장된 평면이 없으면 우리 집 기본 평면으로 시작한다(스펙 §15.1)
+  const r = await prepareHomePreset(homePreset, getDefaultImageStore());
+  if (r.ok) {
+    initialPlan = r.plan;
+    if (r.imageMissing) useUi.getState().showBanner({ kind: 'error', text: '우리 집 평면도 이미지를 불러오지 못했습니다. private/home-floorplan.jpg를 확인하세요.' });
+  } else {
+    useUi.getState().showBanner({ kind: 'error', text: `우리 집 기본 평면을 읽을 수 없어 샘플 평면으로 시작합니다: ${r.error}` });
+  }
 } else if (stored.status === 'invalid') {
   const backupKey = backupInvalidPlan(stored.raw);
   useUi.getState().showBanner({

@@ -1,6 +1,8 @@
 import { useRef, useState, type ChangeEvent } from 'react';
+import homePreset from 'virtual:home-preset';
 import { calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { prepareHomePreset } from '../persistence/homePreset';
 import { getDefaultImageStore, saveBackgroundImage } from '../persistence/images';
 import { NumberField } from './fields';
 import { useUi, type Tool } from './uiStore';
@@ -116,8 +118,31 @@ export function StructurePanel() {
     }
   };
 
+  const onHomePreset = async () => {
+    if (!homePreset) return;
+    const r = await prepareHomePreset(homePreset, getDefaultImageStore());
+    if (!r.ok) {
+      ui.showBanner({ kind: 'error', text: `우리 집 기본 평면을 읽을 수 없습니다: ${r.error}` });
+      return;
+    }
+    if (calibration) ui.cancelCalibration();
+    store.getState().replacePlan(r.plan);
+    ui.showBanner(
+      r.imageMissing
+        ? { kind: 'error', text: '우리 집 기본 평면을 불러왔지만 평면도 이미지는 찾지 못했습니다. private/home-floorplan.jpg를 확인하세요.' }
+        : { kind: 'info', text: '우리 집 기본 평면을 불러왔습니다. Ctrl+Z로 되돌릴 수 있습니다.' },
+    );
+  };
+
   return (
     <div className="structure">
+      {homePreset && (
+        <>
+          <h3>기본 평면</h3>
+          <button type="button" onClick={onHomePreset}>우리 집 기본 평면 불러오기</button>
+          <p className="muted">로컬 실행 전용입니다. 현재 평면을 덮어씁니다.</p>
+        </>
+      )}
       <h3>도구</h3>
       <div className="tool-grid">
         {TOOLS.map(([t, label]) => (
