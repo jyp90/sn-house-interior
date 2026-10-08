@@ -472,6 +472,8 @@ subagent에게 맡기지 않는다. 각 Step의 **확인** 표시가 있는 곳�
 
 - [ ] **Step 2: 히스토리 정리 사전 점검** — 다른 세션의 미커밋 변경과 worktree를 확인한다.
 
+**선행 조건(2026-10-08 추가)**: `origin`에 push되지 않은 커밋을 가진 브랜치가 하나라도 남아 있으면 시작하지 않는다(`git -C /Users/jypark/Projects/homefit for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads`에 `[ahead N]`이 없어야 함). 옛 계보 브랜치를 새 repo에 push하면 지운 커밋(`f3726c0`)이 되살아난다. 작업 중인 브랜치(예: `feat/room-finish`)는 먼저 PR로 `main`에 병합한다. `gh auth status`의 scope에 `delete_repo`가 있어야 한다(없으면 사용자가 `gh auth refresh -h github.com -s delete_repo`).
+
 ```bash
 git -C /Users/jypark/Projects/homefit status --short
 git -C /Users/jypark/Projects/homefit worktree list
