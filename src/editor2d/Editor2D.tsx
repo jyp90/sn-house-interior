@@ -19,6 +19,7 @@ import { fitViewBox, panBy, zoomAt, type ViewBox } from './viewBox';
 import { Walls2D } from './Walls2D';
 
 const ZOOM_STEP = 1.15;
+const NO_POINTS: Vec2[] = [];
 
 export function Editor2D() {
   const store = usePlanStore();
@@ -26,11 +27,16 @@ export function Editor2D() {
   const mode = useUi((s) => s.mode);
   const tool = useUi((s) => s.tool);
   const resetKey = useUi((s) => s.viewResetKey);
+  const areaSession = useUi((s) => s.areaSession);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
   const [vb, setVb] = useState<ViewBox>(() => fitViewBox(planBounds({ walls }), 4 / 3));
   const [wallPoints, setWallPoints] = useState<Vec2[]>([]);
-  const [areaPoints, setAreaPoints] = useState<Vec2[]>([]);
+  // 영역 초안은 그린 세션 번호와 함께 둔다. 「영역 (다시) 그리기」로 세션이 바뀐 바로 그 렌더부터 빈 초안으로 보이므로,
+  // 효과(effect)가 비우기 전에 들어온 클릭이 옛 점에 이어 붙는 일이 없다
+  const [areaDraft, setAreaDraft] = useState<{ session: number; points: Vec2[] }>({ session: areaSession, points: [] });
+  const areaPoints = areaDraft.session === areaSession ? areaDraft.points : NO_POINTS;
+  const setAreaPoints = (points: Vec2[]) => setAreaDraft({ session: useUi.getState().areaSession, points });
   const [cursor, setCursor] = useState<Vec2 | null>(null);
   const pan = useRef<{ x: number; y: number; vb: ViewBox } | null>(null);
 
@@ -50,10 +56,10 @@ export function Editor2D() {
     setVb(fitViewBox(planBounds({ walls: store.getState().plan.walls }), size.w / size.h));
   }, [store, size.w, size.h, resetKey]);
 
-  // 도구를 바꾸면 그리던 벽/영역은 버린다
+  // 도구를 바꾸면 그리던 벽/영역은 버린다(새 영역 세션의 초안은 위 areaDraft가 바로 비운다)
   useEffect(() => {
     setWallPoints([]);
-    setAreaPoints([]);
+    setAreaDraft((d) => ({ ...d, points: [] }));
     setCursor(null);
   }, [tool]);
 

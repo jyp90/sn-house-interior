@@ -22,13 +22,7 @@ export function RoomProperties({ room }: { room: Room }) {
       ) : (
         <p className="muted">영역이 없습니다. 바닥재·벽지를 보려면 영역을 그리세요.</p>
       )}
-      <button
-        type="button"
-        onClick={() => {
-          useUi.getState().setTool('select');
-          useUi.getState().startArea(room.id);
-        }}
-      >
+      <button type="button" onClick={() => useUi.getState().startArea(room.id)}>
         {room.polygon ? '영역 다시 그리기' : '영역 그리기'}
       </button>
       <FinishPicker label="바닥재" value={roomFloor(room, plan)} presets={FLOOR_PRESETS} materials={FLOOR_MATERIALS} onChange={(floor) => s.setRoomFinish(room.id, { floor })} />

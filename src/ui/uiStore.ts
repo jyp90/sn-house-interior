@@ -29,6 +29,8 @@ type UiState = {
   historyOpen: boolean;
   compareLayoutId: string | null;
   areaTarget: string | null;
+  // 「영역 그리기」를 누를 때마다 늘어난다. Editor2D가 이 값이 바뀌면 그리던 영역을 버린다(도구가 이미 area여도)
+  areaSession: number;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -68,11 +70,12 @@ export const useUi = create<UiState>()((set, get) => ({
   historyOpen: false,
   compareLayoutId: null,
   areaTarget: null,
+  areaSession: 0,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null }),
   setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null, areaTarget: null }),
-  startArea: (roomId) => set({ tool: 'area', areaTarget: roomId, candidates: null, calibration: null }),
+  startArea: (roomId) => set((s) => ({ tool: 'area', areaTarget: roomId, areaSession: s.areaSession + 1, candidates: null, calibration: null })),
   toggleSnap: () => set({ snap: !get().snap }),
   setDragging: (dragging) => set({ dragging }),
   showBanner: (banner) => set({ banner }),

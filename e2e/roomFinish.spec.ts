@@ -136,3 +136,17 @@ test('벽 위에 놓인 꼭짓점 손잡이도 잡아서 옮길 수 있다', asy
   expect(plan.rooms.find((r) => r.id === room.id)!.polygon![1]).toEqual({ x: 320, y: 120 });
   expect(plan.walls).toEqual(wallsBefore);
 });
+
+test('「영역 다시 그리기」를 다시 누르면 그리던 점을 버리고 새로 그린다', async ({ page }) => {
+  const room = await drawArea(page, SQUARE);
+  const redraw = page.getByTestId('properties-panel').getByRole('button', { name: '영역 다시 그리기' });
+  await redraw.click();
+  await clickPlan(page, { x: 100, y: 100 });
+  await clickPlan(page, { x: 200, y: 100 });
+  await redraw.click();
+  const pts: P[] = [{ x: 60, y: 60 }, { x: 250, y: 60 }, { x: 250, y: 250 }, { x: 60, y: 250 }];
+  for (const p of pts) await clickPlan(page, p);
+  await clickPlan(page, pts[0]);
+  const plan = await getPlan(page);
+  expect(plan.rooms.find((r) => r.id === room.id)!.polygon).toEqual(pts);
+});
