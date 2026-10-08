@@ -11,7 +11,9 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
 | `docs/superpowers/plans/2026-10-08-homefit-03-layouts-export.md` | Plan 3 done |
 | `docs/superpowers/plans/2026-10-08-homefit-04-electrical-checklist-pdf.md` | Plan 4 done |
-| Plan 5 (catalog, builders, deploy) | Not written — spec §14.5-5, §13 |
+| `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
+| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
+| Plan 5 (catalog, builders) | Not written — spec §14.5-5, §13; deploy split out to §17 |
 
 ## Feature map
 | Feature | Code | Spec |
@@ -32,6 +34,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | PNG export | `src/export/planSvg.ts`, `src/export/png.ts`, `src/ui/ExportButtons.tsx` | §14.1 F12 |
 | Contractor PDF (+ quote request pages) | `src/export/pages.ts`, `src/export/pdf.ts`, `src/export/pdfFont.ts`, `src/export/exportPdf.ts`, `src/quote/request.ts`, `src/ui/ExportView.tsx` | §9, §15.3 |
 | Modes, shortcuts | `src/ui/modes.ts`, `src/ui/shortcuts.ts`, `src/ui/uiStore.ts` | §6 |
+| Pages deploy (base path, bundle guard, OFL notice, Actions) | `vite.config.ts` base, `scripts/check-dist.ts`, `public/licenses/`, `.github/workflows/pages.yml`, `playwright.preview.config.ts` | §17 |
 
 ## Task → read this
 | Task | Read |
@@ -43,6 +46,6 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | PDF page or copy | spec §9, §15.3; `src/export/pages.ts` then `src/export/pdf.ts`; svg2pdf pitfalls in `CLAUDE.md` |
 | Checklist items | spec §8, §15.2 (new `i-` ids, fresh wording) |
 | Anything touching `private/` or the home preset | skill `checking-privacy`; spec §3, §15.1; privacy rule in `CLAUDE.md` |
-| Deploy to Pages | spec §2, §14.5-5; user approval and history rewrite first |
+| Deploy to Pages | spec §17 → `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` (§11 approval points) |
 | Commit / finish a round | skills `committing-safely`, `syncing-docs`, `exploratory-qa` |
 | Resume a past round | `archive/*/HANDOFF.md` (local only) |
