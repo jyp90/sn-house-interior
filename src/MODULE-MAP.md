@@ -34,6 +34,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
   `wallPatternSpec(finish)` — wallpaper: 2cm faint linen cross-hatch; paint: null.
 - `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`. `TEXTURE_CM` sizes.
+- `wallFaces.ts` — `wallFaceRooms(obb, rooms)` → `{ front, back }`: room whose polygon contains the probe point `center ± v·(hd+1)` (front = +v = `axes()[1]`, first room in plan order wins); `WALL_TOP_COLOR` `#3f3a33`.
 
 ## persistence/
 - `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 4; v2→v3, v3→v4 bump only).
@@ -56,6 +57,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## scene3d/ (R3F, 1 unit = 1 m)
 - `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §18.3).
 - `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
+- `Walls3D.tsx` — one box per `wallPieces` piece, material array `[+x, -x, top, -y, +z=front, -z=back]`: side faces take `roomWall` of the room they face (`wallFaceRooms`, browser-verified), else plan default; ends/bottom plan default; dark shared `TOP`. Materials cached module-wide by `material:color` (wallpaper map cloned, repeat 1/m); box UVs rescaled to metres per face.
 - `CameraRig.tsx` + `cameraFit.ts` — perspective/top views, fit, fixed PDF poses (`pdfViewPoses`).
 - `DropBridge.tsx` — catalog drag → floor point; `pick3d.ts` intersections → item ids.
 - `CaptureBridge.tsx` — 3D PNG captures for PNG/PDF export.
