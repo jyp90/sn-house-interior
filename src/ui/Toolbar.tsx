@@ -5,6 +5,7 @@ import { downloadText, planToJson, readPlanFile } from '../persistence/file';
 import { ExportButtons } from './ExportButtons';
 import { canSelectInMode, MODES } from './modes';
 import { saveLabel } from './saveLabel';
+import { UpdateButton } from './UpdateButton';
 import { useUi, type Mode, type View } from './uiStore';
 
 const VIEWS: [View, string][] = [
@@ -72,6 +73,7 @@ export function Toolbar() {
       <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
       <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
       <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
+      {import.meta.env.DEV && <UpdateButton />}
       <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
       <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
     </header>

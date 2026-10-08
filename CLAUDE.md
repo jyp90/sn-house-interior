@@ -2,7 +2,7 @@
 
 Personal (family-only) interior planner: rebuild our home in 3D from a floor plan, place real-size furniture and appliances (Samsung-first) by drag, check collisions / wall gaps / door swings, and export a contractor PDF. Single-package Vite + TypeScript + React 19 + react-three-fiber + zustand + zod SPA. No backend: localStorage + IndexedDB + JSON files.
 
-Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13, §15 is the latest round). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
+Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13; §15–§18 are later rounds, latest last). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
 
 ## Commands
 ```bash
@@ -82,4 +82,5 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 
 ## Work in progress (2026-10-08)
 - Pages deploy (spec §17, `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`): plan 5a `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md`; Tasks 1–3 merged to `main` (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK.
+- Self-update button (spec §18): branch `feat/self-update`, checks + QA done, PR open, waits for the user to merge.
 - Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, exploratory QA): not started, waits for the user's model list.

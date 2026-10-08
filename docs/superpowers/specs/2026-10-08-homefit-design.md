@@ -303,3 +303,10 @@ A4 가로, 도면은 SVG 벡터로 삽입한다.
 - 주소 `https://jyp90.github.io/sn-house-interior/`. repo는 공개, GitHub Actions(`deploy-pages`)로 `main` push마다 배포한다. typecheck·unit·번들 검사를 통과해야 배포된다.
 - 공개 전 히스토리에서 지우는 것은 plan 1의 프리셋 좌표 코드 블록뿐이다. §3의 치수·면적은 공개해도 된다(사용자 결정). 옛 커밋이 SHA로 남지 않도록 repo를 지우고 다시 만든다.
 - build일 때만 `base: '/sn-house-interior/'`. Pretendard OFL 고지 파일과 화면 링크를 추가한다.
+
+## 18. 6차 반영: 코드 자동 업데이트 버튼 (2026-10-08)
+
+- 상단 도구 막대에 「업데이트」 버튼을 둔다. `npm run dev`(Vite dev 서버)에서만 보이고, 빌드·Pages에는 버튼도 서버 기능도 없다.
+- 누르면 dev 서버가 현재 브랜치의 원격 추적 브랜치를 `git fetch` 후 fast-forward로만 받는다. 추적 파일에 커밋 안 된 변경이 있거나 로컬 커밋이 갈라져 있으면 받지 않고 이유를 배너로 알린다(같은 폴더를 쓰는 다른 작업 보호).
+- `package.json`·`package-lock.json`이 바뀌었으면 `npm install` 후 의존성을 다시 최적화한다. 그 뒤 dev 서버가 설정을 다시 읽으며 재시작하고, 화면은 서버가 다시 켜진 것(boot 값 변경)을 확인한 뒤 새로고침한다. 편집 중인 평면은 새로고침 전 자동 저장된다.
+- 이미 최신이면 현재 커밋을 알려 준다. 요청은 같은 출처 + 전용 헤더일 때만 받는다(`--host`로 LAN에 열어도 다른 사이트가 실행하지 못하게).
