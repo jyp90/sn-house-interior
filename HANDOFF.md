@@ -4,6 +4,7 @@
 
 ## 지금 상태
 - 2026-10-08 기준. `main`: 계획 1–4, 3차 반영(PR #1, 스펙 §15·§16), 워크플로 문서(PR #3), Pages 배포 준비(PR #4, 스펙 §17) 병합.
+- `docs/preset-outlets`: 우리 집 프리셋(private)에 일반 콘센트 15개 가안 추가(총 21개), 스펙 §15 프리셋 반영 사항 한 줄 보강. 코드 변경 없음.
 - `feat/self-update`(main 미병합): 스펙 §18 「업데이트」 버튼 — dev 서버가 원격 fast-forward → 필요 시 `npm install` → 재시작 → 화면 새로고침.
 - 테스트(`feat/self-update`): typecheck 통과, `npm test` 329 통과·0 skip, e2e 23 통과. 탐색 QA: 가짜 원격(bare repo)으로 실제 pull·서버 재시작·새로고침·평면 유지, 재클릭 시 「이미 최신」, 미커밋 변경 거부, 다른 출처 거부.
 - `feat/quote-docs-home-preset`(PR #1로 main 병합): 스펙 §15 3차 반영 — 현장 검수 체크리스트 교체 `e12f103`, PDF 견적 요청 4쪽 `9b5f3de`, 로컬 전용 우리 집 프리셋 `54cb00b`, 체크리스트 재설계 `a4614c6`, 탭별 참고 문서 링크 `1c74385`, 스펙 §16 중문 도구 `f8c4d82`.
