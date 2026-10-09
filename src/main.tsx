@@ -10,6 +10,7 @@ import { prepareHomePreset } from './persistence/homePreset';
 import { getDefaultImageStore } from './persistence/images';
 import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
+import { syncModeWithHash } from './ui/modeHash';
 import { useUi } from './ui/uiStore';
 import './styles.css';
 
@@ -58,6 +59,7 @@ startAutosave(store, {
     useUi.getState().showBanner({ kind: 'error', text: '브라우저 저장에 실패했습니다. 상단의 "JSON 저장"으로 백업하세요.' });
   },
 });
+syncModeWithHash(useUi);
 if (import.meta.env.DEV) window.__homefit = { store, ui: useUi };
 
 createRoot(document.getElementById('root')!).render(

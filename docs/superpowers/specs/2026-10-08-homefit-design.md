@@ -709,3 +709,14 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 
 - 단위: `geometry/enclosure.test.ts`(직사각형 방 = 마감면 좌표 정확, L자 방, 문이 있는 벽도 경계, 벽이 안 닫힘 → null, 씨앗이 벽 안 → null, 샘플 평면 r1·r2), store `autoRoomPolygon`/`autoRoomPolygons`(실행 취소 1단계, 기존 영역 유지), `home/plan.json` 방 8개 모두 polygon 보유(`persistence/homePreset.test.ts` 또는 새 테스트, `virtual:home-preset`이 null인 테스트 환경에서는 파일을 직접 읽는다).
 - e2e(`e2e/roomFinish.spec.ts` 추가 케이스): 구조 모드 → 「영역 없는 방 자동 인식」 → `room-area-r1`·`room-area-r2` 표시, 거실 polygon이 (10,10)-(344,390) 마감면 좌표 → 방 선택 후 벽지 프리셋 「베이지」 → `plan.rooms[0].wall.material === 'wallpaper'` → 3D 전환 후 캔버스 존재. 배경 이미지 `filter` 스타일 확인은 단위(컴포넌트 렌더) 또는 e2e 중 하나.
+
+## 36. 24차 반영: 페이지 타이틀·탭 URL hash (2026-10-09)
+
+### 36.1 결정
+- 브라우저 탭 제목은 「우리집 인테리어 by 송뇽」(`index.html` `<title>`). 앱 이름·repo 이름(`sn-house-interior`)과 파일명 접두어는 바꾸지 않는다.
+- 상단 탭(모드)은 URL hash에 반영한다: `#structure` `#place` `#electric` `#checklist` `#export`. GitHub Pages 정적 호스팅이라 path 라우팅(새로고침 시 404)은 쓰지 않는다.
+- 로드 시 hash가 있으면 그 모드로 시작, 없거나 모르는 값이면 기본(`place`)으로 시작하고 hash를 `#place`로 맞춘다. 탭 전환은 `history.replaceState`(히스토리에 쌓지 않음), 주소창 hash 변경(`hashchange`)은 모드에 반영한다.
+- 2D/3D 뷰, 선택, 도구 등 나머지 화면 상태는 hash에 넣지 않는다(화면 전용, §6).
+
+### 36.2 코드·테스트
+- `src/ui/modeHash.ts` — `modeFromHash`, `modeToHash`(pure), `syncModeWithHash(ui)`(main.tsx에서 1회 호출). 단위 `modeHash.test.ts`, e2e `e2e/modeHash.spec.ts`(타이틀, 클릭→reload 유지, 직접 hash, 모르는 hash → 배치).
