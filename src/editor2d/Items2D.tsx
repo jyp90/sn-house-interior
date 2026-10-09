@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
-import { missingDedicatedCircuit } from '../electrical/fixtures';
+import { missingDedicatedCircuitCached } from '../electrical/fixtures';
 import { corners, itemObb } from '../geometry/obb';
 import { itemsAtPoint } from '../geometry/pick';
 import { snapToWalls } from '../geometry/snap';
@@ -32,7 +32,7 @@ export function Items2D({ px }: { px: number }) {
   const drag = useRef<Drag | null>(null);
   const interactive = mode === 'place' && tool === 'select';
   const missingCircuit = useMemo(
-    () => (mode === 'electric' ? new Set(missingDedicatedCircuit(plan, (id) => findProduct(plan, id))) : new Set<string>()),
+    () => (mode === 'electric' ? new Set(missingDedicatedCircuitCached(plan)) : new Set<string>()),
     [mode, plan],
   );
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
