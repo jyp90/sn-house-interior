@@ -29,3 +29,4 @@ bash .claude/skills/checking-privacy/scan.sh --dist     # after npm run build, b
 
 ## Known findings
 - Going public: re-check the §17 history list (`--log --all`); preset coordinates no longer count (spec §24).
+- CI: `.github/workflows/privacy.yml` runs the same scans on every PR and `main` push with the terms from the repo secret `PRIVACY_TERMS`. When `private/privacy-terms.txt` changes, update it: `gh secret set PRIVACY_TERMS -R jyp90/sn-house-interior < private/privacy-terms.txt`.
