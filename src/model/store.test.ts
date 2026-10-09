@@ -133,6 +133,13 @@ describe('createPlanStore', () => {
     expect(s.getState().past.length).toBe(pastBefore);
   });
 
+  it('updateCustomProduct는 패치의 필드마다 따로 검사해 유효한 값만 적용한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pid = s.getState().addCustomProduct({ name: '수납장', w: 60, d: 60, h: 90 });
+    s.getState().updateCustomProduct(pid, { w: 80, d: 0 });
+    expect(s.getState().plan.customProducts[0].dims).toEqual({ w: 80, d: 60, h: 90 });
+  });
+
   it('updateCustomProduct는 카탈로그 제품 id는 바꾸지 않는다', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const pastBefore = s.getState().past.length;

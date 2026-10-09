@@ -18,6 +18,8 @@ export function ItemProperties({ item }: { item: Item }) {
   const st = status[item.id];
   const s = store.getState();
   const locked = !!item.locked;
+  const placements = customProduct ? plan.layouts.flatMap((l) => l.items).filter((i) => i.productId === customProduct.id) : [];
+  const dimsLocked = placements.some((i) => i.locked);
   const missingCircuit = useMemo(
     () => missingDedicatedCircuit(plan, (id) => findProduct(plan, id)).includes(item.id),
     [plan, item.id],
@@ -30,7 +32,6 @@ export function ItemProperties({ item }: { item: Item }) {
           <TextField
             label="이름"
             value={customProduct.name}
-            disabled={locked}
             onCommit={(v) => s.updateCustomProduct(customProduct.id, { name: v })}
           />
           <div className="row">
@@ -39,7 +40,7 @@ export function ItemProperties({ item }: { item: Item }) {
               label="폭 W"
               unit="cm"
               value={customProduct.dims.w}
-              disabled={locked}
+              disabled={dimsLocked}
               onCommit={(v) => s.updateCustomProduct(customProduct.id, { w: v })}
             />
             <NumberField
@@ -47,7 +48,7 @@ export function ItemProperties({ item }: { item: Item }) {
               label="깊이 D"
               unit="cm"
               value={customProduct.dims.d}
-              disabled={locked}
+              disabled={dimsLocked}
               onCommit={(v) => s.updateCustomProduct(customProduct.id, { d: v })}
             />
             <NumberField
@@ -55,10 +56,13 @@ export function ItemProperties({ item }: { item: Item }) {
               label="높이 H"
               unit="cm"
               value={customProduct.dims.h}
-              disabled={locked}
+              disabled={dimsLocked}
               onCommit={(v) => s.updateCustomProduct(customProduct.id, { h: v })}
             />
           </div>
+          {placements.length > 1 && (
+            <p className="muted">이 제품을 쓰는 가구 {placements.length}개에 모두 적용됩니다.</p>
+          )}
         </>
       ) : (
         product && (

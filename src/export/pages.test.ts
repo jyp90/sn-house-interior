@@ -63,6 +63,25 @@ describe('buildPdf', () => {
     expect(layoutDrawing.notes.some((l) => l.includes('그란데'))).toBe(false);
   });
 
+  it('배치도 비고 줄은 번호가 1번이 아니어도 맞는 번호를 쓰고, 고정 안내 다음에 붙는다', () => {
+    const noted = { ...sofa('s1'), note: '벽에서 10cm 띄움' };
+    const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [washer, noted]), input);
+    const layoutDrawing = doc.pages[6];
+    if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
+    expect(layoutDrawing.notes.some((l) => l.startsWith('2. 3인 소파 — 벽에서 10cm 띄움'))).toBe(true);
+    const fixedCount = 2; // '번호는 제품 목록의 번호와 같습니다' · '회색 부채꼴은 방문 열림 반경입니다'
+    const noteIndex = layoutDrawing.notes.findIndex((l) => l.startsWith('2. 3인 소파'));
+    expect(noteIndex).toBeGreaterThanOrEqual(fixedCount);
+  });
+
+  it('공백만 있는 메모는 배치도 비고에서 빠진다', () => {
+    const blank = { ...sofa('s1'), note: '   ' };
+    const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [blank]), input);
+    const layoutDrawing = doc.pages[6];
+    if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
+    expect(layoutDrawing.notes.some((l) => l.startsWith('1. 3인 소파'))).toBe(false);
+  });
+
   it('견적 요청 쪽: 공정별 항목은 자재비+시공비 합산 안내와 11개 공정, 예산 금액은 넣지 않는다', () => {
     const doc = buildPdf(SAMPLE_PLAN, input);
     const groups = doc.pages.find((p) => p.title === '견적 요청 — 공정별 항목') as TablePage;
