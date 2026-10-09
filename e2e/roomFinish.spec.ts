@@ -38,6 +38,7 @@ test('영역 도구로 방을 그리고 바닥재를 바꾸면 2D 패턴과 3D�
   expect(room.polygon).toHaveLength(4);
   expect(room.name).toBe('방 3');
   await expect(page.getByTestId(`room-area-${room.id}`)).toBeVisible();
+  await expect(page.getByTestId(`room-area-label-${room.id}`)).toHaveText('(7.8㎡)'); // 260×300cm, 스펙 §37.2
 
   // 「기본 마감」(구조 패널)에도 같은 칩이 있으므로 방 속성 패널로 한정
   const props = page.getByTestId('properties-panel');

@@ -9,6 +9,10 @@ import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 import { FloorPatternDefs, floorFill } from './floorPattern';
 import { markRoomPress } from './roomPress';
+import { areaM2 } from '../geometry/polygon';
+
+export const ROOM_NAME_PX = 20; // 방 이름 글씨(화면 px, 스펙 §37.2)
+export const ROOM_AREA_PX = 14; // 면적 줄 글씨
 
 function VertexHandle({ roomId, index, point, px }: { roomId: string; index: number; point: Vec2; px: number }) {
   const store = usePlanStore();
@@ -92,7 +96,7 @@ export function Rooms2D({ px }: { px: number }) {
           key={r.id}
           x={r.label.x}
           y={r.label.y}
-          fontSize={14 * px}
+          fontSize={ROOM_NAME_PX * px}
           textAnchor="middle"
           dominantBaseline="middle"
           className={r.id === selectedId ? 'room-name room-selected' : 'room-name'}
@@ -107,7 +111,16 @@ export function Rooms2D({ px }: { px: number }) {
               : undefined
           }
         >
-          {r.name}
+          {r.polygon ? (
+            <>
+              <tspan x={r.label.x} dy="-0.55em">{r.name}</tspan>
+              <tspan x={r.label.x} dy="1.35em" fontSize={ROOM_AREA_PX * px} className="room-area-label" data-testid={`room-area-label-${r.id}`}>
+                ({areaM2(r.polygon).toFixed(1)}㎡)
+              </tspan>
+            </>
+          ) : (
+            r.name
+          )}
         </text>
       ))}
     </g>

@@ -12,19 +12,26 @@ export function BackgroundImage({ px }: { px: number }) {
       </text>
     );
   }
-  if (!url) return null;
+  const w = bg.widthPx * bg.cmPerPx;
+  const h = bg.heightPx * bg.cmPerPx;
   return (
-    <image
-      href={url}
-      x={bg.offsetX}
-      y={bg.offsetY}
-      width={bg.widthPx * bg.cmPerPx}
-      height={bg.heightPx * bg.cmPerPx}
-      opacity={bg.opacity}
-      preserveAspectRatio="none"
-      pointerEvents="none"
-      style={{ filter: 'grayscale(1)' }}
-      data-testid="background-image"
-    />
+    <g className="background2d">
+      {/* 도면 이미지 자리의 흰 종이(스펙 §37.1): 이미지를 숨겨도(opacity 0) 평면도 영역은 흰 바탕 */}
+      <rect x={bg.offsetX} y={bg.offsetY} width={w} height={h} className="background-paper" pointerEvents="none" data-testid="background-paper" />
+      {url && (
+        <image
+          href={url}
+          x={bg.offsetX}
+          y={bg.offsetY}
+          width={w}
+          height={h}
+          opacity={bg.opacity}
+          preserveAspectRatio="none"
+          pointerEvents="none"
+          style={{ filter: 'grayscale(1)' }}
+          data-testid="background-image"
+        />
+      )}
+    </g>
   );
 }

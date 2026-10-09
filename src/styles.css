@@ -227,6 +227,7 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .editor2d { position: absolute; inset: 0; }
 .editor2d-svg { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
 .editor2d-bg { fill: #f8f4ee; } /* 2D 캔버스 */
+.background-paper { fill: #ffffff; } /* 도면 이미지 영역의 흰 종이 (스펙 §37.1) */
 .wall { fill: #3f3a33; stroke: #3f3a33; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .wall-selected { fill: var(--accent); stroke: var(--accent); }
 .dim { fill: #3f3a33; pointer-events: none; }
@@ -240,7 +241,8 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .opening-middle-label { fill: #2b6cb0; pointer-events: none; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
 .opening-stray { fill: var(--danger); stroke: #fff; }
-.room-name { fill: #6b5e4b; }
+.room-name { fill: #6b5e4b; font-weight: 500; }
+.room-area-label { font-weight: 400; }
 .room-selected { fill: var(--accent); font-weight: 600; }
 .room-area { stroke: none; cursor: pointer; }
 .room-area-selected { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
