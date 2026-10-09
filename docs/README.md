@@ -5,7 +5,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Specs and plans
 | Doc | Status |
 |---|---|
-| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset (latest) |
+| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §26 custom box editing / item notes (latest) |
 | `docs/references/2026-10-08-planner5d-research-design.md` | User-provided research; source of requirement IDs F01–F12 |
 | `docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` | Plan 1 done |
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
@@ -20,7 +20,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Feature map
 | Feature | Code | Spec |
 |---|---|---|
-| Plan model, schema versions, migration | `src/model/schema.ts`, `src/persistence/parse.ts` | §5, §14.4 |
+| Plan model, schema versions (v6), migration | `src/model/schema.ts`, `src/persistence/parse.ts` | §5, §14.4, §26 |
 | Store, undo/redo, selection | `src/model/store.ts`, `src/model/StoreContext.tsx` | §4, §6 |
 | Autosave, save status, JSON open/save | `src/persistence/storage.ts`, `src/persistence/file.ts`, `src/ui/saveLabel.ts` | §6 저장, §10, §14.1 F11 |
 | Revision history (20 snapshots) | `src/persistence/revisions.ts`, `src/ui/HistoryPanel.tsx` | §14.1 F10 |
