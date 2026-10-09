@@ -321,4 +321,29 @@ describe('planSvg 옵션', () => {
   it('pdfFileName', () => {
     expect(pdfFileName('샘플 평면', 'A안')).toBe('sn-house-interior-샘플-평면-A안.pdf');
   });
+
+  describe('벽 끝에 걸치거나 벗어난 개구부', () => {
+    const wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 };
+    const door = (over: Partial<(typeof SAMPLE_PLAN)['openings'][number]>) => ({
+      id: 'o', wallId: 'w', kind: 'door' as const, offset: 100, width: 80, height: 210, sill: 0, hinge: 'start' as const, swingIn: true, ...over,
+    });
+    const base = { ...SAMPLE_PLAN, walls: [wall], rooms: [], fixtures: [] };
+
+    it('벽 끝에 걸치는 문은 잘린 구간 안에 폭 글자를 둔다', () => {
+      const plan = { ...base, openings: [door({ offset: 350, width: 90 })] };
+      const { svg } = planSvg(plan, { header: false, items: 'none', dimensionLines: true });
+      const m = svg.match(/<text x="([-\d.]+)" y="[-\d.]+" font-size="11"[^>]*>D1 ≈90<\/text>/);
+      expect(m).not.toBeNull();
+      expect(Number(m![1])).toBeGreaterThanOrEqual(350);
+      expect(Number(m![1])).toBeLessThanOrEqual(400);
+      expect(svg).toContain('>350–400<');
+    });
+
+    it('벽 밖으로 완전히 벗어난 문은 개구부 사각형도 치수 글자도 그리지 않는다', () => {
+      const plan = { ...base, openings: [door({ offset: 500, width: 90 })] };
+      const { svg } = planSvg(plan, { header: false, items: 'none', dimensionLines: true });
+      expect(svg).not.toContain('fill="#ffffff" stroke="#3f3a33" stroke-width="1"');
+      expect(svg).not.toContain('≈90</text>');
+    });
+  });
 });

@@ -2,7 +2,7 @@ import { useContext, useRef, type PointerEvent } from 'react';
 import { doorLeaves } from '../geometry/clearance';
 import { corners } from '../geometry/obb';
 import { fitOpening } from '../geometry/structure';
-import { openingObb, wallDir } from '../geometry/walls';
+import { clampToWall, openingObb, wallDir, wallLength } from '../geometry/walls';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
 import { pointsAttr, sectorPath } from './svg';
@@ -79,8 +79,10 @@ export function Openings2D({ px }: { px: number }) {
         const w = byId.get(o.wallId);
         if (!w) return null;
         const u = wallDir(w);
-        const a = { x: w.a.x + u.x * o.offset, y: w.a.y + u.y * o.offset };
-        const b = { x: a.x + u.x * o.width, y: a.y + u.y * o.width };
+        const [s, e] = clampToWall(o, wallLength(w));
+        const a = { x: w.a.x + u.x * s, y: w.a.y + u.y * s };
+        const b = { x: w.a.x + u.x * e, y: w.a.y + u.y * e };
+        const gap = openingObb(w, o);
         const leaves = o.kind === 'door' ? doorLeaves(w, o) : [];
         const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -94,7 +96,7 @@ export function Openings2D({ px }: { px: number }) {
             onPointerUp={interactive ? onUp : undefined}
             onPointerCancel={interactive ? onUp : undefined}
           >
-            <polygon points={pointsAttr(corners(openingObb(w, o)))} className="opening-gap" data-testid={`opening-gap-${o.id}`} />
+            {gap && <polygon points={pointsAttr(corners(gap))} className="opening-gap" data-testid={`opening-gap-${o.id}`} />}
             {o.kind === 'window' && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="opening-window" />}
             {o.kind === 'opening' && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="opening-open" />}
             {leaves.map((l, i) => (

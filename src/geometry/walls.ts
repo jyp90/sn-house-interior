@@ -89,6 +89,8 @@ export function planWallObbs(plan: Plan): OBB[] {
   return planWallObbsWithIds(plan).map((x) => x.obb);
 }
 
-export function openingObb(w: Wall, o: Opening): OBB {
-  return segmentObb(w, o.offset, o.offset + o.width);
+export function openingObb(w: Wall, o: Opening): OBB | null {
+  const [s, e] = clampToWall(o, wallLength(w));
+  if (e <= s) return null;
+  return segmentObb(w, s, e);
 }

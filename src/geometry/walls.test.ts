@@ -61,6 +61,16 @@ describe('openingObb', () => {
   it('개구부 구간을 벽 두께의 사각형으로', () => {
     expect(openingObb(wall, opening({}))).toMatchObject({ cx: 140, cy: 0, hw: 40, hd: 5 });
   });
+
+  it('벽 끝에 걸쳐 잘리는 개구부는 잘린 구간만 사각형으로', () => {
+    // offset 350, width 90 → 350~440인데 벽은 400까지: 350~400만
+    const obb = openingObb(wall, opening({ offset: 350, width: 90 }));
+    expect(obb).toMatchObject({ cx: 375, cy: 0, hw: 25, hd: 5 });
+  });
+
+  it('벽 밖으로 완전히 벗어난 개구부는 null', () => {
+    expect(openingObb(wall, opening({ offset: 500, width: 90 }))).toBeNull();
+  });
 });
 
 describe('planWallObbsWithIds', () => {
