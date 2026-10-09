@@ -5,7 +5,6 @@ import { downloadText, planToJson, readPlanFile } from '../persistence/file';
 import { ExportButtons } from './ExportButtons';
 import { canSelectInMode, MODES } from './modes';
 import { saveLabel } from './saveLabel';
-import { isSmallScreen, MOBILE_NOTE } from './smallScreen';
 import { UpdateButton } from './UpdateButton';
 import { useUi, type Mode, type View } from './uiStore';
 
@@ -100,7 +99,6 @@ export function Toolbar() {
           {import.meta.env.DEV && <UpdateButton />}
           <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
           <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
-          {isSmallScreen(window.screen.width) && <span className="toolbar-note" data-testid="mobile-note">{MOBILE_NOTE}</span>}
       </>
     </header>
   );

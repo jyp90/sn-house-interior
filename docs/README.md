@@ -47,11 +47,11 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | White floor-plan paper, 20px room labels with `(N㎡)` | `src/editor2d/BackgroundImage.tsx`, `src/editor2d/Rooms2D.tsx`, `src/styles.css`, `home/plan.json` (`opacity` 0) | §37 |
 | No placement outside the house (labels, area points, fixtures; fixture drag clamp) | `src/geometry/houseArea.ts`, `src/editor2d/tools.ts` (`HOUSE_BOUND_TOOLS`), `src/editor2d/Fixtures2D.tsx` | §38 |
 | Home preset v2 (9 rooms, 18cm walls), preset-update notice | `home/plan.json`, `private/make-our-home.mjs` (v2, local only), `src/persistence/homePreset.ts` (`presetFingerprint`, `markPresetSeen`), `src/main.tsx` | §39 |
-| Entry PIN gate (0809 hash, 5 fails → 1 h lock, 7-day unlock, blur-submit, device-width viewport while locked, `?gate=1` in dev) | `src/persistence/gate.ts`, `src/ui/Gate.tsx`, `src/main.tsx`, `e2e/gate.spec.ts` | §42, §46 |
+| Entry PIN gate (0809 hash, 5 fails → 1 h lock, 7-day unlock, blur-submit, `?gate=1` in dev) | `src/persistence/gate.ts`, `src/ui/Gate.tsx`, `src/main.tsx`, `e2e/gate.spec.ts` | §42, §46 |
 | Modes, shortcuts | `src/ui/modes.ts`, `src/ui/shortcuts.ts`, `src/ui/uiStore.ts`, `src/App.tsx` | §6 |
 | GitHub sync (cross-device plan) | `src/persistence/github.ts`, `src/persistence/sync.ts`, `src/ui/SyncPanel.tsx`, `src/main.tsx` startup check, `e2e/sync.spec.ts` | §45 |
 | Sliding middle door (`leaves: 'sliding'`: no swing, 2D/PDF leaf line + slide arrow, 3D offset glass leaf, 창호 일람 「슬라이딩」) | `src/geometry/clearance.ts` `slidingLeaf`/`slideArrow`, `src/editor2d/Openings2D.tsx`, `src/export/planSvg.ts`, `src/scene3d/openingParts.ts`, `src/ui/properties/OpeningProperties.tsx`, `home/plan.json` `middle-door` | §46 |
-| Mobile = desktop layout, 2D pinch zoom | `src/ui/smallScreen.ts`, `src/main.tsx`, `src/editor2d/viewBox.ts` `pinchViewBox`, `src/editor2d/Editor2D.tsx`, `e2e/mobile.spec.ts` | §44 (§33 withdrawn) |
+| Mobile one-column layout, 2D pinch zoom | `src/styles.css` `@media (max-width: 820px)`, `src/editor2d/viewBox.ts` `pinchViewBox`, `src/editor2d/Editor2D.tsx`, `e2e/mobile.spec.ts` | §48, §44.2 (§33 withdrawn) |
 | Page title, tab ↔ URL hash (`#place` …) | `index.html`, `src/ui/modeHash.ts`, `src/main.tsx` | §36 |
 | Custom box editing, item notes (`updateCustomProduct`, `Item.note`) | `src/model/store.ts`, `src/ui/properties/ItemProperties.tsx`, `src/export/pages.ts` | §26 |
 | Validation cache per plan, door-swing wall clamp, PDF emoji strip, first-frame viewport fill | `src/model/useValidation.ts`, `src/geometry/clearance.ts`, `src/export/pages.ts` `pdfSafe`, `src/styles.css` | §30 |
