@@ -26,11 +26,24 @@ export function snapToEndpoint(p: Vec2, endpoints: Vec2[], maxDist = ENDPOINT_SN
   return best ? { ...best } : null;
 }
 
-export function wallToolPoint(raw: Vec2, prev: Vec2 | null, endpoints: Vec2[], snap: boolean): Vec2 {
+// 우선순위 그룹: 앞 그룹에 반경 안 후보가 있으면 뒤 그룹은 보지 않는다
+export function snapToEndpointGroups(p: Vec2, groups: Vec2[][], maxDist = ENDPOINT_SNAP_CM): Vec2 | null {
+  for (const g of groups) {
+    const hit = snapToEndpoint(p, g, maxDist);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+export function groupedToolPoint(raw: Vec2, prev: Vec2 | null, groups: Vec2[][], snap: boolean): Vec2 {
   if (!snap) return round(raw);
-  const endpoint = snapToEndpoint(raw, endpoints);
+  const endpoint = snapToEndpointGroups(raw, groups);
   if (endpoint) return endpoint;
   return prev ? snapAngle(prev, raw) : round(raw);
+}
+
+export function wallToolPoint(raw: Vec2, prev: Vec2 | null, endpoints: Vec2[], snap: boolean): Vec2 {
+  return groupedToolPoint(raw, prev, [endpoints], snap);
 }
 
 function sharedEndpoint(a: Wall, b: Wall): Vec2 | null {
@@ -78,6 +91,44 @@ export function wallFaceCorners(walls: Wall[]): Vec2[] {
           const pt = lineIntersect(fa, fb);
           if (!pt) continue;
           if (Math.hypot(pt.x - shared.x, pt.y - shared.y) > 1.5 * maxThick) continue;
+          const rp = round(pt);
+          const key = `${rp.x},${rp.y}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          result.push(rp);
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// T자 접합부: 한 벽(줄기)의 끝점이 다른 벽(본체) 중심선의 중간에 닿을 때,
+// 줄기의 두 마감면과 본체의 줄기 쪽 마감면이 만나는 안쪽 모서리
+export function tJunctionCorners(walls: Wall[]): Vec2[] {
+  const result: Vec2[] = [];
+  const seen = new Set<string>();
+  for (const stem of walls) {
+    if (wallLength(stem) === 0) continue;
+    for (const [end, other] of [[stem.a, stem.b], [stem.b, stem.a]] as const) {
+      for (const main of walls) {
+        if (main === stem) continue;
+        const len = wallLength(main);
+        if (len === 0) continue;
+        const u = wallDir(main);
+        const n = { x: -u.y, y: u.x };
+        const rx = end.x - main.a.x;
+        const ry = end.y - main.a.y;
+        const t = rx * u.x + ry * u.y;
+        const perp = rx * n.x + ry * n.y;
+        if (Math.abs(perp) > 1 || t <= 1 || t >= len - 1) continue;
+        const side = Math.sign((other.x - main.a.x) * n.x + (other.y - main.a.y) * n.y);
+        if (side === 0) continue;
+        const half = (main.thickness / 2) * side;
+        const face: Line = { p: { x: main.a.x + n.x * half, y: main.a.y + n.y * half }, d: u };
+        for (const f of faceLines(stem)) {
+          const pt = lineIntersect(f, face);
+          if (!pt) continue;
           const rp = round(pt);
           const key = `${rp.x},${rp.y}`;
           if (seen.has(key)) continue;

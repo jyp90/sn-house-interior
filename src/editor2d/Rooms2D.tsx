@@ -2,8 +2,8 @@ import { useContext, useRef, type PointerEvent } from 'react';
 import type { Vec2, Room } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
-import { snapToEndpoint } from './snapping';
-import { areaSnapPoints } from './tools';
+import { snapToEndpointGroups } from './snapping';
+import { areaSnapGroups } from './tools';
 import { pointsAttr } from './svg';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
@@ -27,7 +27,8 @@ function VertexHandle({ roomId, index, point, px }: { roomId: string; index: num
     if (!dragging.current || !svgRef.current) return;
     const raw = clientToPlan(svgRef.current, e.clientX, e.clientY);
     const s = store.getState();
-    const to = useUi.getState().snap ? (snapToEndpoint(raw, areaSnapPoints(s.plan.walls)) ?? raw) : raw;
+    const g = areaSnapGroups(s.plan.walls);
+    const to = useUi.getState().snap ? (snapToEndpointGroups(raw, [g.faces, g.rest]) ?? raw) : raw;
     s.dragRoomVertex(roomId, index, to);
   };
   const onUp = () => {

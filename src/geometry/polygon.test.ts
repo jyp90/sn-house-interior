@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { areaM2, closesPolygon, isValidPolygon, pointInPolygon, polygonArea, polygonCentroid } from './polygon';
+import { areaM2, closesPolygon, isSimplePolygon, isValidPolygon, pointInPolygon, polygonArea, polygonCentroid } from './polygon';
 
 const rect = [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 300 }, { x: 0, y: 300 }];
 // L자: 400×300에서 오른쪽 아래 200×150을 뺀 모양
@@ -30,6 +30,17 @@ describe('polygon', () => {
     expect(isValidPolygon(rect.slice(0, 2))).toBe(false);
     expect(isValidPolygon([{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 5, y: 5 }])).toBe(false);
     expect(isValidPolygon([{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 200, y: 0 }])).toBe(false);
+  });
+  it('단순 다각형: 변끼리 교차하거나 꼭짓점이 닿으면 거부', () => {
+    expect(isSimplePolygon(rect)).toBe(true);
+    expect(isSimplePolygon(L)).toBe(true);
+    expect(isSimplePolygon([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 10 }])).toBe(true);
+    expect(isSimplePolygon([{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 10, y: 0 }, { x: 0, y: 10 }])).toBe(false);
+    expect(isSimplePolygon([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 5, y: 5 }, { x: 0, y: 10 }, { x: 5, y: 5 }])).toBe(false);
+    // 꼭짓점이 다른 변 위에 닿는 경우(접촉)도 거부
+    expect(isSimplePolygon([{ x: 0, y: 0 }, { x: 20, y: 0 }, { x: 20, y: 20 }, { x: 10, y: 0 }, { x: 0, y: 20 }])).toBe(false);
+    // 인접하지 않은 변이 일직선으로 겹침
+    expect(isSimplePolygon([{ x: 0, y: 0 }, { x: 30, y: 0 }, { x: 30, y: 10 }, { x: 20, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 10 }])).toBe(false);
   });
   it('첫 점 근처 클릭이면 닫는다', () => {
     expect(closesPolygon({ x: 10, y: 8 }, { x: 0, y: 0 }, 15)).toBe(true);

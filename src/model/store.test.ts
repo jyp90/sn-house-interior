@@ -615,6 +615,20 @@ describe('room areas and finishes', () => {
     expect(s.getState().setRoomPolygon('r1', [{ x: 0, y: 0 }])).toBe(false);
   });
 
+  it('변이 교차하는 다각형은 addRoomArea·setRoomPolygon·dragRoomVertex 모두 거부한다', () => {
+    const bowTie = [{ x: 10, y: 10 }, { x: 340, y: 390 }, { x: 340, y: 10 }, { x: 10, y: 200 }]; // 면적≠0인 나비꼴
+    const s = createPlanStore(SAMPLE_PLAN);
+    expect(s.getState().addRoomArea(bowTie)).toBeNull();
+    expect(s.getState().setRoomPolygon('r1', bowTie)).toBe(false);
+    expect(s.getState().plan.rooms[0].polygon).toBeUndefined();
+    expect(s.getState().past).toHaveLength(0);
+    s.getState().setRoomPolygon('r1', sq);
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 1, { x: 10, y: 450 }); // 1번 점을 3번 점 너머로 → 변 교차
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].polygon).toEqual(sq);
+  });
+
   it('setRoomFinish / setPlanFinish', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     s.getState().setRoomFinish('r1', { floor: { material: 'tile', color: '#B8B5AE' } });
