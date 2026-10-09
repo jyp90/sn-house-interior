@@ -6,7 +6,8 @@ import type { Vec2 } from '../model/schema';
 export type Banner = { kind: 'error' | 'info'; text: string };
 export type Mode = 'structure' | 'place' | 'electric' | 'checklist' | 'export';
 export type View = '2d' | 'persp' | 'top';
-export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture' | 'area';
+export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture' | 'area' | 'measure';
+export type Measure = { a: Vec2; b: Vec2 | null };
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };
 export type Candidates = { ids: string[]; clientX: number; clientY: number };
 export type WallDraft = { thickness: number; height: number };
@@ -31,6 +32,7 @@ type UiState = {
   areaTarget: string | null;
   // 「영역 그리기」를 누를 때마다 늘어난다. Editor2D가 이 값이 바뀌면 그리던 영역을 버린다(도구가 이미 area여도)
   areaSession: number;
+  measure: Measure | null;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -51,6 +53,8 @@ type UiState = {
   setRoomDraft(patch: Partial<RoomDraft>): void;
   setHistoryOpen(open: boolean): void;
   setCompareLayout(id: string | null): void;
+  measureClick(p: Vec2): void;
+  clearMeasure(): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -71,11 +75,12 @@ export const useUi = create<UiState>()((set, get) => ({
   compareLayoutId: null,
   areaTarget: null,
   areaSession: 0,
-  setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null }),
+  measure: null,
+  setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null, measure: null }),
   setView: (view) => set({ view, candidates: null }),
-  setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null }),
-  setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null, areaTarget: null }),
-  startArea: (roomId) => set((s) => ({ tool: 'area', areaTarget: roomId, areaSession: s.areaSession + 1, candidates: null, calibration: null })),
+  setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null, measure: null }),
+  setFixtureTool: (kind) => set({ tool: 'fixture', fixtureKind: kind, candidates: null, calibration: null, areaTarget: null, measure: null }),
+  startArea: (roomId) => set((s) => ({ tool: 'area', areaTarget: roomId, areaSession: s.areaSession + 1, candidates: null, calibration: null, measure: null })),
   toggleSnap: () => set({ snap: !get().snap }),
   setDragging: (dragging) => set({ dragging }),
   showBanner: (banner) => set({ banner }),
@@ -84,7 +89,7 @@ export const useUi = create<UiState>()((set, get) => ({
   showCandidates: (candidates) => set({ candidates }),
   clearCandidates: () => set({ candidates: null }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
-  startCalibration: (target) => set({ tool: 'calibrate', calibration: { target, points: [] }, candidates: null }),
+  startCalibration: (target) => set({ tool: 'calibrate', calibration: { target, points: [] }, candidates: null, measure: null }),
   addCalibrationPoint: (p) => {
     const c = get().calibration;
     if (!c || c.points.length >= 2) return;
@@ -95,4 +100,13 @@ export const useUi = create<UiState>()((set, get) => ({
   setRoomDraft: (patch) => set({ roomDraft: { ...get().roomDraft, ...patch } }),
   setHistoryOpen: (open) => set({ historyOpen: open }),
   setCompareLayout: (id) => set({ compareLayoutId: id }),
+  measureClick: (p) => {
+    const m = get().measure;
+    if (!m || m.b !== null) {
+      set({ measure: { a: p, b: null } });
+      return;
+    }
+    set({ measure: { a: m.a, b: p } });
+  },
+  clearMeasure: () => set({ measure: null }),
 }));

@@ -57,4 +57,28 @@ describe('useUi', () => {
     useUi.getState().startArea('r1');
     expect(useUi.getState()).toMatchObject({ tool: 'area', areaTarget: 'r1', areaSession: first + 1 });
   });
+
+  it('측정 클릭은 시작점 → 끝점 → 새 시작점 순서로 쌓인다', () => {
+    const ui = useUi.getState();
+    ui.setTool('measure');
+    ui.measureClick({ x: 0, y: 0 });
+    expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: null });
+    ui.measureClick({ x: 300, y: 0 });
+    expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: { x: 300, y: 0 } });
+    ui.measureClick({ x: 50, y: 50 });
+    expect(useUi.getState().measure).toEqual({ a: { x: 50, y: 50 }, b: null });
+    ui.clearMeasure();
+    expect(useUi.getState()).toMatchObject({ measure: null, tool: 'measure' });
+  });
+
+  it('도구나 모드를 바꾸면 측정이 지워진다', () => {
+    useUi.getState().setTool('measure');
+    useUi.getState().measureClick({ x: 0, y: 0 });
+    useUi.getState().setTool('select');
+    expect(useUi.getState().measure).toBeNull();
+    useUi.getState().setTool('measure');
+    useUi.getState().measureClick({ x: 0, y: 0 });
+    useUi.getState().setMode('structure');
+    expect(useUi.getState()).toMatchObject({ measure: null, tool: 'select' });
+  });
 });

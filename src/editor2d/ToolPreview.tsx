@@ -6,7 +6,7 @@ import { useUi } from '../ui/uiStore';
 import { imagePxToPlan } from './calibration';
 import { wallToolPoint } from './snapping';
 import { pointsAttr } from './svg';
-import { areaSnapPoints } from './tools';
+import { areaSnapPoints, measureToolPoint } from './tools';
 
 export function ToolPreview({
   px,
@@ -23,8 +23,10 @@ export function ToolPreview({
   const snap = useUi((s) => s.snap);
   const room = useUi((s) => s.roomDraft);
   const calibration = useUi((s) => s.calibration);
+  const measure = useUi((s) => s.measure);
   const walls = usePlan((s) => s.plan.walls);
   const bg = usePlan((s) => s.plan.background);
+  const plan = usePlan((s) => s.plan);
   const areaSnap = useMemo(() => areaSnapPoints(walls), [walls]);
 
   if (tool === 'wall' && wallPoints.length > 0) {
@@ -81,6 +83,24 @@ export function ToolPreview({
         {pts.map((p, i) => (
           <circle key={i} cx={p.x} cy={p.y} r={5 * px} className="calib-point" />
         ))}
+      </g>
+    );
+  }
+  if (tool === 'measure' && measure) {
+    const end = measure.b ?? (cursor ? measureToolPoint(cursor, measure.a, plan, snap) : null);
+    if (!end) return <g className="tool-preview"><circle cx={measure.a.x} cy={measure.a.y} r={4 * px} /></g>;
+    const dx = Math.abs(end.x - measure.a.x);
+    const dy = Math.abs(end.y - measure.a.y);
+    const dist = Math.round(Math.hypot(dx, dy));
+    const label = dx > 0 && dy > 0 ? `${dist}cm (${dx}×${dy})` : `${dist}cm`;
+    const mx = (measure.a.x + end.x) / 2;
+    const my = (measure.a.y + end.y) / 2;
+    return (
+      <g className="tool-preview measure" data-testid="measure">
+        <line x1={measure.a.x} y1={measure.a.y} x2={end.x} y2={end.y} className="measure-line" />
+        <circle cx={measure.a.x} cy={measure.a.y} r={4 * px} />
+        <circle cx={end.x} cy={end.y} r={4 * px} />
+        <text x={mx} y={my - 8 * px} fontSize={12 * px} textAnchor="middle" className="measure-label" data-testid="measure-label">{label}</text>
       </g>
     );
   }

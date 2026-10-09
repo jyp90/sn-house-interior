@@ -84,6 +84,10 @@ export function Editor2D() {
           return;
         }
       }
+      if (e.key === 'Escape' && tool === 'measure') {
+        useUi.getState().clearMeasure();
+        return;
+      }
       if (e.key === 'Escape') {
         const ui = useUi.getState();
         ui.clearCandidates();
