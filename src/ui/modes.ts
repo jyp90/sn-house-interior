@@ -1,11 +1,12 @@
 import type { Entity } from '../model/entities';
 import type { Mode, View } from './uiStore';
 
+// 탭 순서: 상담 흐름대로 체크리스트 → 구조 → 전기 → 배치 → 내보내기 (spec §41). 기본 모드는 여전히 'place'
 export const MODES: [Mode, string][] = [
-  ['structure', '구조'],
-  ['place', '배치'],
-  ['electric', '전기'],
   ['checklist', '체크리스트'],
+  ['structure', '구조'],
+  ['electric', '전기'],
+  ['place', '배치'],
   ['export', '내보내기'],
 ];
 

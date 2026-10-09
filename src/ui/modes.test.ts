@@ -4,10 +4,10 @@ import { canSelectInMode, isPageMode, MODES, shows2d } from './modes';
 describe('modes', () => {
   it('모드 탭 순서와 이름', () => {
     expect(MODES).toEqual([
-      ['structure', '구조'],
-      ['place', '배치'],
-      ['electric', '전기'],
       ['checklist', '체크리스트'],
+      ['structure', '구조'],
+      ['electric', '전기'],
+      ['place', '배치'],
       ['export', '내보내기'],
     ]);
   });
