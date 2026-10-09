@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import homePreset from 'virtual:home-preset';
-import { calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
+import { backgroundForNewImage, calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
 import { FLOOR_MATERIALS, FinishPicker, WALL_MATERIALS } from './FinishPicker';
 import { FLOOR_PRESETS, planFinish, WALL_PRESETS } from '../materials/presets';
 import { usePlan, usePlanStore } from '../model/StoreContext';
@@ -117,8 +117,12 @@ export function StructurePanel() {
     }
     try {
       const img = await saveBackgroundImage(getDefaultImageStore(), file);
-      store.getState().setBackground({ ...img, cmPerPx: 1, offsetX: 0, offsetY: 0, rotation: 0, opacity: 0.5 });
-      ui.showBanner({ kind: 'info', text: '배경 이미지를 불러왔습니다. "축척 보정"으로 실제 길이를 맞추세요.' });
+      const r = backgroundForNewImage(store.getState().plan.background, img);
+      store.getState().setBackground(r.background);
+      ui.showBanner({
+        kind: 'info',
+        text: r.kept ? '배경 이미지를 바꿨습니다. 기존 축척·위치를 유지합니다.' : '배경 이미지를 불러왔습니다. "축척 보정"으로 실제 길이를 맞추세요.',
+      });
     } catch {
       ui.showBanner({ kind: 'error', text: '이미지를 불러오지 못했습니다.' });
     }

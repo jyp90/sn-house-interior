@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Background } from '../model/schema';
-import { calibrationResult, cmPerPxFrom, imagePxToPlan, planToImagePx, scaleText } from './calibration';
+import { backgroundForNewImage, calibrationResult, cmPerPxFrom, imagePxToPlan, planToImagePx, scaleText } from './calibration';
 
 const bg: Background = { imageRef: 'i', widthPx: 800, heightPx: 600, cmPerPx: 1, offsetX: 10, offsetY: 20, rotation: 0, opacity: 0.5 };
 
@@ -50,5 +50,27 @@ describe('scaleText', () => {
     const primary = calibrationResult(bg, { target: 'primary', points: [{ x: 0, y: 0 }, { x: 400, y: 0 }] }, 400)!.background;
     const ok = calibrationResult(primary, { target: 'check', points: [{ x: 0, y: 0 }, { x: 0, y: 300 }] }, 301)!.background;
     expect(scaleText(ok)).toBe('축척 1px = 1.00cm (기준 400cm) · 검증 길이와 일치');
+  });
+});
+
+describe('backgroundForNewImage', () => {
+  const bg: Background = {
+    imageRef: 'image-old', widthPx: 923, heightPx: 676, cmPerPx: 1.41, offsetX: -107, offsetY: -130, rotation: 0, opacity: 0.5,
+    calibration: { a: { x: 76, y: 72 }, b: { x: 790, y: 72 }, lengthCm: 1010 },
+  };
+  it('같은 픽셀 크기면 축척·위치·보정을 유지하고 이미지만 바꾼다', () => {
+    const r = backgroundForNewImage(bg, { imageRef: 'image-new', widthPx: 923, heightPx: 676 });
+    expect(r.kept).toBe(true);
+    expect(r.background).toEqual({ ...bg, imageRef: 'image-new' });
+  });
+  it('크기가 다르면 축척 1, 위치 0으로 초기화한다', () => {
+    const r = backgroundForNewImage(bg, { imageRef: 'image-new', widthPx: 100, heightPx: 50 });
+    expect(r.kept).toBe(false);
+    expect(r.background).toEqual({ imageRef: 'image-new', widthPx: 100, heightPx: 50, cmPerPx: 1, offsetX: 0, offsetY: 0, rotation: 0, opacity: 0.5 });
+  });
+  it('기존 배경이 없으면 초기화한다', () => {
+    const r = backgroundForNewImage(undefined, { imageRef: 'image-new', widthPx: 923, heightPx: 676 });
+    expect(r.kept).toBe(false);
+    expect(r.background.cmPerPx).toBe(1);
   });
 });
