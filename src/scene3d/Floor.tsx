@@ -1,4 +1,4 @@
-import { Grid, Html } from '@react-three/drei';
+import { Grid } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { planBounds } from '../geometry/bounds';
@@ -8,6 +8,7 @@ import { usePlan, usePlanStore } from '../model/StoreContext';
 import type { FloorFinish, Room, Vec2 } from '../model/schema';
 import { cmToM } from '../model/units';
 import { useUi } from '../ui/uiStore';
+import { LabelProjector } from './LabelProjector';
 import { toWorld } from './units';
 
 function RoomFloor({ polygon, finish }: { polygon: Vec2[]; finish: FloorFinish }) {
@@ -63,6 +64,7 @@ export function Floor() {
   const d = cmToM(b.maxY - b.minY + margin * 2);
   const cx = cmToM((b.minX + b.maxX) / 2);
   const cz = cmToM((b.minY + b.maxY) / 2);
+  const labels = useMemo(() => rooms.map((r) => ({ key: r.id, text: r.name, position: toWorld(r.label, 1) })), [rooms]);
   return (
     <group>
       <mesh
@@ -83,11 +85,7 @@ export function Floor() {
         .map((r) => (
           <RoomFloor key={r.id} polygon={r.polygon} finish={roomFloor(r, { finish })} />
         ))}
-      {rooms.map((r) => (
-        <Html key={r.id} position={toWorld(r.label, 1)} center className="room-label">
-          {r.name}
-        </Html>
-      ))}
+      <LabelProjector kind="room" labels={labels} />
     </group>
   );
 }

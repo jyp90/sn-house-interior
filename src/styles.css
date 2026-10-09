@@ -23,6 +23,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'M
 .viewport-fallback { display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text-2); }
 .room-label { font-size: 13px; color: var(--text-2); background: var(--panel-translucent); padding: 1px 6px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
 .dist-label { font-size: 11px; background: var(--accent); color: var(--on-accent); padding: 1px 5px; border-radius: 4px; white-space: nowrap; pointer-events: none; }
+.label-3d { position: absolute; transform: translate(-50%, -50%); }
 
 /* 상단 도구 막대 */
 .toolbar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 14px; background: linear-gradient(var(--panel), var(--panel-2)); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); position: relative; z-index: 5; }

@@ -9,6 +9,7 @@ import { CaptureBridge } from './CaptureBridge';
 import { DropBridge, screenToFloor } from './DropBridge';
 import { Floor } from './Floor';
 import { Items3D } from './Items3D';
+import { LabelOverlay } from './LabelOverlay';
 import { Overlays } from './Overlays';
 import { Walls3D } from './Walls3D';
 
@@ -71,6 +72,7 @@ export function Viewport({ active }: { active: boolean }) {
         <DropBridge />
         <CaptureBridge />
       </Canvas>
+      <LabelOverlay />
     </div>
   );
 }

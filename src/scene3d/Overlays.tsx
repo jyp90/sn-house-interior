@@ -1,4 +1,4 @@
-import { Html, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import { useMemo } from 'react';
 import { findProduct } from '../catalog/products';
 import { doorSwings, itemClearances, type ClearanceShape } from '../geometry/clearance';
@@ -9,6 +9,7 @@ import { activeItems } from '../model/layout';
 import { usePlan } from '../model/StoreContext';
 import { useValidation } from '../model/useValidation';
 import { cmToM } from '../model/units';
+import { LabelProjector } from './LabelProjector';
 import { sectorToCircleArgs, toWorld } from './units';
 
 const Y = 0.004;
@@ -51,6 +52,11 @@ export function Overlays() {
   });
   const selected = placed.find((p) => p.item.id === selectedId);
   const rays = selected ? wallDistances(selected.fp, wallObbs) : [];
+  const distLabels = rays.map((r) => ({
+    key: r.dir,
+    text: `${r.distance}cm`,
+    position: toWorld({ x: (r.from.x + r.to.x) / 2, y: (r.from.y + r.to.y) / 2 }, 2),
+  }));
 
   return (
     <group>
@@ -70,13 +76,9 @@ export function Overlays() {
         );
       })}
       {rays.map((r) => (
-        <group key={r.dir}>
-          <Line points={[toWorld(r.from, 1), toWorld(r.to, 1)]} color="#3b82f6" lineWidth={1.5} dashed dashSize={0.05} gapSize={0.03} />
-          <Html position={toWorld({ x: (r.from.x + r.to.x) / 2, y: (r.from.y + r.to.y) / 2 }, 2)} center className="dist-label">
-            {r.distance}cm
-          </Html>
-        </group>
+        <Line key={r.dir} points={[toWorld(r.from, 1), toWorld(r.to, 1)]} color="#3b82f6" lineWidth={1.5} dashed dashSize={0.05} gapSize={0.03} />
       ))}
+      <LabelProjector kind="dist" labels={distLabels} />
     </group>
   );
 }
