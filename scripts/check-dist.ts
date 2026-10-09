@@ -2,11 +2,12 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-// 공개 Pages 번들 검사(배포 설계 §7). 우리 집 프리셋·평면도 이미지가 dist에 섞이거나 base 경로가 빠지면 실패한다.
+// Pages 번들 검사(배포 설계 §7, 스펙 §24). 우리 집 평면도(home/floorplan.jpg) 외의 이미지, private/ 흔적, base 경로 누락이면 실패한다.
 export const BASE = '/sn-house-interior/';
-// 프리셋 JSON 유출은 src/main.tsx·src/ui/StructurePanel.tsx 배너 문구의 'private/home-floorplan.jpg'로 잡힌다(프리셋이 켜지면 그 코드가 번들에 남음).
-// 그 배너 문구를 바꾸면 이 검사가 약해진다.
+// private/ 쪽 옛 프리셋 파일명·경로가 번들에 남으면 잡는다. 추적 프리셋은 home/plan.json·home/floorplan.jpg라 걸리지 않는다.
 export const FORBIDDEN_TEXT = ['our-home.local', 'make-our-home', 'home-floorplan.jpg', 'private/'];
+// 허용 이미지: home/floorplan.jpg의 Vite 해시 산출물뿐
+export const ALLOWED_IMAGE = /^assets\/floorplan-[\w-]+\.jpg$/;
 const IMAGE_EXT = /\.(jpe?g|png|webp|heic|gif|avif|bmp)$/i;
 const TEXT_EXT = /\.(html|js|css|json|txt|svg|map)$/i;
 
@@ -15,7 +16,7 @@ export type DistFile = { path: string; text: string | null };
 export function findDistProblems(files: DistFile[]): string[] {
   const problems: string[] = [];
   for (const f of files) {
-    if (IMAGE_EXT.test(f.path)) problems.push(`이미지 파일: ${f.path}`);
+    if (IMAGE_EXT.test(f.path) && !ALLOWED_IMAGE.test(f.path)) problems.push(`이미지 파일: ${f.path}`);
     if (f.text === null) continue;
     for (const word of FORBIDDEN_TEXT) {
       if (f.text.includes(word)) problems.push(`금지 문자열 "${word}": ${f.path}`);

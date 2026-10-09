@@ -2,7 +2,7 @@ import type { Plan } from '../model/schema';
 import type { ImageStore } from './images';
 import { parsePlan } from './parse';
 
-// 우리 집 프리셋은 로컬 dev에서만 virtual:home-preset으로 들어온다(스펙 §15.1)
+// 우리 집 프리셋(home/)은 virtual:home-preset으로 들어온다. 테스트·HOMEFIT_SAMPLE=1에서는 null(스펙 §15.1, §20)
 export type HomePresetSource = { plan: unknown; imageUrl: string | null };
 
 export const HOME_IMAGE_REF = 'image-home-floorplan';

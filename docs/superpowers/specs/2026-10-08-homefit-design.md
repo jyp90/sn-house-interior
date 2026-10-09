@@ -495,3 +495,14 @@ PDF 평면도에 방 영역·면적 표기, 닫힌 벽에서 영역 자동 인�
 
 - 단위: `openingParts` — 외여닫이 90×210(틀 3 + 문짝 1 + 손잡이 1), 양여닫이(문짝 2), 비대칭(2/3·1/3 폭), 창 sill 90 높이 120(유리 yCenter 150, 틀 4), 폭 150 창(멀리온 1), 개구부(0), 경첩 반대쪽(`hinge: 'end'`) 외여닫이·비대칭, 벽 끝을 넘어가는 개구부가 잘리는 사례. 좌표는 벽 방향·각도를 반영한다(세로 벽 사례 1개).
 - e2e: `e2e/scene3d.spec.ts`에 샘플 평면 3D에서 콘솔 오류 없음 확인에 더해, `window.__homefit`으로 읽을 수 있는 값이 없으므로 렌더 존재는 캔버스 스크린샷 대신 단위 테스트로 갈음한다(3D 캔버스 픽셀 검증 없음은 기존과 같음).
+
+## 24. 12차 반영: 우리 집 프리셋·평면도 이미지를 저장소와 Pages 번들에 포함 (2026-10-09)
+
+출처: 사용자 요청 — 집 평면도도 github.io 링크로 같이 보고, 저장소에서 같이 관리한다. §3·§15.1·§17의 「프리셋은 private/ 전용, 빌드에서는 null」 규칙을 아래로 바꾼다.
+
+- 추적 파일: `home/plan.json`(프리셋, `info.title`은 「우리 집」), `home/floorplan.jpg`(평면도 배경, 단지명 없음). 이 둘은 공개해도 되는 것으로 사용자가 결정했다(2026-10-09, 「프리셋만, 소스는 제외」).
+- 계속 `private/` 전용(git 제외, 번들 금지): 단지명·주소·매물 URL(`SOURCE.txt`), 원본 매물 평면도 이미지, 프리셋 생성 스크립트 `make-our-home.mjs`(단지명 포함), 문서 링크 `doc-links.local.json`(`virtual:doc-links`는 여전히 dev 서버 전용), `privacy-terms.txt`.
+- `virtual:home-preset`은 dev 서버와 build 양쪽에서 `home/`을 읽는다. 테스트·`HOMEFIT_SAMPLE=1`은 그대로 null(e2e는 샘플 평면).
+- 번들 검사(`check:dist`): `assets/floorplan-<hash>.jpg`만 허용 이미지, 금지 문자열(`our-home.local`, `make-our-home`, `home-floorplan.jpg`, `private/`)은 유지.
+- 저장소는 2026-10-09 §17로 이미 공개됐다. 사용자가 공개 repo·공개 URL 전제로 `home/plan.json`·`home/floorplan.jpg` 포함을 다시 승인했다(2026-10-09, 병합 직전 확인). 되돌리려면 히스토리 재작성·repo 교체가 다시 필요하다.
+- 구조 탭의 「우리 집 기본 평면 불러오기」 버튼은 배포 빌드에서도 보인다(「로컬 실행 전용」 문구 삭제).

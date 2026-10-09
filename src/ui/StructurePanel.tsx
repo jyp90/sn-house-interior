@@ -139,7 +139,7 @@ export function StructurePanel() {
     store.getState().replacePlan(r.plan);
     ui.showBanner(
       r.imageMissing
-        ? { kind: 'error', text: '우리 집 기본 평면을 불러왔지만 평면도 이미지는 찾지 못했습니다. private/home-floorplan.jpg를 확인하세요.' }
+        ? { kind: 'error', text: '우리 집 기본 평면을 불러왔지만 평면도 이미지는 찾지 못했습니다. home/floorplan.jpg를 확인하세요.' }
         : { kind: 'info', text: '우리 집 기본 평면을 불러왔습니다. Ctrl+Z로 되돌릴 수 있습니다.' },
     );
   };
@@ -150,7 +150,7 @@ export function StructurePanel() {
         <>
           <h3>기본 평면</h3>
           <button type="button" onClick={onHomePreset}>우리 집 기본 평면 불러오기</button>
-          <p className="muted">로컬 실행 전용입니다. 현재 평면을 덮어씁니다.</p>
+          <p className="muted">현재 평면을 덮어씁니다.</p>
         </>
       )}
       <h3>도구</h3>

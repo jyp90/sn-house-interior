@@ -9,7 +9,7 @@ Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Bind
 npm install
 npm run typecheck && npm test        # run both before every commit
 npm run e2e                          # Playwright, own dev server on 5180 with HOMEFIT_SAMPLE=1
-npm run dev                          # local dev; loads private/ home preset if present
+npm run dev                          # local dev; loads home/ preset (same as build); HOMEFIT_SAMPLE=1 for the sample plan
 npm run build                        # tsc --noEmit && vite build (never includes the home preset)
 npm run check:dist                   # after build: Pages bundle guard (no images, no preset markers, base path)
 npm run e2e:preview                  # base-path build on 5181: PDF fonts + license link
@@ -26,7 +26,7 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
 - PDF: `export/pages.ts` (pure page data, wrapping, pagination) → `export/pdf.ts` (jsPDF + svg2pdf.js, lazy-loaded). Always the active layout. svg2pdf needs `font-family="Pretendard"` and has no `paint-order` (labels use two `<text>` layers).
 
 ## Non-negotiable rules
-- Privacy: the repo and Pages build will be public. Address, complex name, listing URL, floor-plan images and our home preset live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. `virtual:home-preset` (`vite.config.ts`) is `null` for build, tests and `HOMEFIT_SAMPLE=1`.
+- Privacy: the repo and the Pages URL are public. The home preset (`home/plan.json`) and its floor-plan background (`home/floorplan.jpg`, no complex name) are tracked and shipped on purpose (spec §24). Address, complex name, listing URL, the original listing floor-plan image and `make-our-home.mjs` live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. The home preset itself is tracked on purpose as `home/plan.json` + `home/floorplan.jpg` (spec §20, title 「우리 집」, no complex name); `virtual:home-preset` (`vite.config.ts`) reads it for dev and build and is `null` for tests and `HOMEFIT_SAMPLE=1`. `virtual:doc-links` stays dev-only.
 - Never `git add -A` / `git add .`; add explicit paths. Never stage `private/`, `handoff/`, `archive/`, `.superpowers/`, `dist/`, `test-results/`, `playwright-report/`, or the root `Planner 5D …md` (user's file — do not touch).
 - Remote `origin` = `jyp90/sn-house-interior` (**public**, GitHub Pages at https://jyp90.github.io/sn-house-interior/ deploys on every `main` push via `.github/workflows/pages.yml`). Feature branch → PR → merge into `main` is the default (see Workflow). Pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK. Never push a branch based on pre-rewrite history (old repo `sn-house-interior-old`, private): it would resurrect removed commits.
 - No new dependency without the user's OK.

@@ -5,7 +5,7 @@ description: Use when about to commit, write docs or commit messages, export PNG
 
 # Checking privacy
 
-Repo and Pages build go public. Our address, complex name, listing URL, floor-plan images and home preset live only in `private/` (spec §3, §15.1). A grep is the only reliable check; memory of "I didn't type it" is not.
+The repo and the Pages URL are public. Our address, complex name, listing URL, the original listing image and `make-our-home.mjs` live only in `private/` (spec §3, §15.1). The home preset is tracked on purpose as `home/plan.json` + `home/floorplan.jpg` (spec §24) — its `info.title` must stay 「우리 집」, never the complex name. A grep is the only reliable check; memory of "I didn't type it" is not.
 
 ## Scan
 
@@ -22,10 +22,10 @@ bash .claude/skills/checking-privacy/scan.sh --dist     # after npm run build, b
 
 ## What else counts as leaking
 
-- `virtual:home-preset` must stay `null` for `build`, tests and `HOMEFIT_SAMPLE=1` (`vite.config.ts`). Don't widen the `enabled` condition.
-- PNG/PDF export of a plan whose background is the real floor plan. Exports for QA/e2e use the sample plan.
-- Screenshots from `npm run dev` without `HOMEFIT_SAMPLE=1` show our home: keep them in scratchpad, never in repo or artifacts.
+- `virtual:home-preset` reads `home/` for dev and build; it must stay `null` for tests and `HOMEFIT_SAMPLE=1`. `virtual:doc-links` (private URLs) must stay serve-only (`vite.config.ts`).
+- Regenerating the preset: `node private/make-our-home.mjs` writes `home/plan.json`; rescan `home/` before committing (the script's source has the complex name, the output must not).
+- Screenshots of our home are fine in scratchpad; put them in the repo or artifacts only when the user asks.
 - Claude artifact URLs with `sk=` keys are private links.
 
 ## Known findings
-- History before push needs a rewrite (`f3726c0` preset coordinates; `--log --all` lists the rest).
+- Going public: re-check the §17 history list (`--log --all`); preset coordinates no longer count (spec §24).
