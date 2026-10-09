@@ -47,6 +47,7 @@ export type PlanState = {
   endDrag(): void;
   replacePlan(plan: Plan): void;
   addCustomProduct(input: { name: string; w: number; d: number; h: number }): string;
+  updateCustomProduct(productId: string, patch: { name?: string; w?: number; d?: number; h?: number }): void;
   addWalls(walls: Omit<Wall, 'id'>[]): string[];
   updateWall(id: string, patch: Partial<Pick<Wall, 'thickness' | 'height' | 'verified'>>): void;
   resizeWall(id: string, length: number): string | null;
@@ -87,6 +88,9 @@ function normalizeItem(item: Item): Item {
   const next: Item = { ...item, x: Math.round(item.x), y: Math.round(item.y), rotation: normalizeDeg(item.rotation) };
   if (item.elevation === undefined) delete next.elevation;
   else next.elevation = Math.max(0, Math.round(item.elevation));
+  const note = next.note?.trim();
+  if (note) next.note = note;
+  else delete next.note;
   return next;
 }
 
@@ -222,6 +226,32 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         };
         commit({ ...get().plan, customProducts: [...get().plan.customProducts, product] });
         return product.id;
+      },
+
+      updateCustomProduct: (productId, patch) => {
+        const plan = get().plan;
+        const idx = plan.customProducts.findIndex((p) => p.id === productId);
+        if (idx === -1) return; // 카탈로그 제품은 여기 없다
+        const current = plan.customProducts[idx];
+        const next: Product = { ...current, dims: { ...current.dims } };
+        let changed = false;
+        if (patch.name !== undefined) {
+          const name = patch.name.trim();
+          if (name && name !== current.name) {
+            next.name = name;
+            changed = true;
+          }
+        }
+        for (const key of ['w', 'd', 'h'] as const) {
+          const v = patch[key];
+          if (v === undefined) continue;
+          if (Number.isInteger(v) && v >= 1 && v <= 1000 && v !== current.dims[key]) {
+            next.dims[key] = v;
+            changed = true;
+          }
+        }
+        if (!changed) return;
+        commit({ ...plan, customProducts: plan.customProducts.map((p, i) => (i === idx ? next : p)) });
       },
 
       addWalls: (walls) => {

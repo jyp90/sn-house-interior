@@ -3,8 +3,8 @@
 One or two lines per module; grep, never read whole. Tests sit next to the module as `*.test.ts`.
 
 ## model/
-- `schema.ts` — zod schemas for `Plan` (version 4) and every entity (walls, openings incl. door `middle`/`leaves`, rooms incl. optional `polygon`/`floor`/`wall` finish, items, layouts, fixtures, checklist state, plan-level `finish`); types derive from here.
-- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step. Room area/finish actions: `addRoomArea`, `setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, `dragRoomVertex` (uses `beginDrag`/`endDrag` like `dragEndpoint`).
+- `schema.ts` — zod schemas for `Plan` (version 6) and every entity (walls, openings incl. door `middle`/`leaves`, rooms incl. optional `polygon`/`floor`/`wall` finish, items incl. optional `note`, layouts, fixtures, checklist state, plan-level `finish`); types derive from here.
+- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step. Room area/finish actions: `addRoomArea`, `setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, `dragRoomVertex` (uses `beginDrag`/`endDrag` like `dragEndpoint`). `updateCustomProduct(id, { name?, w?, d?, h? })` edits `plan.customProducts` only (ignores `CATALOG` ids, invalid name/out-of-range dims). `updateItem`/`normalizeItem` trim `note` and drop the key when blank (spec §26); note stays editable while locked.
 - `StoreContext.tsx` — `usePlanStore` / `usePlan` React bindings.
 - `layout.ts` — `activeItems` / `withActiveItems` (only item access path), layout naming, `compareItems` for the A/B overlay.
 - `entities.ts` — `findEntity` across walls/openings/rooms/items/fixtures by id.
@@ -38,7 +38,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `wallFaces.ts` — `wallFaceSegments(obb, rooms)` → `{ front, back }: FaceSegment[]` (`{ s, e, room }`, cm on local u, −hw..+hw): probe line `± v·(hd+1)` cut where it crosses room edges, each interval → room containing its midpoint (first in plan order wins, else null), adjacent equal rooms merged; front = +v = `axes()[1]`. `WALL_TOP_COLOR` `#3f3a33`.
 
 ## persistence/
-- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 4; v2→v3, v3→v4 bump only).
+- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 6; v2→v3, v3→v4, v4→v5, v5→v6 bump only).
 - `storage.ts` — localStorage read/save, invalid-plan backup, `startAutosave` (debounced).
 - `revisions.ts` — local revision snapshots (max 20, auto interval).
 - `images.ts` — background image store (IndexedDB, memory fallback), downscale to `MAX_IMAGE_PX`.
@@ -82,7 +82,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `request.ts` — quote request data for the PDF (groups, questions, spec decisions, photo requests). No budget amounts.
 
 ## export/
-- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages).
+- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
 - `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」). Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
@@ -97,9 +97,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `Toolbar` ends with the `글꼴 라이선스` link → `public/licenses/Pretendard-OFL.txt` via `import.meta.env.BASE_URL` (deploy design §9).
 - `FinishPicker.tsx` — generic preset-chip + material `<select>` + color `<input type="color">` picker for `FloorFinish`/`WallFinish` (colour previews locally, commits once on the native `change` event); used by `RoomProperties` (room floor/wall) and `StructurePanel` (plan defaults). Exports `FLOOR_MATERIALS`/`WALL_MATERIALS` option lists.
 - `styles.css` (src root) — wood-tone design tokens on `:root` (spec §19.4); colors only via tokens, 2D selection accent stays blue (`--accent`).
-- `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
+- `fields.tsx` — number/text/checkbox inputs with units; `TextField` takes an optional `disabled`; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
 - `catalogFilter.ts` — `filterCatalog`: name/model/category-label (`CATEGORY_LABEL`) substring filter for `CatalogPanel`'s 제품 찾기 input.
-- `properties/ItemProperties.tsx` — 설치 높이 `NumberField` (`itemElevationCm`, commits `item.elevation`) with a 기본값 reset button shown only when the item has an explicit elevation.
+- `properties/ItemProperties.tsx` — 설치 높이 `NumberField` (`itemElevationCm`, commits `item.elevation`) with a 기본값 reset button shown only when the item has an explicit elevation. For a `plan.customProducts` item, shows 이름 `TextField` (always editable) + 폭 W/깊이 D/높이 H `NumberField`s (via `updateCustomProduct`, disabled if ANY item across all layouts sharing that product is locked, spec §26.2 리뷰 반영) instead of the static dims line, plus a 「이 제품을 쓰는 가구 N개…」 note when shared by more than one placement. Every item gets a 메모 `TextAreaField` (`item.note`, editable even when locked).
 
 ## scripts/ (Node, outside the app bundle)
 - `check-dist.ts` — post-build Pages bundle guard: no images except `assets/floorplan-<hash>.jpg` (`ALLOWED_IMAGE`), no `private/` preset markers, all index.html refs under `/sn-house-interior/` (deploy design §7, spec §24). `npm run check:dist`.
