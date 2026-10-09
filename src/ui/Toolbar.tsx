@@ -25,6 +25,7 @@ export function Toolbar() {
   const tool = useUi((s) => s.tool);
   const saveStatus = useUi((s) => s.saveStatus);
   const historyOpen = useUi((s) => s.historyOpen);
+  const syncOpen = useUi((s) => s.syncOpen);
   const ui = useUi.getState();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +94,7 @@ export function Toolbar() {
           {mode === 'place' && <ExportButtons />}
           <span className="sep" />
           <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
+          <button type="button" aria-pressed={syncOpen} onClick={() => ui.setSyncOpen(!syncOpen)}>동기화</button>
           <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
           <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
           {import.meta.env.DEV && <UpdateButton />}

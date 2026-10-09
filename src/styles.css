@@ -88,10 +88,10 @@ button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); 
 .save-error { color: var(--danger-text); }
 
 /* 입력 */
-.props input, .props select, .custom-box input, .field input, .props .field select, .history input, .layout-bar select, .export-view textarea, .export-view select, .doc-links-form textarea, .finish select {
+.props input, .props select, .custom-box input, .field input, .props .field select, .history input, .sync input, .layout-bar select, .export-view textarea, .export-view select, .doc-links-form textarea, .finish select {
   padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-s); background: var(--panel); color: var(--text); font: inherit; font-size: 13px; transition: border-color 0.12s, box-shadow 0.12s;
 }
-.props input:focus, .props select:focus, .custom-box input:focus, .field input:focus, .history input:focus, .layout-bar select:focus, .export-view textarea:focus, .export-view select:focus, .doc-links-form textarea:focus, .finish select:focus {
+.props input:focus, .props select:focus, .custom-box input:focus, .field input:focus, .history input:focus, .sync input:focus, .layout-bar select:focus, .export-view textarea:focus, .export-view select:focus, .doc-links-form textarea:focus, .finish select:focus {
   outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px var(--brass-bg);
 }
 .props input[type='checkbox'], .check input { accent-color: var(--walnut); }
@@ -124,10 +124,14 @@ button.badge { border: 0; cursor: pointer; font: inherit; font-size: 12px; }
 p.badge { display: inline-block; margin: 0 0 8px; }
 
 /* 변경 이력 패널 */
-.history { position: absolute; top: 12px; right: 12px; z-index: 15; width: 320px; max-height: calc(100% - 24px); overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
-.history-head { display: flex; justify-content: space-between; align-items: center; }
-.history-head h3 { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); }
+.history, .sync { position: absolute; top: 12px; right: 12px; z-index: 15; width: 320px; max-height: calc(100% - 24px); overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+.history-head, .sync-head { display: flex; justify-content: space-between; align-items: center; }
+.history-head h3, .sync-head h3 { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); }
 .history input { flex: 1; min-width: 0; }
+.sync .field { margin-top: 8px; }
+.sync .field input { width: 100%; }
+.sync .help { font-size: 11px; color: var(--text-2); margin: 2px 0 0; }
+.sync .sync-status { margin: 10px 0 8px; font-size: 12px; color: var(--text-2); }
 .history-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .history-list li { border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-2); padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
 

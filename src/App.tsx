@@ -12,6 +12,7 @@ import { isPageMode, shows2d } from './ui/modes';
 import { PropertiesPanel } from './ui/PropertiesPanel';
 import { useShortcuts } from './ui/shortcuts';
 import { StructurePanel } from './ui/StructurePanel';
+import { SyncPanel } from './ui/SyncPanel';
 import { Toolbar } from './ui/Toolbar';
 import { useUi } from './ui/uiStore';
 
@@ -51,6 +52,7 @@ export function App() {
           </div>
         )}
         <HistoryPanel />
+        <SyncPanel />
       </main>
       {!page && (
         <aside className="right">

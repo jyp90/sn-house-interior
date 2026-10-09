@@ -37,6 +37,14 @@ describe('useUi', () => {
     expect(useUi.getState().historyOpen).toBe(false);
   });
 
+  it('동기화 패널 열고 닫기', () => {
+    expect(useUi.getState().syncOpen).toBe(false);
+    useUi.getState().setSyncOpen(true);
+    expect(useUi.getState().syncOpen).toBe(true);
+    useUi.getState().setSyncOpen(false);
+    expect(useUi.getState().syncOpen).toBe(false);
+  });
+
   it('비교 대상 배치안 설정과 해제', () => {
     useUi.getState().setCompareLayout('layout-b');
     expect(useUi.getState().compareLayoutId).toBe('layout-b');

@@ -9,9 +9,11 @@ import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
 import { markPresetSeen, presetFingerprint, PRESET_UPDATED_TEXT, prepareHomePreset } from './persistence/homePreset';
+import { getFile } from './persistence/github';
 import { getDefaultImageStore } from './persistence/images';
 import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
+import { readSyncConfig, REMOTE_CHANGED_TEXT } from './persistence/sync';
 import { syncModeWithHash } from './ui/modeHash';
 import { applyViewport } from './ui/smallScreen';
 import { useUi } from './ui/uiStore';
@@ -70,6 +72,17 @@ startAutosave(store, {
   },
 });
 syncModeWithHash(useUi);
+
+// GitHub 동기화 시작 확인(스펙 §45.2): 동기화한 적 있는 기기만, 토큰 없이 한 번. 렌더를 막지 않고 실패는 조용히 넘긴다
+const sync = readSyncConfig();
+if (sync.lastSha) {
+  const lastSha = sync.lastSha;
+  void getFile({ repo: sync.repo, branch: sync.branch, path: sync.path })
+    .then((r) => {
+      if (r.ok && r.sha !== lastSha) useUi.getState().showBanner({ kind: 'info', text: REMOTE_CHANGED_TEXT });
+    })
+    .catch(() => undefined);
+}
 if (import.meta.env.DEV) window.__homefit = { store, ui: useUi };
 
 // 진입 PIN(스펙 §42): 우리 집 프리셋이 실린 빌드에서만. 테스트·HOMEFIT_SAMPLE=1은 꺼지고 dev의 ?gate=1로 강제한다
