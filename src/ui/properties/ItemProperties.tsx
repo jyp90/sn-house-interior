@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ceilingHeightCm, itemElevationCm } from '../../catalog/elevation';
 import { findProduct } from '../../catalog/products';
 import { DEDICATED_RADIUS_CM, missingDedicatedCircuit } from '../../electrical/fixtures';
 import type { Item } from '../../model/schema';
@@ -64,6 +65,22 @@ export function ItemProperties({ item }: { item: Item }) {
       <NumberField key={`${item.id}-x`} label="X" unit="cm" value={item.x} disabled={locked} onCommit={(v) => s.updateItem(item.id, { x: v })} />
       <NumberField key={`${item.id}-y`} label="Y" unit="cm" value={item.y} disabled={locked} onCommit={(v) => s.updateItem(item.id, { y: v })} />
       <NumberField key={`${item.id}-r`} label="회전" unit="°" value={item.rotation} disabled={locked} onCommit={(v) => s.updateItem(item.id, { rotation: v })} />
+      {product && (
+        <div className="row">
+          <NumberField
+            key={`${item.id}-e`}
+            label="설치 높이"
+            unit="cm"
+            value={itemElevationCm(item, product, ceilingHeightCm(plan))}
+            disabled={locked}
+            onCommit={(v) => s.updateItem(item.id, { elevation: Math.max(0, v) })}
+          />
+          {item.elevation !== undefined && (
+            <button type="button" disabled={locked} onClick={() => s.updateItem(item.id, { elevation: undefined })}>기본값</button>
+          )}
+        </div>
+      )}
+      {product && <p className="muted">바닥에서 밑면까지. 벽걸이·상부장·천장형은 제품 기본값에서 시작합니다.</p>}
       {product && product.variants.length > 1 && (
         <label className="field">
           색상

@@ -215,6 +215,8 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .item2d-selected { stroke: var(--accent); stroke-width: 2.5; }
 .item2d-warn { stroke: var(--warn); stroke-width: 2.5; }
 .item2d-danger { stroke: var(--danger); stroke-width: 2.5; }
+.item2d-elevated { stroke-dasharray: 5 3; }
+.item2d-ceiling { fill-opacity: 0.5; }
 .item2d-label { fill: #1f2328; pointer-events: none; }
 .editor2d.mode-structure .items2d, .editor2d.mode-electric .items2d { opacity: 0.45; pointer-events: none; }
 .clearance { fill: rgba(79, 157, 222, 0.18); }

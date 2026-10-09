@@ -1,4 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
+import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
 import { missingDedicatedCircuit } from '../electrical/fixtures';
 import { corners, itemObb } from '../geometry/obb';
@@ -91,18 +92,22 @@ export function Items2D({ px }: { px: number }) {
     if (ids.length > 1) useUi.getState().showCandidates({ ids, clientX: e.clientX, clientY: e.clientY });
   };
 
+  const ceiling = ceilingHeightCm(plan);
   return (
     <g className="items2d">
       {activeItems(plan).map((item) => {
         const product = findProduct(plan, item.productId);
         const dims = product?.dims ?? { w: 50, d: 50 };
         const st = status[item.id];
+        const elevation = product ? itemElevationCm(item, product, ceiling) : 0;
         const cls = [
           'item2d',
           item.id === selectedId ? 'item2d-selected' : '',
           st?.clearanceBlocked ? 'item2d-warn' : '',
           st?.collides || st?.blocksDoor ? 'item2d-danger' : '',
           missingCircuit.has(item.id) ? 'item2d-circuit' : '',
+          elevation > 0 ? 'item2d-elevated' : '',
+          product?.mount === 'ceiling' ? 'item2d-ceiling' : '',
         ]
           .filter(Boolean)
           .join(' ');
@@ -113,6 +118,7 @@ export function Items2D({ px }: { px: number }) {
               fill={product ? itemColor(product, item.variantId) : MISSING_COLOR}
               className={cls}
               data-testid={`item2d-${item.id}`}
+              data-elevation={elevation}
               onPointerDown={interactive ? (e) => onDown(e, item) : undefined}
               onPointerMove={interactive ? onMove : undefined}
               onPointerUp={interactive ? onUp : undefined}

@@ -1,7 +1,8 @@
 import type { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { buildProduct, disposeObject, mountHeightCm } from '../catalog/builders';
+import { buildProduct, disposeObject } from '../catalog/builders';
+import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
 import { deg2rad, itemObb } from '../geometry/obb';
 import { snapToWalls } from '../geometry/snap';
@@ -98,7 +99,8 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     finishDrag();
   }, []);
 
-  const y = product ? cmToM(mountHeightCm(product)) : 0;
+  const ceiling = usePlan((s) => ceilingHeightCm(s.plan));
+  const y = product ? cmToM(itemElevationCm(item, product, ceiling)) : 0;
   return (
     <group
       position={[cmToM(item.x), y, cmToM(item.y)]}
