@@ -38,7 +38,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `wallFaces.ts` — `wallFaceSegments(obb, rooms)` → `{ front, back }: FaceSegment[]` (`{ s, e, room }`, cm on local u, −hw..+hw): probe line `± v·(hd+1)` cut where it crosses room edges, each interval → room containing its midpoint (first in plan order wins, else null), adjacent equal rooms merged; front = +v = `axes()[1]`. `WALL_TOP_COLOR` `#3f3a33`.
 
 ## persistence/
-- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 6; v2→v3, v3→v4, v4→v5, v5→v6 bump only).
+- `parse.ts` — `parsePlan` (zod + `migrate` by `version`, `CURRENT_VERSION` 7; v2→v3, v3→v4, v4→v5, v5→v6, v6→v7 (`Fixture.group`) bump only).
 - `storage.ts` — localStorage read/save, invalid-plan backup, `startAutosave` (debounced).
 - `revisions.ts` — local revision snapshots (max 20, auto interval).
 - `images.ts` — background image store (IndexedDB, memory fallback), downscale to `MAX_IMAGE_PX`.
@@ -56,7 +56,8 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `useBackgroundUrl.ts` — object URL for the stored background image.
 
 ## scene3d/ (R3F, 1 unit = 1 m)
-- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Openings3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3); `<LabelOverlay />` sits next to the canvas.
+- `fixtureParts.ts` (pure, tested) + `Fixtures3D.tsx` — electrical fixtures in 3D (spec §27.3): wall-attached outlet/switch = 8×8×1.5 plate (waterproof 10×10) centred 0.75cm out from `pos` along the wall normal facing `pos`, plus a 4×4×0.5 glyph-colour mark on its outer face; light = Ø24×2 disc centred at `min(height, ceiling) − 1 − 1`; unattached/orphaned = 6cm glyph-colour cube. Colour-cached materials, `raycast={() => null}`.
+- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Openings3D`, `Fixtures3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3); `<LabelOverlay />` sits next to the canvas.
 - `openingParts.ts` (pure, tested) + `Openings3D.tsx` — door frames/leaves/handles and window frames/glass/mullion (spec §23). `openingParts(wall, o)` computes part rects in plan cm from `o.offset`/`leafWidths` (`geometry/clearance.ts`, now exported) directly on the wall centre line — not from `doorLeaves`' hinge, which is offset by `thickness/2` onto the wall face. Opening offset/width/height are clamped to the wall via `geometry/walls.ts`'s exported `clampToWall` (same cut as `wallPieces`) before any part geometry is derived, so an opening past the wall end or taller than the wall is cut. One 2×2cm handle box per leaf (depth `wall.thickness+4`, through both faces); its inset from the visible leaf edge is `FRAME_CM+6` for a single full-width leaf (edge = opposite jamb) or `6` for a double/asym leaf (edge = the other leaf). `Openings3D` renders each part as a `boxGeometry` mesh with module-cached materials per kind (middle-door frame tinted `#8a8a8a`; mullion is always the plain frame color since it only occurs on windows); `raycast={() => null}` so clicks fall through to walls/items/empty-click deselect unchanged.
 - `labelBridge.ts` + `LabelProjector.tsx` + `LabelOverlay.tsx` — 3D labels without drei `Html` (spec §22): `LabelProjector` (in Canvas, `useFrame`) projects world labels with `projectToScreen` and `publishLabels(kind)`; `LabelOverlay` (`useSyncExternalStore`) draws `.room-label`/`.dist-label` divs (`.label-3d`, absolute px); off-screen labels are culled and `.viewport` clips with `overflow: hidden`. Room labels from `Floor`, wall-distance labels from `Overlays`.
 - `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
@@ -72,17 +73,17 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`, `standAc`, `builtInAppliance`, `cabinetRun`, `ceilingAc`, `chair`, `wardrobe`, `toilet`, `basin`, `shower`); `index.ts` dispatches and disposes. `parts.ts` gained `cylinder`/`glass` primitives.
 
 ## electrical/
-- `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius).
+- `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius). `switchGroups` (switch/light with `group`, name order `ko`) and `switchLinks` (switch × light pairs per group) feed 2D `Fixtures2D` dashed `switch-link-<s>-<l>` lines (electric mode only), `ElectricPanel` 「스위치 그룹」 list, `planSvg` 전기 계획도 dashes, `auto-switch-<h>` checklist item (spec §27).
 
 ## checklist/
 - `defaults.ts` — phases and default on-site inspection items (`i-` ids).
-- `items.ts` — `autoChecklist` from the plan + merged `checklistItems` with saved state. Auto ids carry `shortHash` (`hash.ts`, FNV-1a → base36): `auto-circuit-<h>`/`auto-door-<itemId>-<h>` hash the full text; `auto-builtin-<itemId>-<h>` hashes only name + W×D×H + verified, so moving keeps the check/memo (spec §22); `auto-outlets` stays fixed.
+- `items.ts` — `autoChecklist` from the plan + merged `checklistItems` with saved state. Auto ids carry `shortHash` (`hash.ts`, FNV-1a → base36): `auto-circuit-<h>`/`auto-door-<itemId>-<h>` hash the full text; `auto-builtin-<itemId>-<h>` hashes only name + W×D×H + verified, so moving keeps the check/memo (spec §22); `auto-outlets` stays fixed; `auto-switch-<h>` (full-text hash) lists switch groups (spec §27).
 
 ## quote/
 - `request.ts` — quote request data for the PDF (groups, questions, spec decisions, photo requests). No budget amounts.
 
 ## export/
-- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26).
+- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26). 전기 설비 목록 has a 「그룹」 column (switch/light only, else `-`; spec §27).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
 - `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). 치수 평면도 only (`dimensionLines: true`): opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90` — not shown on 배치도/전기 계획도/PNG. Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width, also used for the 「중문」 label on vertical walls to clear the width label); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.

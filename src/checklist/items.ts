@@ -1,5 +1,5 @@
 import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
-import { DEDICATED_RADIUS_CM, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
+import { DEDICATED_RADIUS_CM, fixtureSummary, missingDedicatedCircuit, switchGroups } from '../electrical/fixtures';
 import { wallReferenceText } from '../geometry/wallReference';
 import { activeItems } from '../model/layout';
 import type { ChecklistState, Plan, Product } from '../model/schema';
@@ -30,6 +30,13 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
 
   if (plan.fixtures.length > 0) {
     out.push({ id: 'auto-outlets', phase: 'carpentry', auto: true, text: `콘센트 위치 공유: ${fixtureSummary(plan.fixtures)} — 전기 계획도·전기 설비 목록 참고` });
+  }
+
+  const groups = switchGroups(plan.fixtures);
+  if (groups.length > 0) {
+    const count = (label: string, n: number) => (n > 0 ? `${label} ${n}` : `${label} 없음`);
+    const text = `스위치 회로 전달: ${groups.map((g) => `${g.name}(${count('스위치', g.switches.length)}·${count('조명', g.lights.length)})`).join(', ')}`;
+    out.push({ id: `auto-switch-${shortHash(text)}`, phase: 'carpentry', auto: true, text });
   }
 
   for (const { item, product } of placed) {

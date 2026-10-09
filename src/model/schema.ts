@@ -74,6 +74,8 @@ export const FixtureSchema = z.object({
   pos: Vec2Schema,
   height: cm.nonnegative(),
   memo: z.string().optional(),
+  // 스위치 그룹 이름(스위치·조명만 의미, spec §27)
+  group: z.string().optional(),
 });
 
 export const ChecklistStateSchema = z.object({
@@ -151,7 +153,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(6),
+    version: z.literal(7),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

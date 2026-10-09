@@ -102,6 +102,8 @@ button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); 
 button.badge { border: 0; cursor: pointer; font: inherit; font-size: 12px; }
 .conflicts { margin: 0 0 8px; padding-left: 18px; font-size: 12px; color: var(--danger-text); }
 .circuit-list { margin: 0; padding-left: 18px; font-size: 12px; }
+.switch-groups { margin: 0; padding-left: 18px; font-size: 12px; }
+.switch-groups li.warn { color: var(--warn-text); }
 p.badge { display: inline-block; margin: 0 0 8px; }
 
 /* 변경 이력 패널 */
@@ -235,4 +237,5 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .fixture2d-shape { stroke-width: 2; vector-effect: non-scaling-stroke; }
 .fixture2d-selected .fixture2d-shape { stroke: var(--accent); stroke-width: 3; }
 .fixture2d-letter { font-weight: 700; pointer-events: none; user-select: none; }
+.switch-link { stroke: #4338ca; stroke-width: 1.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; pointer-events: none; }
 .item2d-circuit { stroke: var(--danger); stroke-width: 3; stroke-dasharray: 6 4; }

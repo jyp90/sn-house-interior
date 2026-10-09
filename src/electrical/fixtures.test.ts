@@ -12,6 +12,8 @@ import {
   missingDedicatedCircuit,
   refitFixtures,
   snapFixture,
+  switchGroups,
+  switchLinks,
 } from './fixtures';
 
 const walls = SAMPLE_PLAN.walls;
@@ -166,5 +168,40 @@ describe('keepWallIdAfterMove', () => {
   it('벽에 붙지 않았거나 벽이 없으면 undefined', () => {
     expect(keepWallIdAfterMove(walls, { ...outlet, wallId: undefined }, { x: 300, y: 10 })).toBeUndefined();
     expect(keepWallIdAfterMove(walls, { ...outlet, wallId: 'nope' }, { x: 300, y: 10 })).toBeUndefined();
+  });
+});
+
+describe('switchGroups', () => {
+  const g = (kind: Fixture['kind'], id: string, group?: string): Fixture => ({ id, kind, pos: { x: 0, y: 0 }, height: 30, ...(group ? { group } : {}) });
+
+  it('그룹 이름별로 스위치·조명을 모으고 이름 순(ko)으로 정렬한다', () => {
+    const s1 = g('switch', 's1', '침실1');
+    const s2 = g('switch', 's2', '거실');
+    const l1 = g('light', 'l1', '거실');
+    const l2 = g('light', 'l2', '거실');
+    expect(switchGroups([s1, l1, s2, l2])).toEqual([
+      { name: '거실', switches: [s2], lights: [l1, l2] },
+      { name: '침실1', switches: [s1], lights: [] },
+    ]);
+  });
+
+  it('그룹 없는 설비와 콘센트 종류는 빠진다', () => {
+    expect(
+      switchGroups([g('switch', 's1'), g('outlet', 'o1', '거실'), g('outlet-waterproof', 'o2', '거실'), g('outlet-dedicated', 'o3', '거실')]),
+    ).toEqual([]);
+  });
+});
+
+describe('switchLinks', () => {
+  it('그룹마다 스위치 × 조명 쌍을 만든다', () => {
+    const f = (kind: Fixture['kind'], id: string, x: number, group?: string): Fixture => ({ id, kind, pos: { x, y: 0 }, height: 30, ...(group ? { group } : {}) });
+    const s1 = f('switch', 's1', 0, '거실');
+    const s2 = f('switch', 's2', 5, '거실');
+    const l1 = f('light', 'l1', 10, '거실');
+    const l2 = f('light', 'l2', 20, '침실');
+    expect(switchLinks([s1, s2, l1, l2])).toEqual([
+      { switchId: 's1', lightId: 'l1', a: { x: 0, y: 0 }, b: { x: 10, y: 0 } },
+      { switchId: 's2', lightId: 'l1', a: { x: 5, y: 0 }, b: { x: 10, y: 0 } },
+    ]);
   });
 });

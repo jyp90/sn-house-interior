@@ -188,6 +188,24 @@ describe('planSvg 옵션', () => {
     expect(on.height).toBe(off.height + 100);
   });
 
+  it('fixtures:true는 같은 그룹의 스위치→조명 점선을 마커 아래에 그린다', () => {
+    const withFx = {
+      ...plan,
+      fixtures: [
+        { id: 's1', kind: 'switch' as const, pos: { x: 10, y: 100 }, height: 120, group: '거실' },
+        { id: 'l1', kind: 'light' as const, pos: { x: 200, y: 200 }, height: 230, group: '거실' },
+        { id: 'l2', kind: 'light' as const, pos: { x: 300, y: 200 }, height: 230, group: '침실' },
+      ],
+    };
+    const on = planSvg(withFx, { fixtures: true }).svg;
+    const link = '<line x1="10" y1="100" x2="200" y2="200" stroke="#4338ca" stroke-width="1.5" stroke-dasharray="6 4"/>';
+    expect(on).toContain(link);
+    expect(on.match(/stroke-dasharray="6 4"/g)).toHaveLength(1);
+    // 점선이 스위치 마커(사각형)보다 먼저 = 아래 레이어
+    expect(on.indexOf(link)).toBeLessThan(on.indexOf('<rect x="1" y="91" width="18" height="18"'));
+    expect(planSvg(withFx).svg).not.toContain('stroke-dasharray="6 4"');
+  });
+
   it('fixtures:true는 마커 오른쪽에 E번호를 흰 테두리 글자로 붙인다', () => {
     const withFx = {
       ...plan,

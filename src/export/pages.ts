@@ -293,12 +293,21 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
       '전기 설비 목록',
       [
         { label: '번호', width: 18 },
-        { label: '종류', width: 50 },
-        { label: '설치 높이', width: 30 },
-        { label: '벽 부착', width: 25 },
-        { label: '메모', width: 144 },
+        { label: '종류', width: 44 },
+        { label: '설치 높이', width: 28 },
+        { label: '벽 부착', width: 22 },
+        { label: '그룹', width: 35 },
+        { label: '메모', width: 120 },
       ],
-      plan.fixtures.map((f) => [`E${fxNumbers.get(f.id)}`, FIXTURE_LABEL[f.kind], `${f.height}cm`, f.wallId ? '예' : '아니오', f.memo ?? '']),
+      plan.fixtures.map((f) => [
+        `E${fxNumbers.get(f.id)}`,
+        FIXTURE_LABEL[f.kind],
+        `${f.height}cm`,
+        f.wallId ? '예' : '아니오',
+        // 스위치 그룹은 스위치·조명에만 의미가 있다(spec §27.1)
+        (f.kind === 'switch' || f.kind === 'light') && f.group ? f.group : '-',
+        f.memo ?? '',
+      ]),
       '배치된 전기 설비가 없습니다',
     ),
     ...tablePages(

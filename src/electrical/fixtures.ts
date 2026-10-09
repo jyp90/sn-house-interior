@@ -118,3 +118,30 @@ export function keepWallIdAfterMove(walls: Wall[], fixture: Fixture, pos: Vec2):
   if (!wall) return undefined;
   return distanceToWall(wall, pos) <= wall.thickness / 2 + 1 ? wall.id : undefined;
 }
+
+export type SwitchGroup = { name: string; switches: Fixture[]; lights: Fixture[] };
+
+// 스위치 그룹(spec §27): 그룹 이름이 있는 스위치·조명만, 이름 순. 콘센트의 group은 무시한다
+export function switchGroups(fixtures: Fixture[]): SwitchGroup[] {
+  const byName = new Map<string, SwitchGroup>();
+  for (const f of fixtures) {
+    if (!f.group || (f.kind !== 'switch' && f.kind !== 'light')) continue;
+    let g = byName.get(f.group);
+    if (!g) {
+      g = { name: f.group, switches: [], lights: [] };
+      byName.set(f.group, g);
+    }
+    (f.kind === 'switch' ? g.switches : g.lights).push(f);
+  }
+  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+}
+
+export type SwitchLink = { switchId: string; lightId: string; a: Vec2; b: Vec2 };
+export const SWITCH_LINK_COLOR = '#4338ca';
+
+// 같은 그룹의 스위치마다 그 그룹의 조명 각각으로 잇는 선(2D 전기 모드·PDF 전기 계획도 공용)
+export function switchLinks(fixtures: Fixture[]): SwitchLink[] {
+  return switchGroups(fixtures).flatMap((g) =>
+    g.switches.flatMap((s) => g.lights.map((l) => ({ switchId: s.id, lightId: l.id, a: s.pos, b: l.pos }))),
+  );
+}

@@ -255,26 +255,29 @@ describe('buildPdf', () => {
     expect(electric.notes.at(-1)).toBe('외 7줄은 앱에서 확인하세요');
   });
 
-  it('전기 설비 목록: E번호·종류·설치 높이·벽 부착·메모, 없으면 안내 문구', () => {
+  it('전기 설비 목록: E번호·종류·설치 높이·벽 부착·그룹·메모, 없으면 안내 문구', () => {
     const plan: Plan = {
       ...SAMPLE_PLAN,
       fixtures: [
         { id: 'f1', kind: 'outlet', pos: { x: 10, y: 100 }, wallId: 'w4', height: 30, memo: 'TV 뒤' },
-        { id: 'f2', kind: 'light', pos: { x: 200, y: 200 }, height: 230 },
+        { id: 'f2', kind: 'light', pos: { x: 200, y: 200 }, height: 230, group: '거실' },
       ],
     };
     const table = buildPdf(plan, input).pages.find((p) => p.title === '전기 설비 목록') as TablePage;
     expect(table.title).toBe('전기 설비 목록');
+    // spec §27.2: 그룹 열(35)을 넣으며 종류 50→44, 높이 30→28, 벽 부착 25→22, 메모 144→120 — 합계는 그대로 267
     expect(table.columns).toEqual([
       { label: '번호', width: 18 },
-      { label: '종류', width: 50 },
-      { label: '설치 높이', width: 30 },
-      { label: '벽 부착', width: 25 },
-      { label: '메모', width: 144 },
+      { label: '종류', width: 44 },
+      { label: '설치 높이', width: 28 },
+      { label: '벽 부착', width: 22 },
+      { label: '그룹', width: 35 },
+      { label: '메모', width: 120 },
     ]);
+    expect(table.columns.reduce((n, c) => n + c.width, 0)).toBe(18 + 50 + 30 + 25 + 144);
     expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
-      ['E1', '콘센트', '30cm', '예', 'TV 뒤'],
-      ['E2', '조명', '230cm', '아니오', ''],
+      ['E1', '콘센트', '30cm', '예', '-', 'TV 뒤'],
+      ['E2', '조명', '230cm', '아니오', '거실', ''],
     ]);
     const empty = buildPdf(SAMPLE_PLAN, input).pages.find((p) => p.title === '전기 설비 목록') as TablePage;
     expect(empty.title).toBe('전기 설비 목록');
