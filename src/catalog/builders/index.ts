@@ -3,9 +3,13 @@ import type { BuilderId, Product, Variant } from '../../model/schema';
 import { DEFAULT_CEILING_CM, productElevationCm } from '../elevation';
 import { buildBed } from './bed';
 import { buildBox } from './box';
+import { buildBuiltInAppliance } from './builtInAppliance';
+import { buildCabinetRun } from './cabinetRun';
+import { buildCeilingAc } from './ceilingAc';
 import { buildFridge } from './fridge';
 import { buildFrontLoader } from './frontLoader';
 import { buildSofa } from './sofa';
+import { buildStandAc } from './standAc';
 import { buildTable } from './table';
 import { buildTv } from './tv';
 
@@ -19,6 +23,10 @@ const BUILDERS: Partial<Record<BuilderId, Builder>> = {
   sofa: buildSofa,
   bed: buildBed,
   table: buildTable,
+  'stand-ac': buildStandAc,
+  'built-in-appliance': buildBuiltInAppliance,
+  'cabinet-run': buildCabinetRun,
+  'ceiling-ac': buildCeilingAc,
 };
 
 export function buildProduct(p: Product, variantId: string): THREE.Group {

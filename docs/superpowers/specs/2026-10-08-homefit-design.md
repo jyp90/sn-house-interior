@@ -385,8 +385,8 @@ PDF 평면도에 방 영역·면적 표기, 닫힌 벽에서 영역 자동 인�
 | builder | 표현 | params |
 |---|---|---|
 | `stand-ac` | 좁고 긴 기둥, 상단 토출구 띠, 모서리 둥글게 보이도록 앞면 패널 분할 | — |
-| `built-in-appliance` | 본체는 짙은 회색, 전면 패널·손잡이만 변형 색(하부장 매립 가정) | `panel: 'door' \| 'drawer'` |
-| `cabinet-run` | 하부장: 몸통 + 상판(4cm) + 문짝 줄눈; 상부장: 몸통 + 문짝 줄눈. `sink`가 있으면 상판에 싱크 홈, `cooktop`은 상판 위 검은 판 | `part: 'base' \| 'upper'`, `doors: number`, `counter?: boolean`, `sink?: boolean` |
+| `built-in-appliance` | 본체는 짙은 회색, 전면 패널·손잡이만 변형 색(하부장 매립 가정) | `panel: 'door' \| 'drawer' \| 'top'` (`top`: 상판 매립 인덕션, 검은 유리 윗면) |
+| `cabinet-run` | 하부장: 몸통 + 상판(4cm) + 문짝 줄눈; 상부장: 몸통 + 문짝 줄눈. `sink`가 있으면 상판에 싱크 홈 | `part: 'base' \| 'upper'`, `doors: number`, `counter?: boolean`, `sink?: boolean` |
 | `chair` | 좌판·등받이·다리 4개 | — |
 | `wardrobe` | 몸통 + 문짝 줄눈 + 손잡이(`doors` 개) | `doors: number` |
 | `toilet` | 물탱크 박스 + 변기 몸통(둥근 앞) | — |
