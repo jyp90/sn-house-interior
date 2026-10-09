@@ -30,3 +30,19 @@ test('3D 방 이름 라벨이 모든 방에 보이고 라벨 루트 경고가 �
 
   expect(errors.filter((e) => /synchronously unmount a root/.test(e))).toEqual([]);
 });
+
+test('첫 로드에서 3D 캔버스가 r3f 기본 크기(300x150)로 깜빡이지 않고 뷰포트를 바로 채운다 (spec §30.4)', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.getByRole('button', { name: '배치', exact: true }).click();
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  const canvas = page.locator('.viewport canvas');
+  const viewport = page.locator('.viewport');
+  await expect(canvas).toBeVisible();
+  const [canvasBox, viewportBox] = await Promise.all([canvas.boundingBox(), viewport.boundingBox()]);
+  expect(canvasBox).not.toBeNull();
+  expect(viewportBox).not.toBeNull();
+  expect(Math.abs(canvasBox!.width - viewportBox!.width)).toBeLessThanOrEqual(2);
+  expect(Math.abs(canvasBox!.height - viewportBox!.height)).toBeLessThanOrEqual(2);
+});

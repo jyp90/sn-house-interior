@@ -20,6 +20,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'M
 .layer { position: absolute; inset: 0; }
 .layer-hidden { display: none; }
 .viewport { position: absolute; inset: 0; overflow: hidden; }
+/* r3f sizes the canvas via ResizeObserver one frame late; it starts at its 300x150 default. Force the first frame to fill (spec §30.4). */
+.viewport canvas { width: 100% !important; height: 100% !important; display: block; }
 .viewport-fallback { display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text-2); }
 .room-label { font-size: 13px; color: var(--text-2); background: var(--panel-translucent); padding: 1px 6px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
 .dist-label { font-size: 11px; background: var(--accent); color: var(--on-accent); padding: 1px 5px; border-radius: 4px; white-space: nowrap; pointer-events: none; }
