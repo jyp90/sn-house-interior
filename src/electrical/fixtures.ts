@@ -104,11 +104,13 @@ export function refitFixtures(oldWalls: Wall[], newWalls: Wall[], fixtures: Fixt
   });
 }
 
-// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 뗀다
+// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 떼고, 콘센트 종류는 스위치 그룹을 지운다
 export function kindChangePatch(fixture: Fixture, kind: FixtureKind): Partial<Omit<Fixture, 'id'>> {
   const patch: Partial<Omit<Fixture, 'id'>> = { kind };
   if (fixture.height === FIXTURE_DEFAULT_HEIGHT[fixture.kind]) patch.height = FIXTURE_DEFAULT_HEIGHT[kind];
   if (kind === 'light') patch.wallId = undefined;
+  // 스위치 그룹은 스위치·조명에만 의미가 있다(spec §27.1)
+  if (kind !== 'switch' && kind !== 'light') patch.group = undefined;
   return patch;
 }
 

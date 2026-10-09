@@ -37,7 +37,7 @@ export function fixtureParts(f: Fixture, walls: Wall[], ceiling: number): Fixtur
         kind: 'disc',
         cx: f.pos.x,
         cy: f.pos.y,
-        yCenter: top - LIGHT_D_CM / 2,
+        yCenter: Math.max(LIGHT_D_CM / 2, top - LIGHT_D_CM / 2),
         w: LIGHT_DIAMETER_CM,
         h: LIGHT_D_CM,
         d: LIGHT_DIAMETER_CM,
@@ -53,13 +53,17 @@ export function fixtureParts(f: Fixture, walls: Wall[], ceiling: number): Fixtur
     return [{ kind: 'box', cx: f.pos.x, cy: f.pos.y, yCenter: f.height, w: s, h: s, d: s, angle: 0, color: glyphColor }];
   }
 
-  // 벽 중심선에서 설비 위치 쪽으로 향하는 벽면 법선(바깥 방향)
+  // 벽 중심선에서 설비 위치 쪽으로 향하는 벽면 법선(바깥 방향). 판은 pos가 아니라 그 쪽 벽면에 붙인다
   const u = wallDir(wall);
   const n = { x: -u.y, y: u.x };
-  const side = (f.pos.x - wall.a.x) * n.x + (f.pos.y - wall.a.y) * n.y < 0 ? -1 : 1;
+  const normalOff = (f.pos.x - wall.a.x) * n.x + (f.pos.y - wall.a.y) * n.y;
+  const side = normalOff < 0 ? -1 : 1;
   const out = { x: n.x * side, y: n.y * side };
+  // pos에서 벽면까지 법선 방향 거리(부호 포함): side·두께/2 − 현재 법선 오프셋
+  const toFace = side * (wall.thickness / 2) - normalOff;
+  const face = { x: f.pos.x + n.x * toFace, y: f.pos.y + n.y * toFace };
   const angle = Math.atan2(u.y, u.x);
-  const at = (off: number) => ({ cx: f.pos.x + out.x * off + 0, cy: f.pos.y + out.y * off + 0 });
+  const at = (off: number) => ({ cx: face.x + out.x * off, cy: face.y + out.y * off });
   const size = f.kind === 'outlet-waterproof' ? PLATE_WATERPROOF_CM : PLATE_CM;
 
   return [

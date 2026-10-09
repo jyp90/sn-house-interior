@@ -16,6 +16,13 @@ describe('fixtureParts', () => {
     expect(parts).toHaveLength(2);
   });
 
+  it('위치가 벽 몸체 안쪽이어도 판은 벽면(중심선 + 두께/2)에 붙는다', () => {
+    // pos (100,3): 법선 쪽(+y) → 벽면 y=5, 판 중심 5 + 0.75, 표식 5 + 1.75
+    const [plate, mark] = fixtureParts(fx({ wallId: 'w', pos: { x: 100, y: 3 } }), [wall], 230);
+    expect(plate).toMatchObject({ cx: 100, cy: 5.75 });
+    expect(mark).toMatchObject({ cx: 100, cy: 6.75 });
+  });
+
   it('벽 -y 면이면 바깥 방향도 -y', () => {
     const [plate, mark] = fixtureParts(fx({ wallId: 'w', pos: { x: 100, y: -5 } }), [wall], 230);
     expect(plate.cy).toBeCloseTo(-5.75);
@@ -45,6 +52,10 @@ describe('fixtureParts', () => {
     // 천장보다 높게 적힌 조명은 천장 아래로
     expect(fixtureParts(fx({ kind: 'light', height: 300 }), [wall], 240)[0].yCenter).toBe(238);
     expect(fixtureParts(fx({ kind: 'light', height: 200 }), [wall], 240)[0].yCenter).toBe(198);
+  });
+
+  it('조명 원반은 바닥 아래로 내려가지 않는다(높이 0 → 중심 두께/2)', () => {
+    expect(fixtureParts(fx({ kind: 'light', height: 0 }), [wall], 230)[0].yCenter).toBe(1);
   });
 
   it('벽에 붙지 않았거나 벽이 사라진 콘센트·스위치는 6cm 정육면체', () => {

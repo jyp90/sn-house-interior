@@ -145,6 +145,13 @@ describe('kindChangePatch', () => {
     expect(kindChangePatch({ ...outlet, height: 45 }, 'switch')).toEqual({ kind: 'switch' });
   });
 
+  it('콘센트 종류로 바꾸면 스위치 그룹을 지우고, 스위치↔조명은 유지한다', () => {
+    const sw: Fixture = { id: 's', kind: 'switch', pos: { x: 0, y: 0 }, height: 120, group: '거실' };
+    expect(kindChangePatch(sw, 'outlet')).toHaveProperty('group', undefined);
+    expect(kindChangePatch(sw, 'outlet-waterproof')).toHaveProperty('group', undefined);
+    expect(kindChangePatch(sw, 'light')).not.toHaveProperty('group');
+  });
+
   it('조명으로 바꾸면 벽에서 뗀다', () => {
     const patch = kindChangePatch(outlet, 'light');
     expect(patch).toEqual({ kind: 'light', height: 230, wallId: undefined });
