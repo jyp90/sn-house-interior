@@ -21,11 +21,11 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Feature | Code | Spec |
 |---|---|---|
 | Interaction polish (press feedback, reduced motion, transform-only bars, input autocomplete) | `src/styles.css`, `src/docs/DocLinks.css`, `src/ui/fields.tsx`, `index.html` | §32 |
-| Plan model, schema versions (v6), migration | `src/model/schema.ts`, `src/persistence/parse.ts` | §5, §14.4, §26 |
+| Plan model, schema versions (v8), migration | `src/model/schema.ts`, `src/persistence/parse.ts` | §5, §14.4, §26, §27, §29 |
 | Store, undo/redo, selection | `src/model/store.ts`, `src/model/StoreContext.tsx` | §4, §6 |
 | Autosave, save status, JSON open/save | `src/persistence/storage.ts`, `src/persistence/file.ts`, `src/ui/saveLabel.ts` | §6 저장, §10, §14.1 F11 |
 | Revision history (20 snapshots) | `src/persistence/revisions.ts`, `src/ui/HistoryPanel.tsx` | §14.1 F10 |
-| Home preset (tracked `home/plan.json` + `home/floorplan.jpg`, dev + build, spec §24) | `vite.config.ts` `virtual:home-preset`, `src/persistence/homePreset.ts`, `src/main.tsx`, `scripts/check-dist.ts` | §15.1, §20 |
+| Home preset (tracked `home/plan.json` + `home/floorplan.jpg`, dev + build, spec §24) | `vite.config.ts` `virtual:home-preset`, `src/persistence/homePreset.ts`, `src/main.tsx`, `scripts/check-dist.ts` | §15.1, §24 |
 | 2D structure editor (walls, openings, rooms, tools, snapping) | `src/editor2d/`, `src/geometry/structure.ts`, `src/ui/StructurePanel.tsx` | §6 구조 모드, §14.1 |
 | Distance measurement tool (측정, screen-only) | `src/ui/uiStore.ts` `measure`, `src/editor2d/tools.ts` `measureToolPoint`, `src/editor2d/ToolPreview.tsx`, `src/ui/Toolbar.tsx` | §21 |
 | Background image + scale calibration (same-size re-upload keeps scale/offset) | `src/editor2d/calibration.ts`, `src/editor2d/BackgroundImage.tsx`, `src/persistence/images.ts` | §6, §14.1 F01 |
@@ -42,15 +42,18 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Room areas, floor/wall finishes (2D patterns, 3D textures, wall faces) | `src/geometry/polygon.ts`, `src/materials/`, `src/editor2d/Rooms2D.tsx`, `src/scene3d/Floor.tsx`, `src/scene3d/Walls3D.tsx`, `src/ui/FinishPicker.tsx` | §19 |
 | Wood-tone UI theme (design tokens) | `src/styles.css` | §19.4 |
 | Modes, shortcuts, mobile view-only | `src/ui/modes.ts`, `src/ui/shortcuts.ts`, `src/ui/uiStore.ts`, `src/ui/MobileInfoBar.tsx`, `src/App.tsx` | §6, §33 |
+| Custom box editing, item notes (`updateCustomProduct`, `Item.note`) | `src/model/store.ts`, `src/ui/properties/ItemProperties.tsx`, `src/export/pages.ts` | §26 |
+| Validation cache per plan, door-swing wall clamp, PDF emoji strip, first-frame viewport fill | `src/model/useValidation.ts`, `src/geometry/clearance.ts`, `src/export/pages.ts` `pdfSafe`, `src/styles.css` | §30 |
+| Opening 2D/PDF clamp to wall, checklist orphan pruning | `src/geometry/walls.ts` `openingObb`/`clampToWall`, `src/geometry/clearance.ts`, `src/editor2d/Openings2D.tsx`, `src/export/planSvg.ts`, `src/model/store.ts` `setChecklistEntry` | §31 |
 | Pages deploy (base path, bundle guard, OFL notice, Actions) | `vite.config.ts` base, `scripts/check-dist.ts`, `public/licenses/`, `.github/workflows/pages.yml`, `playwright.preview.config.ts` | §17 |
 
 ## Task → read this
 | Task | Read |
 |---|---|
 | Any change | `CLAUDE.md`, `HANDOFF.md` 「지금 상태」/「다음 할 일」 |
-| New feature / product decision | spec §1–2, §14–§19; brainstorm with the user, append a dated spec round |
+| New feature / product decision | spec §1–2, §14–§33; brainstorm with the user, append a dated spec round |
 | Schema field | skill `migrating-plan-schema`; spec §5, §14.4; `src/model/schema.ts`, `src/persistence/parse.ts` |
-| Add a catalog product | skill `adding-catalog-product`; spec §7, §13, §20.3; `src/catalog/products.ts`, `src/catalog/builders/index.ts` |
+| Add a catalog product | skill `adding-catalog-product`; spec §7, §13, §20.3, §29; `src/catalog/products.ts`, `src/catalog/builders/index.ts` |
 | Item height / mount rules | spec §20.1–§20.2; `src/catalog/elevation.ts`, `src/validation/validate.ts` |
 | PDF page or copy | spec §9, §15.3; `src/export/pages.ts` then `src/export/pdf.ts`; svg2pdf pitfalls in `CLAUDE.md` |
 | Floor/wall finish preset, room area | spec §19; `src/materials/presets.ts`, `src/geometry/polygon.ts`, `src/editor2d/tools.ts` (area tool) |

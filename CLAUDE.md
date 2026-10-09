@@ -2,7 +2,7 @@
 
 Personal (family-only) interior planner: rebuild our home in 3D from a floor plan, place real-size furniture and appliances (Samsung-first) by drag, check collisions / wall gaps / door swings, and export a contractor PDF. Single-package Vite + TypeScript + React 19 + react-three-fiber + zustand + zod SPA. No backend: localStorage + IndexedDB + JSON files.
 
-Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13; §15–§19 are later rounds, latest last). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
+Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13; §15–§33 are later rounds, latest last; the current last § is listed in `docs/README.md`). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
 
 ## Commands
 ```bash
@@ -10,8 +10,10 @@ npm install
 npm run typecheck && npm test        # run both before every commit
 npm run e2e                          # Playwright, own dev server on 5180 with HOMEFIT_SAMPLE=1
 npm run dev                          # local dev; loads home/ preset (same as build); HOMEFIT_SAMPLE=1 for the sample plan
-npm run build                        # tsc --noEmit && vite build (never includes the home preset)
-npm run check:dist                   # after build: Pages bundle guard (no images, no preset markers, base path)
+npm run build                        # tsc --noEmit && vite build; includes home/ preset + floorplan.jpg (spec §24); HOMEFIT_SAMPLE=1 excludes it
+npm run check:dist                   # after build: Pages bundle guard (no images except assets/floorplan-*.jpg, no private/ markers, /sn-house-interior/ base path)
+npm run preview                      # vite preview of dist on 4173 (base path /sn-house-interior/)
+npm run test:watch                   # vitest watch mode
 npm run e2e:preview                  # base-path build on 5181: PDF fonts + license link
 ```
 Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx playwright test e2e/pdf.spec.ts`.
@@ -26,9 +28,9 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
 - PDF: `export/pages.ts` (pure page data, wrapping, pagination) → `export/pdf.ts` (jsPDF + svg2pdf.js, lazy-loaded). Always the active layout. svg2pdf needs `font-family="Pretendard"` and has no `paint-order` (labels use two `<text>` layers).
 
 ## Non-negotiable rules
-- Privacy: the repo and the Pages URL are public. The home preset (`home/plan.json`) and its floor-plan background (`home/floorplan.jpg`, no complex name) are tracked and shipped on purpose (spec §24). Address, complex name, listing URL, the original listing floor-plan image and `make-our-home.mjs` live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. The home preset itself is tracked on purpose as `home/plan.json` + `home/floorplan.jpg` (spec §20, title 「우리 집」, no complex name); `virtual:home-preset` (`vite.config.ts`) reads it for dev and build and is `null` for tests and `HOMEFIT_SAMPLE=1`. `virtual:doc-links` stays dev-only.
+- Privacy: the repo and the Pages URL are public. The home preset (`home/plan.json`) and its floor-plan background (`home/floorplan.jpg`, no complex name) are tracked and shipped on purpose (spec §24). Address, complex name, listing URL, the original listing floor-plan image and `make-our-home.mjs` live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. Preset title is 「우리 집」, no complex name; `virtual:home-preset` (`vite.config.ts`) reads it for dev and build and is `null` for tests and `HOMEFIT_SAMPLE=1`. `virtual:doc-links` stays dev-only.
 - Never `git add -A` / `git add .`; add explicit paths. Never stage `private/`, `handoff/`, `archive/`, `.superpowers/`, `dist/`, `test-results/`, `playwright-report/`, or the root `Planner 5D …md` (user's file — do not touch).
-- Remote `origin` = `jyp90/sn-house-interior` (**public**, GitHub Pages at https://jyp90.github.io/sn-house-interior/ deploys on every `main` push via `.github/workflows/pages.yml`). Feature branch → PR → merge into `main` is the default (see Workflow). Pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK. Never push a branch based on pre-rewrite history (old repo `sn-house-interior-old`, private): it would resurrect removed commits.
+- Remote `origin` = `jyp90/sn-house-interior` (**public**, GitHub Pages at https://jyp90.github.io/sn-house-interior/ deploys on every `main` push via `.github/workflows/pages.yml`: `npm ci → typecheck → test → build → check:dist → deploy-pages`, any red step blocks the deploy; `workflow_dispatch` re-deploys manually. The bundle ships the `home/` preset + floorplan (spec §24). `.github/workflows/privacy.yml` runs `scan.sh --tracked / --log / --dist` on every PR and `main` push and needs the repo secret `PRIVACY_TERMS` (one term per line, same as `private/privacy-terms.txt`); a missing secret fails the job. After a merge verify with `gh run list --workflow pages.yml -L 1` (success) and load the Pages URL: preset plan + 3D + PDF.) Feature branch → PR → merge into `main` is the default (see Workflow). Pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK. Never push a branch based on pre-rewrite history (old repo `sn-house-interior-old`, private): it would resurrect removed commits.
 - No new dependency without the user's OK.
 - Checklist and PDF copy is written fresh; never copy wording from reference PDFs or the user's private consultation notes. Budget amounts and contractor-judging criteria never go into the PDF or app data (spec §15.3).
 - Never edit expected values, skip tests or replace a real user action in e2e with a direct store call to get green.
@@ -90,5 +92,5 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 - Product research source (user-provided, F01–F12 IDs): `docs/references/2026-10-08-planner5d-research-design.md`.
 - Past rounds (decisions, deferred minors): `archive/*/HANDOFF.md` (local only).
 
-## Work in progress (2026-10-08)
+## Work in progress (2026-10-09)
 - Plan 5 remainder (spec §14.5-5, §20.6): official Samsung dims + `sourceUrl` for the `-sample` products once the user's model list arrives; builders and generic products shipped in spec §20 (plan `docs/superpowers/plans/2026-10-09-catalog-elevation.md`).
