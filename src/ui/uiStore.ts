@@ -28,6 +28,8 @@ type UiState = {
   wallDraft: WallDraft;
   roomDraft: RoomDraft;
   historyOpen: boolean;
+  // GitHub 동기화 패널(스펙 §45.2), 화면 전용
+  syncOpen: boolean;
   compareLayoutId: string | null;
   areaTarget: string | null;
   // 「영역 그리기」를 누를 때마다 늘어난다. Editor2D가 이 값이 바뀌면 그리던 영역을 버린다(도구가 이미 area여도)
@@ -54,6 +56,7 @@ type UiState = {
   setWallDraft(patch: Partial<WallDraft>): void;
   setRoomDraft(patch: Partial<RoomDraft>): void;
   setHistoryOpen(open: boolean): void;
+  setSyncOpen(open: boolean): void;
   setCompareLayout(id: string | null): void;
   measureClick(p: Vec2): void;
   clearMeasure(): void;
@@ -75,6 +78,7 @@ export const useUi = create<UiState>()((set, get) => ({
   wallDraft: { thickness: 12, height: 230 },
   roomDraft: { w: 400, d: 300, thickness: 12, height: 230, name: '방' },
   historyOpen: false,
+  syncOpen: false,
   compareLayoutId: null,
   areaTarget: null,
   areaSession: 0,
@@ -103,6 +107,7 @@ export const useUi = create<UiState>()((set, get) => ({
   setWallDraft: (patch) => set({ wallDraft: { ...get().wallDraft, ...patch } }),
   setRoomDraft: (patch) => set({ roomDraft: { ...get().roomDraft, ...patch } }),
   setHistoryOpen: (open) => set({ historyOpen: open }),
+  setSyncOpen: (open) => set({ syncOpen: open }),
   setCompareLayout: (id) => set({ compareLayoutId: id }),
   measureClick: (p) => {
     const m = get().measure;

@@ -864,3 +864,24 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 44.3 테스트
 - 단위: `viewBox.test.ts` `pinchViewBox`(줌=zoomAt과 동일, 배율 1은 팬, 50cm 하한), `smallScreen.test.ts`(판정·viewport content·meta 적용). §33의 `viewOnly` 단위 테스트 삭제.
 - e2e `e2e/mobile.spec.ts`(390×844, `hasTouch`): meta viewport `width=1200` → 구조 탭에서 `.left`·「벽 그리기」·`.right`·안내 문구·「JSON 저장」 표시 / 합성 터치 포인터 2개로 핀치 → viewBox 폭이 절반 미만.
+
+## 45. 33차 반영: GitHub 저장소로 평면 동기화 (2026-10-10)
+
+사용자 요청: 평면 데이터가 기기마다 다르지 않게. §12 「백엔드 없음」은 유지하되, 이미 공개 저장소에 추적·배포하는 `home/plan.json`(§24)을 **기기 간 공유 저장소**로 쓴다. 기기에서 GitHub Contents API로 그 파일을 읽고(공개, 토큰 불필요) 쓴다(fine-grained PAT, `contents: write`). 새 의존성 없음(`fetch`).
+
+### 45.1 저장과 설정 (`src/persistence/sync.ts`, `src/persistence/github.ts`)
+- 설정은 브라우저 localStorage `homefit:sync:v1`에만 둔다: `{ repo: "owner/name", branch, path, token, lastSha, lastAt }`. 기본 `repo = "jyp90/sn-house-interior"`, `branch = "main"`, `path = "home/plan.json"`, `token = ""`. 토큰은 기기별 입력이며 Plan JSON·PNG/PDF·번들·커밋 어디에도 들어가지 않는다. 읽기/쓰기/지우기는 try/catch(사생활 창 등), 깨진 값은 기본값.
+- `github.ts`(순수, `fetch` 주입 가능): `getFile({repo, branch, path, token?}) → { ok: true, text, sha } | { ok: false, error }`(`GET /repos/{repo}/contents/{path}?ref={branch}`, base64 → UTF-8 디코드), `putFile({…, token, text, sha, message}) → { ok: true, sha } | { ok: false, error }`(`PUT`, UTF-8 → base64, `sha`는 수정 시 필수). 오류 문구(한국어): 401/403 「토큰이 없거나 권한이 없습니다」, 404 「저장소나 파일을 찾을 수 없습니다」, 409/422 「GitHub의 파일이 바뀌었습니다. 먼저 불러오세요」, 네트워크 「GitHub에 연결하지 못했습니다」, 그 외 상태 코드 포함.
+- 올리는 내용은 「JSON 저장」과 같은 `planToJson(plan)`에 끝 개행. 커밋 메시지 `chore(plan): sync from app (yyyy-MM-dd HH:mm)`.
+
+### 45.2 화면 (`src/ui/SyncPanel.tsx`, 툴바 「동기화」)
+- 툴바 「이력」 옆 「동기화」 버튼(`aria-pressed`, `uiStore.syncOpen`/`setSyncOpen`, 화면 전용). 패널은 `.history`와 같은 자리·스타일(`.sync`, 캔버스 오른쪽 위 겹침, 체크리스트·내보내기 탭에서도 열림).
+- 패널: 제목 「GitHub 동기화」 + 닫기. 입력 「저장소」(`owner/name`), 「브랜치」, 「파일」, 「토큰」(`type="password"`, 아래 한 줄 「이 기기 브라우저에만 저장됩니다. 저장소 contents 쓰기 권한의 fine-grained 토큰」). 상태 한 줄(`role="status"`): 「마지막 동기화 없음」 또는 「마지막 동기화 HH:mm · abcdef1」.
+- 「불러오기」: `getFile` → `parsePlan` → 실패면 배너 오류, 성공이면 `prepareHomePreset({ plan, imageUrl: homePreset?.imageUrl ?? null }, imageStore)`로 프리셋 평면도 이미지를 확보한 뒤 `store.replacePlan`(실행 취소 한 단계) + `ui.resetView()`, `lastSha`/`lastAt` 저장, 배너 「GitHub에서 평면을 불러왔습니다(abcdef1). 실행 취소로 되돌릴 수 있습니다.」 기기에 올린 다른 배경 이미지는 동기화되지 않는다(이미지 없음 안내는 기존 `BackgroundImage` 처리).
+- 「GitHub에 저장」(토큰 비어 있으면 disabled): 먼저 `getFile`로 현재 sha를 받고, `lastSha`가 있고 다르면 `window.confirm('GitHub의 평면이 마지막 동기화 이후 바뀌었습니다. 지금 평면으로 덮어쓸까요?')` 취소 시 중단. `putFile` 성공 → `lastSha`/`lastAt` 저장, 배너 「GitHub에 저장했습니다(abcdef1). 1–2분 뒤 배포에 반영됩니다.」 실패 → 배너 오류.
+- 시작 시 확인(`main.tsx`): `lastSha`가 있으면 토큰 없이 `getFile` 한 번 → sha가 다르면 배너 「GitHub에 새 평면이 있습니다. 「동기화」에서 불러오세요.」 설정이 없으면 호출하지 않는다(비가입 기기는 네트워크 요청 0).
+- 저장이 `main`을 바꾸므로 `pages.yml`이 돌아 프리셋도 갱신되고, 다른 기기의 §39.4 안내도 그대로 동작한다. `privacy.yml`은 메모에 사생활 용어가 있으면 빨갛게 된다(배포는 막지 않음) — 메모에 주소·단지명을 적지 않는다.
+
+### 45.3 테스트
+- 단위 `github.test.ts`(fetch mock): 한국어 base64 왕복, GET 경로·헤더(토큰 있을 때만 `Authorization`), PUT 본문(`sha`, `branch`, `content`), 401/404/409/네트워크 오류 문구. `sync.test.ts`: 기본값, 저장/읽기/지우기, 깨진 JSON → 기본값, 저장소 예외 무시.
+- e2e `e2e/sync.spec.ts`(`page.route('https://api.github.com/**')`로 메모리 파일 흉내): 동기화 열기 → 토큰 입력 → 「GitHub에 저장」 → PUT 본문에 현재 제목 포함·상태 줄 갱신 → 원격 내용을 다른 제목으로 바꾼 뒤 「불러오기」 → 제목 바뀜·실행 취소로 복귀 → 원격 sha를 바꾼 뒤 저장 → confirm 수락 → PUT 전송. 새로고침 후 설정(토큰 제외 표시) 유지.
