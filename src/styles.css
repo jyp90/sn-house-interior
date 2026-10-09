@@ -200,14 +200,17 @@ p.badge { display: inline-block; margin: 0 0 8px; }
   .app-mobile { grid-template-columns: 1fr; grid-template-rows: auto auto 60vh auto; }
   .app-mobile .center { grid-column: 1; grid-row: 3; height: 60vh; }
   .app-mobile .toolbar { flex-wrap: nowrap; overflow-x: auto; }
-  .mobile-info {
+  /* 체크리스트·내보내기(page 모드)는 데스크톱 app-wide와 같은 전체 높이 1열 — 캔버스용 60vh 행과 하단 패널 행을 쓰지 않는다 */
+  .app-mobile.app-wide { grid-template-rows: auto auto 1fr; }
+  .app-mobile.app-wide .center { height: auto; }
+  .app-mobile .mobile-info {
     position: absolute; top: 0; left: 0; right: 0; z-index: 4;
     display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px;
     padding: 6px 12px; background: var(--panel-translucent); border-bottom: 1px solid var(--border); font-size: 13px;
   }
-  .mobile-info-name { font-weight: 600; }
-  .mobile-info-dims { color: var(--text-2); font-size: 12px; }
-  .mobile-bottom { grid-column: 1; grid-row: 4; overflow-y: auto; max-height: 32vh; background: var(--panel); padding: 10px 14px; border-top: 1px solid var(--border); }
+  .app-mobile .mobile-info-name { font-weight: 600; }
+  .app-mobile .mobile-info-dims { color: var(--text-2); font-size: 12px; }
+  .app-mobile .mobile-bottom { grid-column: 1; grid-row: 4; overflow-y: auto; max-height: 32vh; background: var(--panel); padding: 10px 14px; border-top: 1px solid var(--border); }
 }
 /* 내보내기 */
 .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 16px; }

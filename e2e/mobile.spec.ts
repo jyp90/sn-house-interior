@@ -43,8 +43,13 @@ test('모바일 폭에서는 보기 전용: 패널이 숨고, 선택은 되지�
   );
   expect(after).toMatchObject({ x: 100, y: 100 });
 
-  // 체크리스트 탭에서 체크 가능
+  // 체크리스트 탭에서 체크 가능하고, 툴바 아래 빈 띠 없이 바로 내용이 보인다(스펙 §32 리뷰 반영)
   await page.getByRole('button', { name: '체크리스트', exact: true }).click();
+  const heading = page.getByRole('heading', { name: '공사 체크리스트' });
+  await expect(heading).toBeVisible();
+  const headingBox = await heading.boundingBox();
+  if (!headingBox) throw new Error('체크리스트 제목 bounding box 없음');
+  expect(headingBox.y).toBeLessThan(160);
   const firstCheck = page.locator('.cl-check input').first();
   await firstCheck.check();
   await expect(firstCheck).toBeChecked();
