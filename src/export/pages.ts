@@ -215,6 +215,9 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
     drawing(`가구·가전 배치도 (${layout.name})`, planSvg(plan, { ...base, items: 'number' }), [
       '번호는 제품 목록의 번호와 같습니다',
       '회색 부채꼴은 방문 열림 반경입니다',
+      ...placed
+        .filter(({ item }) => item.note)
+        .map(({ item, product }) => `${numbers.get(item.id)}. ${product.name} — ${item.note}`),
     ]),
     drawing('전기 계획도', planSvg(plan, { ...base, items: 'faint', fixtures: true, highlightIds: dedicated.map((p) => p.item.id) }), [
       ...(plan.fixtures.length > 0

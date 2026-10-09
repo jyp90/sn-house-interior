@@ -111,6 +111,54 @@ describe('createPlanStore', () => {
     expect(s.getState().plan.customProducts[0]).toMatchObject({ id: pid, builder: 'box', category: 'custom', dims: { w: 70, d: 80, h: 90 } });
   });
 
+  it('updateCustomProduct는 이름·치수를 바꾸고 한 번의 실행 취소 단위다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pid = s.getState().addCustomProduct({ name: '수납장', w: 60, d: 60, h: 90 });
+    const pastBefore = s.getState().past.length;
+    s.getState().updateCustomProduct(pid, { w: 80 });
+    expect(s.getState().plan.customProducts[0].dims).toEqual({ w: 80, d: 60, h: 90 });
+    expect(s.getState().past.length).toBe(pastBefore + 1);
+    s.getState().undo();
+    expect(s.getState().plan.customProducts[0].dims.w).toBe(60);
+  });
+
+  it('updateCustomProduct는 이름 공백·범위 밖 치수를 무시한다(변경 없음)', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pid = s.getState().addCustomProduct({ name: '수납장', w: 60, d: 60, h: 90 });
+    const pastBefore = s.getState().past.length;
+    s.getState().updateCustomProduct(pid, { w: 0 });
+    s.getState().updateCustomProduct(pid, { w: 1001 });
+    s.getState().updateCustomProduct(pid, { name: '  ' });
+    expect(s.getState().plan.customProducts[0]).toMatchObject({ name: '수납장', dims: { w: 60, d: 60, h: 90 } });
+    expect(s.getState().past.length).toBe(pastBefore);
+  });
+
+  it('updateCustomProduct는 카탈로그 제품 id는 바꾸지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const pastBefore = s.getState().past.length;
+    s.getState().updateCustomProduct('sofa-3seat', { name: '내맘대로소파' });
+    expect(s.getState().plan.customProducts).toEqual([]);
+    expect(s.getState().past.length).toBe(pastBefore);
+    expect(findProduct(s.getState().plan, 'sofa-3seat')!.name).not.toBe('내맘대로소파');
+  });
+
+  it('updateItem note는 trim해서 저장하고 빈 문자열이면 키를 지운다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().updateItem(id, { note: '  콘센트 확인  ' });
+    expect(activeItems(s.getState().plan).find((i) => i.id === id)!.note).toBe('콘센트 확인');
+    s.getState().updateItem(id, { note: '   ' });
+    expect('note' in activeItems(s.getState().plan).find((i) => i.id === id)!).toBe(false);
+  });
+
+  it('잠긴 아이템도 메모는 수정할 수 있다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem(P, V, { x: 0, y: 0 });
+    s.getState().updateItem(id, { locked: true });
+    s.getState().updateItem(id, { note: '시공 후 재측정' });
+    expect(activeItems(s.getState().plan).find((i) => i.id === id)!.note).toBe('시공 후 재측정');
+  });
+
   it('loadPlan은 히스토리와 선택을 초기화한다', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     s.getState().addItem(P, V, { x: 0, y: 0 });

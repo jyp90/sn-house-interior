@@ -8,8 +8,8 @@ describe('parsePlan', () => {
   });
 
   it('parsePlan은 버전이 다르면 실패한다', () => {
-    const r = parsePlan({ ...SAMPLE_PLAN, version: 6 });
-    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 6' });
+    const r = parsePlan({ ...SAMPLE_PLAN, version: 7 });
+    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 7' });
   });
 
   it('객체가 아니면 실패한다', () => {
@@ -26,7 +26,7 @@ describe('parsePlan', () => {
   it('v3 파일은 v4로 올라가고 마감 필드 없이도 통과한다', () => {
     const r = parsePlan({ ...JSON.parse(JSON.stringify(SAMPLE_PLAN)), version: 3 });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.plan.version).toBe(5);
+    if (r.ok) expect(r.plan.version).toBe(6);
   });
 
   it('방 영역·마감과 기본 마감을 받는다', () => {
@@ -49,7 +49,21 @@ describe('parsePlan', () => {
   it('v4 파일은 v5로 올라가고 elevation 없이도 통과한다', () => {
     const r = parsePlan({ ...JSON.parse(JSON.stringify(SAMPLE_PLAN)), version: 4 });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.plan.version).toBe(5);
+    if (r.ok) expect(r.plan.version).toBe(6);
+  });
+
+  it('v5 파일은 v6으로 올라가고 아이템 메모 없이도 통과한다', () => {
+    const r = parsePlan({ ...JSON.parse(JSON.stringify(SAMPLE_PLAN)), version: 5 });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.plan.version).toBe(6);
+  });
+
+  it('v6: 아이템 메모는 문자열이다', () => {
+    const raw = JSON.parse(JSON.stringify(SAMPLE_PLAN));
+    raw.layouts[0].items = [{ id: 'i1', productId: 'sofa-3seat', variantId: 'v', x: 100, y: 100, rotation: 0, note: '콘센트 확인' }];
+    const r = parsePlan(raw);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.plan.layouts[0].items[0].note).toBe('콘센트 확인');
   });
 
   it('v5: 아이템 elevation은 0 이상 정수, 제품 mount는 ceiling도 된다', () => {
@@ -69,7 +83,7 @@ describe('parsePlan', () => {
 
 describe('migrate', () => {
   it('현재 버전은 그대로 돌려준다', () => {
-    const raw = { version: 5, a: 1 };
+    const raw = { version: 6, a: 1 };
     expect(migrate(raw)).toBe(raw);
   });
 
@@ -82,7 +96,7 @@ describe('migrate', () => {
 
   it('변환이 없거나 현재보다 높은 버전은 null', () => {
     expect(migrate({ version: 0 })).toBeNull();
-    expect(migrate({ version: 6 })).toBeNull();
+    expect(migrate({ version: 7 })).toBeNull();
     expect(migrate({})).toBeNull();
   });
 
@@ -109,7 +123,7 @@ describe('migrate', () => {
     };
     const r = parsePlan(v1);
     if (!r.ok) throw new Error(r.error);
-    expect(r.plan.version).toBe(5);
+    expect(r.plan.version).toBe(6);
     expect(r.plan.layouts).toEqual([{ id: 'layout-a', name: 'A안', items: [item] }]);
     expect(r.plan.activeLayoutId).toBe('layout-a');
   });

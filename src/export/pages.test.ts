@@ -54,6 +54,15 @@ describe('buildPdf', () => {
     expect(rest.every((p) => p.kind === 'table' && p.title.startsWith('공사 체크리스트'))).toBe(true);
   });
 
+  it('배치도 비고 줄에 메모 있는 아이템을 번호. 제품명 — 메모로 나열한다', () => {
+    const noted = { ...sofa('s1'), note: '벽에서 10cm 띄움' };
+    const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [noted, washer]), input);
+    const layoutDrawing = doc.pages[6];
+    if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
+    expect(layoutDrawing.notes.some((l) => l.startsWith('1. 3인 소파 — 벽에서 10cm 띄움'))).toBe(true);
+    expect(layoutDrawing.notes.some((l) => l.includes('그란데'))).toBe(false);
+  });
+
   it('견적 요청 쪽: 공정별 항목은 자재비+시공비 합산 안내와 11개 공정, 예산 금액은 넣지 않는다', () => {
     const doc = buildPdf(SAMPLE_PLAN, input);
     const groups = doc.pages.find((p) => p.title === '견적 요청 — 공정별 항목') as TablePage;

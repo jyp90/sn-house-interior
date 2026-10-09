@@ -57,6 +57,7 @@ export const ItemSchema = z.object({
   label: z.string().optional(),
   locked: z.boolean().optional(),
   verified: z.boolean().optional(),
+  note: z.string().optional(), // 아이템 메모(빈 문자열은 저장하지 않고 키를 지운다)
 });
 
 export const LayoutSchema = z.object({
@@ -150,7 +151,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(5),
+    version: z.literal(6),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

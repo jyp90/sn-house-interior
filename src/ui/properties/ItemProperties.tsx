@@ -6,7 +6,7 @@ import type { Item } from '../../model/schema';
 import { usePlan, usePlanStore } from '../../model/StoreContext';
 import { useValidation } from '../../model/useValidation';
 import { conflictLines } from '../../validation/describe';
-import { CheckboxField, NumberField } from '../fields';
+import { CheckboxField, NumberField, TextAreaField, TextField } from '../fields';
 
 export function ItemProperties({ item }: { item: Item }) {
   const [open, setOpen] = useState(false);
@@ -14,6 +14,7 @@ export function ItemProperties({ item }: { item: Item }) {
   const plan = usePlan((s) => s.plan);
   const status = useValidation();
   const product = findProduct(plan, item.productId);
+  const customProduct = product && plan.customProducts.some((p) => p.id === product.id) ? product : null;
   const st = status[item.id];
   const s = store.getState();
   const locked = !!item.locked;
@@ -24,11 +25,48 @@ export function ItemProperties({ item }: { item: Item }) {
   return (
     <>
       <h3>{product?.name ?? '알 수 없는 제품'}</h3>
-      {product && (
-        <p className="muted">
-          {product.model && `${product.model} · `}
-          {product.dims.w}×{product.dims.d}×{product.dims.h}cm
-        </p>
+      {customProduct ? (
+        <>
+          <TextField
+            label="이름"
+            value={customProduct.name}
+            disabled={locked}
+            onCommit={(v) => s.updateCustomProduct(customProduct.id, { name: v })}
+          />
+          <div className="row">
+            <NumberField
+              key={`${customProduct.id}-w`}
+              label="폭 W"
+              unit="cm"
+              value={customProduct.dims.w}
+              disabled={locked}
+              onCommit={(v) => s.updateCustomProduct(customProduct.id, { w: v })}
+            />
+            <NumberField
+              key={`${customProduct.id}-d`}
+              label="깊이 D"
+              unit="cm"
+              value={customProduct.dims.d}
+              disabled={locked}
+              onCommit={(v) => s.updateCustomProduct(customProduct.id, { d: v })}
+            />
+            <NumberField
+              key={`${customProduct.id}-h`}
+              label="높이 H"
+              unit="cm"
+              value={customProduct.dims.h}
+              disabled={locked}
+              onCommit={(v) => s.updateCustomProduct(customProduct.id, { h: v })}
+            />
+          </div>
+        </>
+      ) : (
+        product && (
+          <p className="muted">
+            {product.model && `${product.model} · `}
+            {product.dims.w}×{product.dims.d}×{product.dims.h}cm
+          </p>
+        )
       )}
       {product?.power && (
         <p className="muted">
@@ -91,6 +129,7 @@ export function ItemProperties({ item }: { item: Item }) {
           </select>
         </label>
       )}
+      <TextAreaField key={`${item.id}-note`} label="메모" value={item.note ?? ''} onCommit={(v) => s.updateItem(item.id, { note: v })} />
       <CheckboxField label="잠금 (이동·회전 막기)" checked={locked} onChange={(v) => s.updateItem(item.id, { locked: v })} />
       <CheckboxField label="실측 확인" checked={!!item.verified} onChange={(v) => s.updateItem(item.id, { verified: v })} />
       <div className="row">
