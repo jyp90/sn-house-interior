@@ -3,9 +3,9 @@ import { findProduct } from '../catalog/products';
 import { PHASES } from '../checklist/defaults';
 import { checklistEntry, checklistItems } from '../checklist/items';
 import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
+import { areaM2 } from '../geometry/polygon';
 import { openingNumbers } from '../geometry/structure';
 import { wallReferenceText } from '../geometry/wallReference';
-import { areaM2 } from '../geometry/polygon';
 import { finishLabel, planFinish, roomFloor, roomWall } from '../materials/presets';
 import { activeItems, activeLayout } from '../model/layout';
 import type { Item, Opening, Plan, Product } from '../model/schema';
@@ -246,6 +246,7 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
       '단위: cm · 벽 길이는 벽 중심선 기준',
       `≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`,
       '개구부 아래 숫자는 벽 시작점 기준 위치(cm)',
+      'D·W·O 번호는 창호 일람의 번호',
     ]),
     ...tablePages(
       '방 마감표',

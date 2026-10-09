@@ -84,7 +84,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## export/
 - `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
-- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90`, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
+- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). 치수 평면도 only (`dimensionLines: true`): opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90` — not shown on 배치도/전기 계획도/PNG. Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width, also used for the 「중문」 label on vertical walls to clear the width label); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
 
 ## devserver/ (Node, dev server only)

@@ -26,4 +26,7 @@ describe('presets', () => {
     expect(finishLabel({ material: 'wallpaper', color: '#e8dcc8' })).toBe('벽지 · 베이지');
     expect(finishLabel({ material: 'plain', color: '#ffffff' })).toBe('단색 · #ffffff');
   });
+  it('finishLabel: hex는 대소문자 구분 없이 프리셋과 비교한다', () => {
+    expect(finishLabel({ material: 'wood', color: '#C9A06C' })).toBe('마루 · 내추럴 오크');
+  });
 });

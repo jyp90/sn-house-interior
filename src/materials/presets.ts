@@ -41,7 +41,8 @@ const MATERIAL_LABEL: Record<FloorFinish['material'] | WallFinish['material'], s
 function presetLabel(finish: FloorFinish | WallFinish): string | undefined {
   const presets: readonly { finish: FloorFinish | WallFinish; label: string }[] =
     finish.material === 'paint' || finish.material === 'wallpaper' ? WALL_PRESETS : FLOOR_PRESETS;
-  return presets.find((p) => p.finish.material === finish.material && p.finish.color === finish.color)?.label;
+  const color = finish.color.toLowerCase();
+  return presets.find((p) => p.finish.material === finish.material && p.finish.color.toLowerCase() === color)?.label;
 }
 
 // PDF 표용: 프리셋이면 「재질 · 라벨」, 아니면 「재질 · #rrggbb」
