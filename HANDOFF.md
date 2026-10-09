@@ -3,7 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-09 기준 `main` = PR #22(`feat/mode-hash`, §36) 병합 직후. 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §36.
+- 2026-10-09 기준 `main` `64042d9`(PR #23 `feat/room-labels`, §37 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §37.
 - 테스트(`main`): typecheck 통과, `npm test` 575 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 578 통과·0 skip), e2e 39 통과(17 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 Pages 주소(§33 보기 전용 포함).
@@ -12,6 +12,7 @@
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
 | §34 | — | 체크리스트 탭에 1차·2차 문서 링크 추가(`private/doc-links.local.json` 데이터만, 코드 변경 없음) | 560 / 37 (변경 없음) |
+| §37 | #23 | 2D 도면 자리 흰 종이(`BackgroundImage` `background-paper`, 프리셋 배경 `opacity` 0), 방 라벨 20px + `(면적㎡)` 줄(`Rooms2D`) | 575 / 39 |
 | §36 | #22 | 페이지 타이틀 「우리집 인테리어 by 송뇽」, 탭 ↔ URL hash(`src/ui/modeHash.ts`, `e2e/modeHash.spec.ts`) | 575 / 39 |
 | §35 | #21 | 배경 도면 흑백화(`BackgroundImage` grayscale), 닫힌 벽 영역 자동 인식(`geometry/enclosure.ts`, `autoRoomPolygon(s)`, 방 속성·구조 패널 버튼), `home/plan.json` 방 8개 polygon | 572 / 38 |
 | §33 | #18 | 820px 이하 보기 전용(`uiStore.viewOnly`, `MobileInfoBar`, `e2e/mobile.spec.ts`) | 560 / 37 |
