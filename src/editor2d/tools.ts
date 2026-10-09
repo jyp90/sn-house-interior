@@ -2,6 +2,7 @@ import type { StoreApi } from 'zustand/vanilla';
 import { findProduct } from '../catalog/products';
 import { FIXTURE_DEFAULT_HEIGHT, snapFixture } from '../electrical/fixtures';
 import { axes, corners, itemObb, type OBB } from '../geometry/obb';
+import { insideHouse, OUTSIDE_HOUSE_TEXT } from '../geometry/houseArea';
 import { closesPolygon, isSimplePolygon, isValidPolygon } from '../geometry/polygon';
 import { nearestWall, openingAtPoint } from '../geometry/structure';
 import { wallObb } from '../geometry/walls';
@@ -124,9 +125,20 @@ export function finishArea(store: StoreApi<PlanState>, points: Vec2[]): boolean 
   return true;
 }
 
+// 집 영역 밖 클릭 거부(스펙 §38): 벽·방 만들기는 벽을 만들어 영역을 정의하므로 제외, 개구부는 벽 위에만 놓이므로 제외
+const HOUSE_BOUND_TOOLS: ReadonlySet<Tool> = new Set<Tool>(['label', 'fixture', 'area']);
+
 export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
   const ui = useUi.getState();
   const s = ctx.store.getState();
+  if (HOUSE_BOUND_TOOLS.has(tool) && !insideHouse(s.plan.walls, raw)) {
+    const first = ctx.areaPoints[0];
+    const closing = tool === 'area' && first && ctx.areaPoints.length >= 3 && closesPolygon(raw, first, AREA_CLOSE_CM);
+    if (!closing) {
+      ui.showBanner({ kind: 'error', text: OUTSIDE_HOUSE_TEXT });
+      return;
+    }
+  }
   switch (tool) {
     case 'wall': {
       const endpoints = [...s.plan.walls.flatMap((w) => [w.a, w.b]), ...ctx.wallPoints];
