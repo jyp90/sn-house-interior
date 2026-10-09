@@ -11,8 +11,8 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
 | `docs/superpowers/plans/2026-10-08-homefit-03-layouts-export.md` | Plan 3 done |
 | `docs/superpowers/plans/2026-10-08-homefit-04-electrical-checklist-pdf.md` | Plan 4 done |
-| `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
-| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy); Tasks 1–3 merged (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK |
+| `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` | Pages deploy design (spec §17); done 2026-10-09 — live at https://jyp90.github.io/sn-house-interior/ |
+| `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md` | Plan 5a (Pages deploy) done |
 | `docs/superpowers/plans/2026-10-08-room-finish.md` | Room areas, finishes, wood-tone UI (spec §19); branch `feat/room-finish`, PR pending |
 | Plan 5 (catalog, builders) | Not written — spec §14.5-5, §13; deploy split out to §17 |
 
@@ -51,6 +51,6 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Floor/wall finish preset, room area | spec §19; `src/materials/presets.ts`, `src/geometry/polygon.ts`, `src/editor2d/tools.ts` (area tool) |
 | Checklist items | spec §8, §15.2 (new `i-` ids, fresh wording) |
 | Anything touching `private/` or the home preset | skill `checking-privacy`; spec §3, §15.1; privacy rule in `CLAUDE.md` |
-| Deploy to Pages | spec §17 → `docs/superpowers/specs/2026-10-08-pages-deploy-design.md` (§11 approval points) |
+| Deploy / change the Pages setup | spec §17 → `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`; `.github/workflows/pages.yml`, `scripts/check-dist.ts`; never push pre-rewrite history |
 | Commit / finish a round | skills `committing-safely`, `syncing-docs`, `exploratory-qa` |
 | Resume a past round | `archive/*/HANDOFF.md` (local only) |

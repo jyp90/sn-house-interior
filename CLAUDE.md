@@ -11,6 +11,8 @@ npm run typecheck && npm test        # run both before every commit
 npm run e2e                          # Playwright, own dev server on 5180 with HOMEFIT_SAMPLE=1
 npm run dev                          # local dev; loads private/ home preset if present
 npm run build                        # tsc --noEmit && vite build (never includes the home preset)
+npm run check:dist                   # after build: Pages bundle guard (no images, no preset markers, base path)
+npm run e2e:preview                  # base-path build on 5181: PDF fonts + license link
 ```
 Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx playwright test e2e/pdf.spec.ts`.
 
@@ -26,7 +28,7 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
 ## Non-negotiable rules
 - Privacy: the repo and Pages build will be public. Address, complex name, listing URL, floor-plan images and our home preset live only in `private/` (gitignored). Never put them in tracked files, the bundle, exported PNG/PDF backgrounds, commit messages or docs. `virtual:home-preset` (`vite.config.ts`) is `null` for build, tests and `HOMEFIT_SAMPLE=1`.
 - Never `git add -A` / `git add .`; add explicit paths. Never stage `private/`, `handoff/`, `archive/`, `.superpowers/`, `dist/`, `test-results/`, `playwright-report/`, or the root `Planner 5D …md` (user's file — do not touch).
-- Remote `origin` = `jyp90/sn-house-interior` (**private**). Feature branch → PR → merge into `main` is the default (see Workflow). Making the repo public, Pages deploy, pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK; going public first needs a history rewrite (`f3726c0` carries preset coordinates).
+- Remote `origin` = `jyp90/sn-house-interior` (**public**, GitHub Pages at https://jyp90.github.io/sn-house-interior/ deploys on every `main` push via `.github/workflows/pages.yml`). Feature branch → PR → merge into `main` is the default (see Workflow). Pushing directly to `main` and force-pushing `main` or someone else's branch still need the user's OK. Never push a branch based on pre-rewrite history (old repo `sn-house-interior-old`, private): it would resurrect removed commits.
 - No new dependency without the user's OK.
 - Checklist and PDF copy is written fresh; never copy wording from reference PDFs or the user's private consultation notes. Budget amounts and contractor-judging criteria never go into the PDF or app data (spec §15.3).
 - Never edit expected values, skip tests or replace a real user action in e2e with a direct store call to get green.
@@ -81,7 +83,4 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 - Past rounds (decisions, deferred minors): `archive/*/HANDOFF.md` (local only).
 
 ## Work in progress (2026-10-08)
-- Pages deploy (spec §17, `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`): plan 5a `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md`; Tasks 1–3 merged to `main` (PR #4); Task 4 (history rewrite, repo re-create, public, Pages) pending user OK.
-- Self-update button (spec §18): branch `feat/self-update`, checks + QA done, PR open, waits for the user to merge.
-- Room areas, floor/wall finishes, wood-tone UI (spec §19): branch `feat/room-finish`, plan `docs/superpowers/plans/2026-10-08-room-finish.md`; checks + QA done, PR pending.
 - Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, exploratory QA): not started, waits for the user's model list.
