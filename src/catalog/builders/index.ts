@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import type { BuilderId, Product, Variant } from '../../model/schema';
-import { DEFAULT_CEILING_CM, productElevationCm } from '../elevation';
 import { buildBasin } from './basin';
 import { buildBed } from './bed';
 import { buildBox } from './box';
@@ -42,11 +41,6 @@ const BUILDERS: Record<BuilderId, Builder> = {
 export function buildProduct(p: Product, variantId: string): THREE.Group {
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   return (BUILDERS[p.builder] ?? buildBox)(p, variant);
-}
-
-// 제품 기본 설치 높이. 평면이 없는 곳(테스트·카탈로그)용; 화면은 itemElevationCm을 쓴다
-export function mountHeightCm(p: Product): number {
-  return productElevationCm(p, DEFAULT_CEILING_CM);
 }
 
 // 공유 재질(parts.material 캐시)은 해제하지 않고 지오메트리만 해제한다

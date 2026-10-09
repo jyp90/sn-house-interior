@@ -29,9 +29,17 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     if (object) disposeObject(object);
   }, [object]);
 
+  const ceiling = usePlan((s) => ceilingHeightCm(s.plan));
+  const elevation = product ? itemElevationCm(item, product, ceiling) : 0;
+  // 드래그 레이가 아이템이 놓인 높이의 수평면과 만나야 커서를 따라간다(바닥(0)은 그대로 FLOOR_PLANE)
+  const dragPlane = useMemo(
+    () => (elevation === 0 ? FLOOR_PLANE : new THREE.Plane(new THREE.Vector3(0, 1, 0), -cmToM(elevation))),
+    [elevation],
+  );
+
   const floorPoint = (e: ThreeEvent<PointerEvent>) => {
     const p = new THREE.Vector3();
-    return e.ray.intersectPlane(FLOOR_PLANE, p) ? { x: mToCm(p.x), y: mToCm(p.z) } : null;
+    return e.ray.intersectPlane(dragPlane, p) ? { x: mToCm(p.x), y: mToCm(p.z) } : null;
   };
 
   const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -99,8 +107,7 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     finishDrag();
   }, []);
 
-  const ceiling = usePlan((s) => ceilingHeightCm(s.plan));
-  const y = product ? cmToM(itemElevationCm(item, product, ceiling)) : 0;
+  const y = cmToM(elevation);
   return (
     <group
       position={[cmToM(item.x), y, cmToM(item.y)]}

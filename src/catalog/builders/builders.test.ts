@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import type { BuilderId, Product } from '../../model/schema';
+import { DEFAULT_CEILING_CM, productElevationCm } from '../elevation';
 import { CATALOG, CATEGORY_LABEL, CATEGORY_ORDER } from '../products';
-import { buildProduct, mountHeightCm } from './index';
+import { buildProduct } from './index';
 
 function bounds(p: Product) {
   const g = buildProduct(p, p.variants[0].id);
@@ -35,8 +36,8 @@ describe('buildProduct', () => {
   });
 
   it('벽걸이 제품만 설치 높이를 갖는다', () => {
-    expect(mountHeightCm(CATALOG.find((p) => p.mount === 'wall')!)).toBe(90);
-    expect(mountHeightCm(CATALOG[0])).toBe(0);
+    expect(productElevationCm(CATALOG.find((p) => p.mount === 'wall')!, DEFAULT_CEILING_CM)).toBe(90);
+    expect(productElevationCm(CATALOG[0], DEFAULT_CEILING_CM)).toBe(0);
   });
 
   const countNamed = (o: THREE.Object3D, name: string) => {
@@ -65,7 +66,7 @@ describe('buildProduct', () => {
   });
 
   it('하부장은 상판과 문짝 수만큼의 문이 있고, 싱크가 있으면 싱크 홈이 있다', () => {
-    const p = CATALOG.find((x) => x.id === 'samsung-sink-base-240-sample')!;
+    const p = CATALOG.find((x) => x.id === 'kitchen-base-240')!;
     const g = buildProduct(p, p.variants[0].id);
     expect(countNamed(g, 'door')).toBe(4);
     expect(countNamed(g, 'counter')).toBe(1);
@@ -73,9 +74,9 @@ describe('buildProduct', () => {
   });
 
   it('상부장은 상판이 없고 벽걸이 기본 높이 145', () => {
-    const p = CATALOG.find((x) => x.id === 'samsung-upper-cabinet-240-sample')!;
+    const p = CATALOG.find((x) => x.id === 'kitchen-upper-240')!;
     expect(countNamed(buildProduct(p, p.variants[0].id), 'counter')).toBe(0);
-    expect(mountHeightCm(p)).toBe(145);
+    expect(productElevationCm(p, DEFAULT_CEILING_CM)).toBe(145);
   });
 
   it('빌트인 가전은 전면 패널만 변형 색이고, 인덕션은 윗면 유리가 있다', () => {
@@ -83,7 +84,7 @@ describe('buildProduct', () => {
     expect(countNamed(buildProduct(dw, dw.variants[0].id), 'front-panel')).toBe(1);
     const hob = CATALOG.find((x) => x.id === 'samsung-induction-sample')!;
     expect(countNamed(buildProduct(hob, hob.variants[0].id), 'cooktop-glass')).toBe(1);
-    expect(mountHeightCm(hob)).toBe(87);
+    expect(productElevationCm(hob, DEFAULT_CEILING_CM)).toBe(87);
   });
 
   it('스탠드·천장형 에어컨은 토출구가 있고 천장형은 ceiling 기본 높이', () => {
@@ -91,7 +92,7 @@ describe('buildProduct', () => {
     expect(countNamed(buildProduct(stand, stand.variants[0].id), 'vent')).toBe(1);
     const ceil = CATALOG.find((x) => x.id === 'samsung-ceiling-ac-sample')!;
     expect(countNamed(buildProduct(ceil, ceil.variants[0].id), 'vent')).toBe(4);
-    expect(mountHeightCm(ceil)).toBe(230 - 25);
+    expect(productElevationCm(ceil, DEFAULT_CEILING_CM)).toBe(230 - 25);
   });
 
   it('옷장은 문짝 수만큼 문과 손잡이가 있다', () => {

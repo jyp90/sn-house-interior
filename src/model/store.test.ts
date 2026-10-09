@@ -74,6 +74,14 @@ describe('createPlanStore', () => {
     expect(activeItems(s.getState().plan).find((i) => i.id === id)!.elevation).toBe(0);
   });
 
+  it('잠긴 아이템은 updateItem으로 elevation을 바꿀 수 없다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addItem('sofa-3seat', 'gray', { x: 100, y: 100 });
+    s.getState().updateItem(id, { locked: true });
+    s.getState().updateItem(id, { elevation: 50 });
+    expect(activeItems(s.getState().plan).find((i) => i.id === id)!.elevation).toBeUndefined();
+  });
+
   it('duplicateItem은 20cm 옆에 복제하고 선택한다', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     const id = s.getState().addItem(P, V, { x: 100, y: 100 });

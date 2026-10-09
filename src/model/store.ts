@@ -143,6 +143,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
           delete next.x;
           delete next.y;
           delete next.rotation;
+          delete next.elevation;
           if (Object.keys(next).length === 0) return;
         }
         commit(withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, ...next }) : i))));

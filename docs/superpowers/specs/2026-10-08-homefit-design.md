@@ -401,18 +401,18 @@ PDF 평면도에 방 영역·면적 표기, 닫힌 벽에서 영역 자동 인�
 | 주방가전 | 김치냉장고 4도어 92×80×185 | `fridge`, 문짝 반경 46 |
 | 주방가전 | 인덕션 3구 60×52×6 | `built-in-appliance`, `builtIn`, 전용회로, `elevation` 87 |
 | 주방가전 | 빌트인 식기세척기 60×57×82 | `built-in-appliance` door, `builtIn`, 전용회로, 앞 공간 60 |
-| 주방가전 | 빌트인 오븐 60×57×45 | `built-in-appliance` door, `builtIn`, 전용회로, `elevation` 60 |
-| 주방가전 | 싱크대 하부장 240×60×87 | `cabinet-run` base, doors 4, counter, sink |
-| 주방가전 | 싱크대 하부장 180×60×87 | `cabinet-run` base, doors 3, counter |
-| 주방가전 | 상부장 240×35×70 | `cabinet-run` upper, doors 4, `mount: 'wall'`, `elevation` 145 |
+| 주방가전 | 빌트인 오븐 60×57×45 | `built-in-appliance` door, `builtIn`, 전용회로, 바닥 설치(상부 설치 시 아이템 높이로 조정) |
+| 주방가전 | 싱크대 하부장 240×60×87 | `cabinet-run` base, doors 4, counter, sink, id `kitchen-base-240`, brand 일반, `builtIn` |
+| 주방가전 | 싱크대 하부장 180×60×87 | `cabinet-run` base, doors 3, counter, id `kitchen-base-180`, brand 일반, `builtIn` |
+| 주방가전 | 상부장 240×35×70 | `cabinet-run` upper, doors 4, `mount: 'wall'`, `elevation` 145, id `kitchen-upper-240`, brand 일반, `builtIn` |
 | 세탁·건조 | 건조기 60×66×85 | `front-loader`, 전용회로, 앞 공간 60(세탁기 위 직렬은 elevation을 세탁기 높이로) |
 | 냉난방 | 스탠드 에어컨 38×36×188 | `stand-ac`, 전용회로 |
 | 냉난방 | 벽걸이 에어컨 85×25×30 | `box`, `mount: 'wall'`, `elevation` 195, 전용회로 |
-| 냉난방 | 천장형 시스템 에어컨 84×84×25 | `ceiling-ac`, `mount: 'ceiling'`, 전용회로 |
+| 냉난방 | 천장형 시스템 에어컨 84×84×25 | `ceiling-ac`, `mount: 'ceiling'`, 전용회로, `builtIn` |
 | 생활가전 | 공기청정기 37×37×60 | `box` |
 | 가구 | 붙박이장 240×60×230 | `wardrobe` doors 4, `builtIn` |
 | 가구 | 옷장 120×60×200 | `wardrobe` doors 2, 문짝 반경 60 좌·우 |
-| 가구 | 신발장 120×40×180 | `wardrobe` doors 2 |
+| 가구 | 신발장 120×40×180 | `wardrobe` doors 2, `builtIn` |
 | 가구 | 책상 140×70×73 | `table` |
 | 가구 | 의자 45×50×85 | `chair` |
 | 가구 | TV장 180×40×45 | `cabinet-run` base, doors 3, counter 없음 |
@@ -422,7 +422,7 @@ PDF 평면도에 방 영역·면적 표기, 닫힌 벽에서 영역 자동 인�
 | 욕실 | 샤워부스 90×90×200 | `shower` |
 | 욕실 | 욕조 150×75×55 | `box` |
 
-비고: 인덕션·오븐처럼 `floor`지만 바닥에서 띄우는 제품은 `product.elevation`으로 기본 높이를 준다(§20.1 우선순위). 기존 TV 샘플의 `builderParams.mountHeight: 90`은 그대로 동작한다.
+비고: 인덕션·오븐처럼 `floor`지만 바닥에서 띄우는 제품은 `product.elevation`으로 기본 높이를 준다(§20.1 우선순위). 기존 TV 샘플의 `builderParams.mountHeight: 90`은 그대로 동작한다. 싱크대 하부장·상부장은 가구로 취급해 `brand: '일반'`, id `kitchen-*`로 둔다(삼성 제품이 아님, 2026-10-09 최종 리뷰).
 
 ### 20.4 화면
 
