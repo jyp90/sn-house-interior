@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import homePreset from 'virtual:home-preset';
 import type { StoreApi } from 'zustand/vanilla';
 import { App } from './App';
+import { isGateEnabled } from './persistence/gate';
+import { Gate } from './ui/Gate';
 import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
@@ -66,10 +68,20 @@ startAutosave(store, {
 syncModeWithHash(useUi);
 if (import.meta.env.DEV) window.__homefit = { store, ui: useUi };
 
+// 진입 PIN(스펙 §42): 우리 집 프리셋이 실린 빌드에서만. 테스트·HOMEFIT_SAMPLE=1은 꺼지고 dev의 ?gate=1로 강제한다
+const gated = isGateEnabled({ preset: homePreset !== null, search: window.location.search, dev: import.meta.env.DEV });
+const app = gated ? (
+  <Gate>
+    <App />
+  </Gate>
+) : (
+  <App />
+);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <PlanStoreContext.Provider value={store}>
-      <App />
+      {app}
     </PlanStoreContext.Provider>
   </StrictMode>,
 );
