@@ -46,9 +46,18 @@ export function unitsForWidth(widthMm: number, fontPt = TABLE_FONT_PT): number {
   return Math.max(1, Math.floor((widthMm - 3) / (fontPt * PT_MM)));
 }
 
+// 이모지·변형 선택자·접합자를 지워 PDF(Pretendard, 이모지 미지원)에서 네모·깨짐을 막는다 (spec §30.3)
+export function pdfSafe(text: string): string {
+  return text
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[️‍]/gu, '')
+    .replace(/ {2,}/g, ' ')
+    .trim();
+}
+
 export function wrapText(text: string, maxUnits: number): string[] {
   const lines: string[] = [];
-  for (const para of text.split('\n')) {
+  for (const para of pdfSafe(text).split('\n')) {
     let line = '';
     for (const word of para.split(' ')) {
       const candidate = line ? `${line} ${word}` : word;

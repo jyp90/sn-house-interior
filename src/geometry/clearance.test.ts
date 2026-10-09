@@ -116,4 +116,14 @@ describe('doorLeaves', () => {
     };
     expect(doorSwings(plan)).toHaveLength(3);
   });
+
+  it('벽 끝을 넘는 문은 벽 안쪽으로 잘린다 (spec §30.2)', () => {
+    const [l] = doorLeaves(wall, { ...door, offset: 350, width: 90 });
+    expect(l.width).toBe(50);
+    expect(l.hinge).toEqual({ x: 350, y: 5 });
+  });
+
+  it('벽 밖으로 완전히 나간 문은 문짝이 없다', () => {
+    expect(doorLeaves(wall, { ...door, offset: 500, width: 90 })).toHaveLength(0);
+  });
 });

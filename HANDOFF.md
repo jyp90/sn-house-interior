@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- `fix/deferred-minors-2`: 스펙 §30 — 평면당 1회 검증 캐시(`useValidation` WeakMap, `missingDedicatedCircuitCached`), 문 열림 영역 벽 끝 클램프, PDF 이모지 제거(`pdfSafe`), 3D 첫 프레임 300×150 깜빡임 제거(CSS), 병렬 e2e 24/24(flake 재현 안 됨). 테스트: typecheck 통과, `npm test` 549 통과·3 skip, e2e 36 통과. 탐색 QA(샘플): 3D PNG 내보내기 정상(캔버스 버퍼 = CSS 크기), 오류 없음.
 - `feat/corner-cabinet`: 스펙 §29 — `corner-cabinet` builder(ㄱ자 몸통·문짝 2·L자 상판, 팔 깊이 클램프), 제품 코너 하부장 90·코너 상부장 60·레인지후드 60, 스키마 v8(builder id). 테스트: typecheck 통과, `npm test` 543 통과·3 skip, e2e 35 통과. 탐색 QA(샘플): 코너에 하부장·상부장·후드 3D 표시, 오류 없음.
 - `feat/item-list-panel`: 스펙 §28 — 배치 모드 왼쪽 「배치된 가구 (N)」 접이식 목록(방별 묶음, PDF와 같은 번호, 충돌/경고/잠금 표시, 클릭 선택; `model/itemList.ts` `groupItemsByRoom`, `itemNumbers`는 `model/layout.ts`로 이동). 테스트: typecheck 통과, `npm test` 535 통과·3 skip, e2e 35 통과(`e2e/itemList.spec.ts` 신규). 탐색 QA(샘플): 4개 추가 → 「방 미지정 (4)」·번호·충돌 배지, 오류 없음.
 - `feat/switch-groups-3d-fixtures`: 스펙 §27 — 스위치 그룹(`Fixture.group`, 스키마 v7; 속성 패널 「스위치 그룹」+datalist, 전기 모드 2D 점선, 전기 패널 그룹 목록, 자동 체크리스트 「스위치 회로 전달」, PDF 전기 계획도 점선·설비 목록 「그룹」 열) + 3D 전기 설비(`scene3d/fixtureParts.ts`·`Fixtures3D.tsx`: 벽면 판·천장 조명 원반·비부착 상자, raycast 없음). 테스트: typecheck 통과, `npm test` 526 통과·3 skip, e2e 34 통과(`e2e/switchGroups.spec.ts` 신규). 탐색 QA(샘플, 5186): 설비 6개 배치·그룹 「거실」 → 점선 2개·패널 「거실 — 스위치 1 · 조명 2」·체크리스트 항목·3D 천장 원반, 오류 없음.
@@ -35,6 +36,6 @@
 0a. (완료, §22) T자 접합부 스냅·영역 자기 교차 검사. 남은 것: e2e의 3D 반영 검증은 `e2e/scene3d.spec.ts`가 라벨까지 확인(캔버스 픽셀 검증은 여전히 없음).
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인; 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
 2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). builder·탐색 QA는 §20 라운드에서 완료. 병합 후 `private/make-our-home.mjs`는 `version: 5`로.
-2a. §20·§22·§23 보류 minor: 벽 끝을 넘는 개구부의 2D 문 열림 영역은 클램프되지 않음(3D만 클램프), 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만), 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택), 상판 위 가전 자동 높이·적층 스냅 없음, 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨(중복 손잡이를 옮기면 풀림), 대각선 벽의 개구부 라벨 간격 미검증, 자동 체크리스트의 옛 id 항목이 `plan.checklist`에 고아로 남음(표시 안 됨), `e2e/checklist.spec.ts` 「+ 메모」 호버 버튼·`e2e/elevation.spec.ts:16` 병렬 실행 시 드문 flake.
+2a. §20·§22·§23 보류 minor: 벽 끝을 넘는 개구부의 2D 문 열림 영역은 클램프되지 않음(3D만 클램프), 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만), 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택), 상판 위 가전 자동 높이·적층 스냅 없음, 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨(중복 손잡이를 옮기면 풀림), 대각선 벽의 개구부 라벨 간격 미검증, 자동 체크리스트의 옛 id 항목이 `plan.checklist`에 고아로 남음(표시 안 됨). e2e flake 2건은 §30에서 12회 반복으로 재현 안 됨.
 3. (완료) 히스토리 정리·공개 전환 — 기록은 `archive/20261008-pages-publish/HANDOFF.md`.
-4. 보류된 minor(§22에서 일부 처리): `missingDedicatedCircuit` 중복 계산, R3F 첫 로드 크기 깜빡임, pdf e2e 쪽수 하한, FixtureProperties/ExportView 컴포넌트 테스트 없음, PDF 메모의 이모지 누락(Pretendard 미포함). 처리됨: 자동 체크리스트 id 재사용, 전기 범례 잘림, dev 콘솔 unmount 오류, 개구부 라벨 겹침(실제 원인은 세로 벽의 「≈90」·「250–340」 겹침).
+4. 보류된 minor(§22에서 일부 처리): pdf e2e 쪽수 하한, FixtureProperties/ExportView 컴포넌트 테스트 없음, 벽 끝을 넘는 개구부의 2D 구멍 사각형·라벨 위치(`Openings2D`/`planSvg`)는 아직 미클램프(열림 영역·3D는 클램프됨). 처리됨(§30): 중복 계산, 첫 로드 깜빡임, PDF 이모지. 처리됨: 자동 체크리스트 id 재사용, 전기 범례 잘림, dev 콘솔 unmount 오류, 개구부 라벨 겹침(실제 원인은 세로 벽의 「≈90」·「250–340」 겹침).

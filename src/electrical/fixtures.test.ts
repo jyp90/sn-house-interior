@@ -10,6 +10,7 @@ import {
   keepWallIdAfterMove,
   kindChangePatch,
   missingDedicatedCircuit,
+  missingDedicatedCircuitCached,
   refitFixtures,
   snapFixture,
   switchGroups,
@@ -74,6 +75,19 @@ describe('missingDedicatedCircuit', () => {
       activeLayoutId: 'layout-a',
     };
     expect(missingDedicatedCircuit(plan, resolve(plan))).toEqual([]);
+  });
+});
+
+describe('missingDedicatedCircuitCached', () => {
+  it('같은 평면 객체는 같은 배열을 돌려주고, 배치가 바뀐 새 평면은 다시 계산한다', () => {
+    const base = withActiveItems(SAMPLE_PLAN, [washer]);
+    const first = missingDedicatedCircuitCached(base);
+    expect(first).toEqual(missingDedicatedCircuit(base, resolve(base)));
+    expect(missingDedicatedCircuitCached(base)).toBe(first);
+    const next = withActiveItems(base, []);
+    const second = missingDedicatedCircuitCached(next);
+    expect(second).not.toBe(first);
+    expect(second).toEqual([]);
   });
 });
 

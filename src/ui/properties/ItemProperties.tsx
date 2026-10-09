@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ceilingHeightCm, itemElevationCm } from '../../catalog/elevation';
 import { findProduct } from '../../catalog/products';
-import { DEDICATED_RADIUS_CM, missingDedicatedCircuit } from '../../electrical/fixtures';
+import { DEDICATED_RADIUS_CM, missingDedicatedCircuitCached } from '../../electrical/fixtures';
 import type { Item } from '../../model/schema';
 import { usePlan, usePlanStore } from '../../model/StoreContext';
 import { useValidation } from '../../model/useValidation';
@@ -20,10 +20,7 @@ export function ItemProperties({ item }: { item: Item }) {
   const locked = !!item.locked;
   const placements = customProduct ? plan.layouts.flatMap((l) => l.items).filter((i) => i.productId === customProduct.id) : [];
   const dimsLocked = placements.some((i) => i.locked);
-  const missingCircuit = useMemo(
-    () => missingDedicatedCircuit(plan, (id) => findProduct(plan, id)).includes(item.id),
-    [plan, item.id],
-  );
+  const missingCircuit = missingDedicatedCircuitCached(plan).includes(item.id);
   return (
     <>
       <h3>{product?.name ?? '알 수 없는 제품'}</h3>

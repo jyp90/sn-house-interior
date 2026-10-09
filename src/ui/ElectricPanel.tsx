@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { findProduct } from '../catalog/products';
-import { DEDICATED_RADIUS_CM, FIXTURE_KINDS, FIXTURE_LABEL, fixtureSummary, missingDedicatedCircuit, switchGroups } from '../electrical/fixtures';
+import { DEDICATED_RADIUS_CM, FIXTURE_KINDS, FIXTURE_LABEL, fixtureSummary, missingDedicatedCircuitCached, switchGroups } from '../electrical/fixtures';
 import { activeItems, activeLayout } from '../model/layout';
 import { usePlan } from '../model/StoreContext';
 import { useUi } from './uiStore';
@@ -10,7 +10,7 @@ export function ElectricPanel() {
   const tool = useUi((s) => s.tool);
   const fixtureKind = useUi((s) => s.fixtureKind);
   const ui = useUi.getState();
-  const missing = useMemo(() => new Set(missingDedicatedCircuit(plan, (id) => findProduct(plan, id))), [plan]);
+  const missing = useMemo(() => new Set(missingDedicatedCircuitCached(plan)), [plan]);
   const groups = useMemo(() => switchGroups(plan.fixtures), [plan.fixtures]);
   const needs = activeItems(plan).flatMap((item) => {
     const product = findProduct(plan, item.productId);

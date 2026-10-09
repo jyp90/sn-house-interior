@@ -626,3 +626,11 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 29.4 테스트
 
 - 단위: 마이그레이션 v7→v8, builder 경계 상자(자동), 코너장 부품(`door` 2, base는 `counter` 1·upper는 0, 몸통이 L자로 두 조각), 새 제품 3개 카탈로그 필터 「코너」.
+
+## 30. 18차 반영: 보류 minor 정리 2 (2026-10-09)
+
+- 검증 결과 공유: `useValidation`은 평면 객체를 키로 한 `WeakMap` 캐시를 써서 같은 평면에 대해 한 번만 `validatePlan`을 돌린다(2D·3D·속성 패널·목록 패널이 공유). `missingDedicatedCircuit`도 같은 방식으로 평면당 한 번.
+- 벽 끝을 넘는 개구부: `doorLeaves`(문 열림 영역)도 `clampToWall`로 벽 안으로 잘라 2D·충돌·PDF가 3D(§23)와 같은 범위를 쓴다.
+- PDF 글자: Pretendard에 없는 이모지·기호(`\p{Extended_Pictographic}`)는 PDF 쪽 데이터에서 뺀다(`pages.ts`, 메모·비고·체크리스트 문구). 화면과 JSON에는 그대로 남는다.
+- 3D 첫 로드 크기 깜빡임: 뷰포트 캔버스가 컨테이너 크기를 알기 전 기본 300×150으로 한 프레임 그려지는 문제 — 컨테이너 크기를 측정한 뒤 `Canvas`를 그리거나 CSS로 캔버스를 100%로 고정해 없앤다(원인 확인 후 가장 작은 수정).
+- 병렬 e2e 드문 실패(`checklist.spec.ts` 호버 버튼, `elevation.spec.ts:16`): `--repeat-each`로 재현해 대기 조건을 고친다. 재현되지 않으면 그대로 두고 기록한다.

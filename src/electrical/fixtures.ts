@@ -1,3 +1,4 @@
+import { findProduct } from '../catalog/products';
 import { distanceToWall, nearestWall } from '../geometry/structure';
 import { wallDir, wallLength } from '../geometry/walls';
 import { activeItems } from '../model/layout';
@@ -60,6 +61,18 @@ export function missingDedicatedCircuit(plan: Plan, resolve: (productId: string)
     .filter((item) => resolve(item.productId)?.power?.dedicatedCircuit)
     .filter((item) => !outlets.some((f) => Math.hypot(f.pos.x - item.x, f.pos.y - item.y) <= DEDICATED_RADIUS_CM))
     .map((item) => item.id);
+}
+
+// 평면 객체 정체성을 키로 한 캐시: 2D·속성 패널·전기 패널이 평면당 한 번만 계산한다 (spec §30)
+const missingCache = new WeakMap<Plan, string[]>();
+
+export function missingDedicatedCircuitCached(plan: Plan): string[] {
+  let ids = missingCache.get(plan);
+  if (!ids) {
+    ids = missingDedicatedCircuit(plan, (id) => findProduct(plan, id));
+    missingCache.set(plan, ids);
+  }
+  return ids;
 }
 
 export function fixtureSummary(fixtures: Fixture[]): string {
