@@ -9,8 +9,14 @@ export function ItemListPanel() {
   const plan = usePlan((s) => s.plan);
   const selectedId = usePlan((s) => s.selectedId);
   const status = useValidation();
-  const open = useUi((s) => s.itemListOpen);
-  const setOpen = useUi((s) => s.setItemListOpen);
+  const viewOnly = useUi((s) => s.viewOnly);
+  const itemListOpen = useUi((s) => s.itemListOpen);
+  const mobileItemListOpen = useUi((s) => s.mobileItemListOpen);
+  const setItemListOpen = useUi((s) => s.setItemListOpen);
+  const setMobileItemListOpen = useUi((s) => s.setMobileItemListOpen);
+  // 모바일(viewOnly)은 데스크톱과 별개의 펼침 상태를 쓴다. 기본 접힘(스펙 §33 리뷰 반영)
+  const open = viewOnly ? mobileItemListOpen : itemListOpen;
+  const setOpen = viewOnly ? setMobileItemListOpen : setItemListOpen;
   const groups = groupItemsByRoom(plan, (id) => findProduct(plan, id));
   const count = groups.reduce((n, g) => n + g.items.length, 0);
 

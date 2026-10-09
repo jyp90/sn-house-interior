@@ -104,7 +104,8 @@ export function Editor2D() {
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
-    if (tool === 'select') {
+    // 보기 전용(스펙 §33)에서는 그리기 도구가 (경합 등으로) 여전히 남아 있어도 클릭을 팬으로만 다룬다
+    if (tool === 'select' || useUi.getState().viewOnly) {
       // 방을 눌렀으면 그 선택은 유지하고, 빈 곳이면 선택 해제. 어느 쪽이든 끌면 화면 이동
       if (!isRoomPress(e.nativeEvent)) {
         store.getState().select(null);
@@ -129,6 +130,7 @@ export function Editor2D() {
     pan.current = null;
   };
   const onDoubleClick = () => {
+    if (useUi.getState().viewOnly) return;
     if (tool === 'wall' && wallPoints.length > 0) {
       finishWall(store, wallPoints);
       setWallPoints([]);
@@ -143,11 +145,11 @@ export function Editor2D() {
     setVb((v) => zoomAt(v, p, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
   };
   const onDragOver = (e: DragEvent) => {
-    if (mode === 'place' && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
+    if (mode === 'place' && !useUi.getState().viewOnly && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
   };
   const onDrop = (e: DragEvent) => {
     const data = e.dataTransfer.getData(DND_MIME);
-    if (!data || mode !== 'place') return;
+    if (!data || mode !== 'place' || useUi.getState().viewOnly) return; // 보기 전용: 카탈로그 추가·드래그 금지(스펙 §33)
     e.preventDefault();
     const [productId, variantId] = data.split('|');
     const p = toPlan(e);

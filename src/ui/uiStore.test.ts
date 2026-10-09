@@ -90,6 +90,39 @@ describe('useUi', () => {
     expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: null });
   });
 
+  it('보기 전용(모바일) 설정과 해제', () => {
+    expect(useUi.getState().viewOnly).toBe(false);
+    useUi.getState().setViewOnly(true);
+    expect(useUi.getState().viewOnly).toBe(true);
+    useUi.getState().setViewOnly(false);
+    expect(useUi.getState().viewOnly).toBe(false);
+  });
+
+  it('보기 전용으로 들어가면 도구·초안 상태가 모두 선택으로 돌아간다', () => {
+    const ui = useUi.getState();
+    ui.setTool('wall');
+    ui.startCalibration('primary');
+    ui.showCandidates({ ids: ['a', 'b'], clientX: 0, clientY: 0 });
+    ui.setViewOnly(true);
+    expect(useUi.getState()).toMatchObject({
+      viewOnly: true,
+      tool: 'select',
+      calibration: null,
+      areaTarget: null,
+      measure: null,
+      candidates: null,
+    });
+  });
+
+  it('모바일 배치 아이템 목록은 기본 접힘이고 토글된다(데스크톱 itemListOpen과 별개)', () => {
+    expect(useUi.getState().mobileItemListOpen).toBe(false);
+    expect(useUi.getState().itemListOpen).toBe(true);
+    useUi.getState().setMobileItemListOpen(true);
+    expect(useUi.getState()).toMatchObject({ mobileItemListOpen: true, itemListOpen: true });
+    useUi.getState().setMobileItemListOpen(false);
+    expect(useUi.getState().mobileItemListOpen).toBe(false);
+  });
+
   it('배치 아이템 목록 패널은 기본 펼침이고 토글된다', () => {
     expect(useUi.getState().itemListOpen).toBe(true);
     useUi.getState().setItemListOpen(false);
