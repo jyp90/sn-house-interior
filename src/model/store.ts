@@ -2,9 +2,27 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
 import { refitFixtures } from '../electrical/fixtures';
 import { wallLength } from '../geometry/walls';
+import { isValidPolygon, pointInPolygon, polygonCentroid } from '../geometry/polygon';
+import { planFinish } from '../materials/presets';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
-import type { Background, ChecklistState, Fixture, Item, Layout, Opening, Plan, PlanInfo, Product, Room, Vec2, Wall } from './schema';
+import type {
+  Background,
+  ChecklistState,
+  Fixture,
+  FloorFinish,
+  Item,
+  Layout,
+  Opening,
+  Plan,
+  PlanFinish,
+  PlanInfo,
+  Product,
+  Room,
+  Vec2,
+  Wall,
+  WallFinish,
+} from './schema';
 
 export const HISTORY_LIMIT = 100;
 
@@ -40,6 +58,11 @@ export type PlanState = {
   addRoom(name: string, label: Vec2): string;
   updateRoom(id: string, patch: Partial<Omit<Room, 'id'>>): void;
   removeRoom(id: string): void;
+  addRoomArea(polygon: Vec2[], name?: string): string | null;
+  setRoomPolygon(id: string, polygon: Vec2[]): boolean;
+  setRoomFinish(id: string, patch: { floor?: FloorFinish; wall?: WallFinish }): void;
+  setPlanFinish(patch: Partial<PlanFinish>): void;
+  dragRoomVertex(id: string, index: number, to: Vec2): void;
   addFixture(fixture: Omit<Fixture, 'id'>): string;
   updateFixture(id: string, patch: Partial<Omit<Fixture, 'id'>>): void;
   dragFixture(id: string, pos: Vec2, wallId?: string): void;
@@ -162,9 +185,16 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       },
 
       endDrag: () => {
-        const { dragOrigin, plan, past } = get();
+        const { dragOrigin, past } = get();
+        let plan = get().plan;
         if (dragOrigin && dragOrigin !== plan) {
-          set({ past: [...past, dragOrigin].slice(-HISTORY_LIMIT), future: [], dragOrigin: null });
+          // 꼭짓점을 끌어 이름표가 영역 밖에 남은 방은 이름표를 영역 가운데로 옮긴다(같은 되돌리기 단계)
+          const before = new Map(dragOrigin.rooms.map((r) => [r.id, r.polygon]));
+          const stray = (r: Room) => !!r.polygon && r.polygon !== before.get(r.id) && !pointInPolygon(r.label, r.polygon);
+          if (plan.rooms.some(stray)) {
+            plan = { ...plan, rooms: plan.rooms.map((r) => (stray(r) ? { ...r, label: polygonCentroid(r.polygon!) } : r)) };
+          }
+          set({ plan, past: [...past, dragOrigin].slice(-HISTORY_LIMIT), future: [], dragOrigin: null });
         } else {
           set({ dragOrigin: null });
         }
@@ -293,6 +323,55 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const plan = get().plan;
         if (!plan.rooms.some((r) => r.id === id)) return;
         commit({ ...plan, rooms: plan.rooms.filter((r) => r.id !== id) }, { selectedId: deselectIf(new Set([id])) });
+      },
+
+      addRoomArea: (polygon, name) => {
+        const pts = polygon.map(roundVec);
+        if (!isValidPolygon(pts)) return null;
+        const plan = get().plan;
+        const room: Room = { id: newId('room'), name: name ?? `방 ${plan.rooms.length + 1}`, label: polygonCentroid(pts), polygon: pts };
+        commit({ ...plan, rooms: [...plan.rooms, room] }, { selectedId: room.id });
+        return room.id;
+      },
+
+      setRoomPolygon: (id, polygon) => {
+        const pts = polygon.map(roundVec);
+        if (!isValidPolygon(pts)) return false;
+        const plan = get().plan;
+        const room = plan.rooms.find((r) => r.id === id);
+        if (!room) return false;
+        const label = pointInPolygon(room.label, pts) ? room.label : polygonCentroid(pts);
+        commit({ ...plan, rooms: plan.rooms.map((r) => (r.id === id ? { ...r, polygon: pts, label } : r)) });
+        return true;
+      },
+
+      setRoomFinish: (id, patch) => {
+        const plan = get().plan;
+        if (!plan.rooms.some((r) => r.id === id)) return;
+        const norm = <T extends { color: string }>(f: T): T => ({ ...f, color: f.color.toLowerCase() });
+        commit({
+          ...plan,
+          rooms: plan.rooms.map((r) =>
+            r.id === id ? { ...r, ...(patch.floor ? { floor: norm(patch.floor) } : {}), ...(patch.wall ? { wall: norm(patch.wall) } : {}) } : r,
+          ),
+        });
+      },
+
+      setPlanFinish: (patch) => {
+        const plan = get().plan;
+        const cur = planFinish(plan);
+        const lower = <T extends { color: string }>(f: T): T => ({ ...f, color: f.color.toLowerCase() });
+        commit({ ...plan, finish: { floor: patch.floor ? lower(patch.floor) : cur.floor, wall: patch.wall ? lower(patch.wall) : cur.wall } });
+      },
+
+      dragRoomVertex: (id, index, to) => {
+        const origin = get().dragOrigin;
+        if (!origin) return;
+        const room = origin.rooms.find((r) => r.id === id);
+        if (!room?.polygon || index < 0 || index >= room.polygon.length) return;
+        const polygon = room.polygon.map((p, i) => (i === index ? roundVec(to) : p));
+        if (!isValidPolygon(polygon)) return;
+        set({ plan: { ...get().plan, rooms: get().plan.rooms.map((r) => (r.id === id ? { ...r, polygon } : r)) } });
       },
 
       addFixture: (fixture) => {

@@ -1,6 +1,8 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import homePreset from 'virtual:home-preset';
 import { calibrationResult, SCALE_TOLERANCE, scaleText } from '../editor2d/calibration';
+import { FLOOR_MATERIALS, FinishPicker, WALL_MATERIALS } from './FinishPicker';
+import { FLOOR_PRESETS, planFinish, WALL_PRESETS } from '../materials/presets';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { prepareHomePreset } from '../persistence/homePreset';
 import { getDefaultImageStore, saveBackgroundImage } from '../persistence/images';
@@ -16,6 +18,7 @@ const TOOLS: [Tool, string][] = [
   ['window', '창'],
   ['opening', '개구부'],
   ['label', '방 이름'],
+  ['area', '영역'],
 ];
 
 function DraftNumber({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -95,10 +98,12 @@ function CalibrationForm() {
 export function StructurePanel() {
   const store = usePlanStore();
   const bg = usePlan((s) => s.plan.background);
+  const finish = usePlan((s) => s.plan.finish);
   const tool = useUi((s) => s.tool);
   const calibration = useUi((s) => s.calibration);
   const wallDraft = useUi((s) => s.wallDraft);
   const roomDraft = useUi((s) => s.roomDraft);
+  const areaTarget = useUi((s) => s.areaTarget);
   const ui = useUi.getState();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -179,6 +184,11 @@ export function StructurePanel() {
         <p className="muted">벽 위를 클릭하면 놓입니다. 크기와 위치는 오른쪽 속성창에서 바꿉니다.</p>
       )}
       {tool === 'label' && <p className="muted">방 이름을 놓을 곳을 클릭하세요.</p>}
+      {tool === 'area' && (
+        <p className="muted">
+          {areaTarget ? '이 방의 바닥 꼭짓점을 차례로 클릭하세요.' : '바닥 꼭짓점을 차례로 클릭하세요.'} 첫 점을 다시 클릭하거나 Enter로 닫고, Esc로 취소합니다.
+        </p>
+      )}
 
       <h3>배경 도면</h3>
       <button type="button" onClick={() => fileRef.current?.click()}>이미지 불러오기</button>
@@ -223,6 +233,10 @@ export function StructurePanel() {
           <CalibrationForm key={`${calibration?.target ?? 'none'}-${calibration?.points.length === 0}`} />
         </>
       )}
+
+      <h3>기본 마감</h3>
+      <FinishPicker label="기본 바닥재" value={planFinish({ finish }).floor} presets={FLOOR_PRESETS} materials={FLOOR_MATERIALS} onChange={(floor) => store.getState().setPlanFinish({ floor })} />
+      <FinishPicker label="기본 벽 마감" value={planFinish({ finish }).wall} presets={WALL_PRESETS} materials={WALL_MATERIALS} onChange={(wall) => store.getState().setPlanFinish({ wall })} />
     </div>
   );
 }

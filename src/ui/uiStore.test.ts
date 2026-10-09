@@ -50,4 +50,11 @@ describe('useUi', () => {
     useUi.getState().setMode('electric');
     expect(useUi.getState()).toMatchObject({ mode: 'electric', tool: 'select', fixtureKind: 'switch' });
   });
+
+  it('startArea는 이미 area 도구여도 매번 새 영역 세션을 연다', () => {
+    useUi.getState().startArea('r1');
+    const first = useUi.getState().areaSession;
+    useUi.getState().startArea('r1');
+    expect(useUi.getState()).toMatchObject({ tool: 'area', areaTarget: 'r1', areaSession: first + 1 });
+  });
 });

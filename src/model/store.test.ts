@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findProduct } from '../catalog/products';
+import { pointInPolygon, polygonCentroid } from '../geometry/polygon';
+import { DEFAULT_FINISH } from '../materials/presets';
 import { activeItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 import { createPlanStore, HISTORY_LIMIT } from './store';
@@ -557,5 +559,89 @@ describe('기본 정보', () => {
     const s = createPlanStore(SAMPLE_PLAN);
     s.getState().updateInfo({ title: '샘플 평면', address: '' });
     expect(s.getState().past).toHaveLength(0);
+  });
+});
+
+describe('room areas and finishes', () => {
+  const sq = [{ x: 10, y: 10 }, { x: 340, y: 10 }, { x: 340, y: 390 }, { x: 10, y: 390 }];
+
+  it('addRoomArea는 방을 만들고 라벨을 무게중심에 둔다 (한 undo 단위)', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    const id = s.getState().addRoomArea(sq.map((p) => ({ x: p.x + 0.4, y: p.y })));
+    expect(id).not.toBeNull();
+    const room = s.getState().plan.rooms.find((r) => r.id === id)!;
+    expect(room.polygon![0]).toEqual({ x: 10, y: 10 });
+    expect(room.label).toEqual({ x: 175, y: 200 });
+    expect(room.name).toBe('방 3');
+    expect(s.getState().selectedId).toBe(id);
+    s.getState().undo();
+    expect(s.getState().plan.rooms).toHaveLength(2);
+  });
+
+  it('addRoomArea는 잘못된 다각형을 거부한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    expect(s.getState().addRoomArea(sq.slice(0, 2))).toBeNull();
+    expect(s.getState().past).toHaveLength(0);
+  });
+
+  it('setRoomPolygon은 라벨이 영역 밖일 때만 옮긴다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    expect(s.getState().setRoomPolygon('r1', sq)).toBe(true);
+    expect(s.getState().plan.rooms[0].label).toEqual({ x: 175, y: 200 }); // 원래 라벨이 안에 있어 유지
+    const far = [{ x: 1000, y: 1000 }, { x: 1100, y: 1000 }, { x: 1100, y: 1100 }, { x: 1000, y: 1100 }];
+    s.getState().setRoomPolygon('r1', far);
+    expect(s.getState().plan.rooms[0].label).toEqual({ x: 1050, y: 1050 });
+    expect(s.getState().setRoomPolygon('r1', [{ x: 0, y: 0 }])).toBe(false);
+  });
+
+  it('setRoomFinish / setPlanFinish', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomFinish('r1', { floor: { material: 'tile', color: '#B8B5AE' } });
+    expect(s.getState().plan.rooms[0].floor).toEqual({ material: 'tile', color: '#b8b5ae' });
+    expect(s.getState().plan.rooms[0].wall).toBeUndefined();
+    s.getState().setPlanFinish({ wall: { material: 'wallpaper', color: '#c7cfbf' } });
+    expect(s.getState().plan.finish).toEqual({ floor: DEFAULT_FINISH.floor, wall: { material: 'wallpaper', color: '#c7cfbf' } });
+    expect(s.getState().past).toHaveLength(2);
+  });
+
+  it('dragRoomVertex는 드래그 한 번이 undo 한 단위', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomPolygon('r1', sq);
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 1, { x: 300, y: 20 });
+    s.getState().dragRoomVertex('r1', 1, { x: 320, y: 30 });
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].polygon![1]).toEqual({ x: 320, y: 30 });
+    expect(s.getState().past).toHaveLength(2);
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 1, { x: 10, y: 10 }); // 첫 점과 겹침 → 무시
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].polygon![1]).toEqual({ x: 320, y: 30 });
+  });
+
+  it('꼭짓점 드래그 후 이름표가 영역 밖이면 endDrag가 무게중심으로 옮기고, 한 번에 되돌린다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomPolygon('r1', sq);
+    const label = s.getState().plan.rooms[0].label;
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 2, { x: 100, y: 120 });
+    const poly = s.getState().plan.rooms[0].polygon!;
+    expect(pointInPolygon(label, poly)).toBe(false);
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].label).toEqual(polygonCentroid(poly));
+    expect(pointInPolygon(s.getState().plan.rooms[0].label, poly)).toBe(true);
+    s.getState().undo();
+    expect(s.getState().plan.rooms[0].label).toEqual(label);
+    expect(s.getState().plan.rooms[0].polygon).toEqual(sq);
+  });
+
+  it('이름표가 영역 안에 남으면 endDrag가 옮기지 않는다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().setRoomPolygon('r1', sq);
+    const label = s.getState().plan.rooms[0].label;
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 2, { x: 360, y: 400 });
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].label).toEqual(label);
   });
 });

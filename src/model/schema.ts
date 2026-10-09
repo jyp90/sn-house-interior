@@ -30,7 +30,21 @@ export const OpeningSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-export const RoomSchema = z.object({ id, name: z.string(), label: Vec2Schema });
+export const FloorMaterialSchema = z.enum(['wood', 'tile', 'plain']);
+export const WallMaterialSchema = z.enum(['paint', 'wallpaper']);
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, '#rrggbb 형식이어야 합니다');
+export const FloorFinishSchema = z.object({ material: FloorMaterialSchema, color: hexColor });
+export const WallFinishSchema = z.object({ material: WallMaterialSchema, color: hexColor });
+export const PlanFinishSchema = z.object({ floor: FloorFinishSchema, wall: WallFinishSchema });
+
+export const RoomSchema = z.object({
+  id,
+  name: z.string(),
+  label: Vec2Schema,
+  polygon: z.array(Vec2Schema).min(3).optional(), // 바닥 영역(마감면 기준 꼭짓점, cm)
+  floor: FloorFinishSchema.optional(),
+  wall: WallFinishSchema.optional(),
+});
 
 export const ItemSchema = z.object({
   id,
@@ -133,12 +147,13 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(3),
+    version: z.literal(4),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),
     openings: z.array(OpeningSchema),
     rooms: z.array(RoomSchema),
+    finish: PlanFinishSchema.optional(),
     layouts: z.array(LayoutSchema).min(1),
     activeLayoutId: id,
     fixtures: z.array(FixtureSchema),
@@ -155,6 +170,11 @@ export type Wall = z.infer<typeof WallSchema>;
 export type Opening = z.infer<typeof OpeningSchema>;
 export type DoorLeaves = NonNullable<Opening['leaves']>;
 export type Room = z.infer<typeof RoomSchema>;
+export type FloorMaterial = z.infer<typeof FloorMaterialSchema>;
+export type WallMaterial = z.infer<typeof WallMaterialSchema>;
+export type FloorFinish = z.infer<typeof FloorFinishSchema>;
+export type WallFinish = z.infer<typeof WallFinishSchema>;
+export type PlanFinish = z.infer<typeof PlanFinishSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type Layout = z.infer<typeof LayoutSchema>;
 export type Fixture = z.infer<typeof FixtureSchema>;

@@ -12,9 +12,14 @@
 - 원격 `origin` = `jyp90/sn-house-interior`(비공개). 요청마다 워크트리·새 브랜치 → 로컬 검증 → PR → `main` 병합이 기본(`CLAUDE.md` Workflow). 공개 전환·Pages 배포 전.
 - 프로젝트 스킬 6개 `.claude/skills/`, 사용 가이드는 `CLAUDE.md` 「Project skills」. 개인정보 검색어는 `private/privacy-terms.txt`.
 - `feat/pages-deploy`: Pages 배포 설계 `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`(스펙 §17), 계획 5a `docs/superpowers/plans/2026-10-08-homefit-05a-pages-deploy.md`. Tasks 1–3(base 경로, `check:dist`, OFL 고지, `pages.yml`) main 병합; Task 4(히스토리 정리, repo 재생성, 공개, Pages)는 사용자 확인 대기. 테스트: typecheck, unit, e2e, e2e:preview 2, check:dist.
+- `feat/room-finish`(main 미병합, `origin/main` `f8bf241` 위로 rebase): 스펙 §19 방 영역(영역 도구·꼭짓점 드래그)·바닥재/벽 마감(2D 패턴, 3D 텍스처, 벽 면별 마감)·우드톤 UI, 스키마 v4. 계획 `docs/superpowers/plans/2026-10-08-room-finish.md`.
+- 테스트(`feat/room-finish` `4478b91`): typecheck 통과, `npm test` 374 통과·3 skip, e2e 25 통과(`e2e/roomFinish.spec.ts` 포함). 탐색 QA(샘플, 5181) 통과: L자 영역·꼭짓점 드래그·실행 취소/다시 실행·새로고침 유지·v3 JSON 열기·w5 양쪽 다른 벽 마감(3D 원근/탑뷰)·PDF 15쪽·전 탭 테마·2D 선택 파란색.
+- 최종 리뷰 수정(`feat/room-finish`): 방 안 드래그로 화면 이동, 색 선택기 되돌리기 1단계, 여러 방에 걸친 벽은 방별 구간 마감(스펙 §19.3 수정), 벽 위 꼭짓점 손잡이, 「영역 다시 그리기」 초안 초기화, 이름표 재배치, 색 토큰. typecheck 통과, `npm test` 384 통과·3 skip, e2e 29 통과.
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 
 ## 다음 할 일
+0. `feat/room-finish` PR 검토 후 `main` 병합(사용자 확인). 병합 후 `private/make-our-home.mjs`가 `version: 4`를 내보내도록 고쳐 다시 실행(영역·마감은 앱에서 그린다). 보류: 3D에서 샘플 「거실」 방 이름 라벨이 안 보임(main도 동일), T자 벽 접합부에서 영역 점이 벽 중심 끝점에 스냅됨.
+0a. `feat/room-finish` 보류(최종 리뷰): T자 접합부 안쪽 모서리 스냅, e2e의 3D 반영 검증 강화(현재 캔버스 존재만 확인), 영역 자기 교차 검사(지금은 면적 0만 거부).
 1. 계획 5a Task 4(설계 §11): 히스토리 정리 → repo 재생성 → 공개·Pages. 단계마다 사용자 확인.
 1a. `feat/self-update` PR #2 검토 후 `main` 병합(사용자 확인).
 2. 계획 5(스펙 §14.5-5): 삼성 모델 목록(사용자 제공) → 카탈로그·나머지 builder(`stand-ac`, `built-in-appliance`, `cabinet-run`, `chair`, `wardrobe`), 탐색 QA.

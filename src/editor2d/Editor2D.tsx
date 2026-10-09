@@ -9,15 +9,17 @@ import { Fixtures2D } from './Fixtures2D';
 import { Items2D } from './Items2D';
 import { Openings2D } from './Openings2D';
 import { Overlays2D } from './Overlays2D';
-import { Rooms2D } from './Rooms2D';
+import { RoomVertexHandles, Rooms2D } from './Rooms2D';
+import { isRoomPress } from './roomPress';
 import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 import { ToolPreview } from './ToolPreview';
-import { applyToolClick, finishWall } from './tools';
+import { applyToolClick, finishArea, finishWall } from './tools';
 import { fitViewBox, panBy, zoomAt, type ViewBox } from './viewBox';
 import { Walls2D } from './Walls2D';
 
 const ZOOM_STEP = 1.15;
+const NO_POINTS: Vec2[] = [];
 
 export function Editor2D() {
   const store = usePlanStore();
@@ -25,10 +27,16 @@ export function Editor2D() {
   const mode = useUi((s) => s.mode);
   const tool = useUi((s) => s.tool);
   const resetKey = useUi((s) => s.viewResetKey);
+  const areaSession = useUi((s) => s.areaSession);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
   const [vb, setVb] = useState<ViewBox>(() => fitViewBox(planBounds({ walls }), 4 / 3));
   const [wallPoints, setWallPoints] = useState<Vec2[]>([]);
+  // 영역 초안은 그린 세션 번호와 함께 둔다. 「영역 (다시) 그리기」로 세션이 바뀐 바로 그 렌더부터 빈 초안으로 보이므로,
+  // 효과(effect)가 비우기 전에 들어온 클릭이 옛 점에 이어 붙는 일이 없다
+  const [areaDraft, setAreaDraft] = useState<{ session: number; points: Vec2[] }>({ session: areaSession, points: [] });
+  const areaPoints = areaDraft.session === areaSession ? areaDraft.points : NO_POINTS;
+  const setAreaPoints = (points: Vec2[]) => setAreaDraft({ session: useUi.getState().areaSession, points });
   const [cursor, setCursor] = useState<Vec2 | null>(null);
   const pan = useRef<{ x: number; y: number; vb: ViewBox } | null>(null);
 
@@ -48,9 +56,10 @@ export function Editor2D() {
     setVb(fitViewBox(planBounds({ walls: store.getState().plan.walls }), size.w / size.h));
   }, [store, size.w, size.h, resetKey]);
 
-  // 도구를 바꾸면 그리던 벽은 버린다
+  // 도구를 바꾸면 그리던 벽/영역은 버린다(새 영역 세션의 초안은 위 areaDraft가 바로 비운다)
   useEffect(() => {
     setWallPoints([]);
+    setAreaDraft((d) => ({ ...d, points: [] }));
     setCursor(null);
   }, [tool]);
 
@@ -63,6 +72,18 @@ export function Editor2D() {
         setWallPoints([]);
         return;
       }
+      if (tool === 'area') {
+        if (e.key === 'Enter' && areaPoints.length > 0) {
+          e.preventDefault();
+          if (finishArea(store, areaPoints)) setAreaPoints([]);
+          return;
+        }
+        if (e.key === 'Escape') {
+          setAreaPoints([]);
+          useUi.getState().setTool('select');
+          return;
+        }
+      }
       if (e.key === 'Escape') {
         const ui = useUi.getState();
         ui.clearCandidates();
@@ -72,7 +93,7 @@ export function Editor2D() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [store, wallPoints, tool]);
+  }, [store, wallPoints, areaPoints, tool]);
 
   const px = vb.w / size.w;
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
@@ -80,13 +101,16 @@ export function Editor2D() {
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
     if (tool === 'select') {
-      store.getState().select(null);
-      useUi.getState().clearCandidates();
+      // 방을 눌렀으면 그 선택은 유지하고, 빈 곳이면 선택 해제. 어느 쪽이든 끌면 화면 이동
+      if (!isRoomPress(e.nativeEvent)) {
+        store.getState().select(null);
+        useUi.getState().clearCandidates();
+      }
       pan.current = { x: e.clientX, y: e.clientY, vb };
       e.currentTarget.setPointerCapture(e.pointerId);
       return;
     }
-    applyToolClick(tool, toPlan(e), { store, wallPoints, setWallPoints });
+    applyToolClick(tool, toPlan(e), { store, wallPoints, setWallPoints, areaPoints, setAreaPoints });
   };
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
     const p = pan.current;
@@ -101,9 +125,14 @@ export function Editor2D() {
     pan.current = null;
   };
   const onDoubleClick = () => {
-    if (tool !== 'wall' || wallPoints.length === 0) return;
-    finishWall(store, wallPoints);
-    setWallPoints([]);
+    if (tool === 'wall' && wallPoints.length > 0) {
+      finishWall(store, wallPoints);
+      setWallPoints([]);
+      return;
+    }
+    if (tool === 'area' && areaPoints.length >= 3) {
+      if (finishArea(store, areaPoints)) setAreaPoints([]);
+    }
   };
   const onWheel = (e: WheelEvent<SVGSVGElement>) => {
     const p = toPlan(e);
@@ -144,7 +173,8 @@ export function Editor2D() {
           <Walls2D px={px} />
           <Openings2D px={px} />
           <Fixtures2D />
-          <ToolPreview px={px} wallPoints={wallPoints} cursor={cursor} />
+          <RoomVertexHandles px={px} />
+          <ToolPreview px={px} wallPoints={wallPoints} areaPoints={areaPoints} cursor={cursor} />
         </svg>
       </SvgContext.Provider>
     </div>
