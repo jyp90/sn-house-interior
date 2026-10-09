@@ -11,7 +11,9 @@ const GAP = 0.003;
 export function buildCornerCabinet(p: Product, v: Variant) {
   const { W, D, H } = meters(p.dims);
   const part = (p.builderParams?.part as 'base' | 'upper' | undefined) ?? 'base';
-  const arm = (p.builderParams?.arm !== undefined ? Number(p.builderParams.arm) : 60) / 100;
+  const armRaw = (p.builderParams?.arm !== undefined ? Number(p.builderParams.arm) : 60) / 100;
+  // 팔 깊이는 자리보다 작아야 ㄱ자가 되고 문짝(PANEL)이 자리 안에 남는다(손으로 고친 JSON 보호)
+  const arm = Math.min(Math.max(armRaw, 0.01), Math.min(W, D) - PANEL - GAP);
   const counter = part === 'base';
   const bodyH = counter ? H - COUNTER : H;
   const bodyColor = color(v.colors, 'body', '#d9d3ca');

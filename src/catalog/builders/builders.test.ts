@@ -136,4 +136,13 @@ describe('buildProduct', () => {
     expect(CATEGORY_ORDER.indexOf('bath')).toBeGreaterThan(CATEGORY_ORDER.indexOf('furniture'));
     expect(CATEGORY_LABEL.bath).toBe('욕실');
   });
+
+  it('코너장의 arm이 자리보다 크면 잘라내 경계 상자가 그대로다', () => {
+    const base = CATALOG.find((x) => x.id === 'kitchen-corner-base-90')!;
+    const p: Product = { ...base, builderParams: { ...base.builderParams, arm: 500 } };
+    const size = bounds(p).getSize(new THREE.Vector3());
+    expect(size.x).toBeCloseTo(0.9, 4);
+    expect(size.z).toBeCloseTo(0.9, 4);
+    expect(bounds(p).min.y).toBeCloseTo(0, 4);
+  });
 });
