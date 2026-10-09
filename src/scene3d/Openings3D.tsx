@@ -25,7 +25,8 @@ function materialFor(part: OpeningPart, isMiddleDoor: boolean): THREE.Material {
     case 'handle':
       return handleMaterial;
     case 'mullion':
-      return isMiddleDoor ? middleFrameMaterial : frameMaterial;
+      // 멀리온은 창에만 생기고(중문 door 전용 플래그와 무관) 항상 기본 틀 색이다
+      return frameMaterial;
     default:
       return frameMaterial;
   }
