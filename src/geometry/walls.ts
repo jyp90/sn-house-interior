@@ -32,7 +32,7 @@ export function wallObb(w: Wall): OBB {
   return segmentObb(w, -w.thickness / 2, wallLength(w) + w.thickness / 2);
 }
 
-function clampToWall(o: Opening, len: number): [number, number] {
+export function clampToWall(o: Opening, len: number): [number, number] {
   return [Math.max(0, o.offset), Math.min(len, o.offset + o.width)];
 }
 

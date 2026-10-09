@@ -45,7 +45,7 @@ export function itemClearances(item: Item, product: Product): ClearanceShape[] {
 }
 
 // 문짝 폭: [경첩(o.hinge) 쪽, 반대쪽]. 외여닫이는 반대쪽이 0
-function leafWidths(o: Opening): [number, number] {
+export function leafWidths(o: Opening): [number, number] {
   if (o.leaves === 'double') return [o.width / 2, o.width / 2];
   if (o.leaves === 'asym') {
     const big = Math.round((o.width * 2) / 3);

@@ -10,6 +10,7 @@ import { DropBridge, screenToFloor } from './DropBridge';
 import { Floor } from './Floor';
 import { Items3D } from './Items3D';
 import { LabelOverlay } from './LabelOverlay';
+import { Openings3D } from './Openings3D';
 import { Overlays } from './Overlays';
 import { Walls3D } from './Walls3D';
 
@@ -67,6 +68,7 @@ export function Viewport({ active }: { active: boolean }) {
         <directionalLight position={[5, 10, 5]} intensity={1.0} />
         <Floor />
         <Walls3D />
+        <Openings3D />
         <Items3D />
         <Overlays />
         <DropBridge />
