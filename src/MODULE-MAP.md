@@ -14,6 +14,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `ids.ts` — `newId`.
 
 ## geometry/ (pure)
+- `vertical.ts` — vertical span overlap (touching ≠ overlap).
 - `obb.ts` — 2D OBB + SAT overlap, `itemObb`.
 - `walls.ts` — wall pieces split by openings, wall OBBs for collision.
 - `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan.
@@ -26,7 +27,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `polygon.ts` — area/centroid/point-in-polygon/validity for room floor polygons.
 
 ## validation/
-- `validate.ts` — `validatePlan` → per-item status (`collides`, `clearanceBlocked`, `blocksDoor`) with `conflicts` reasons.
+- `validate.ts` — `validatePlan` → per-item status (`collides`, `clearanceBlocked`, `blocksDoor`) with `conflicts` reasons. Every obstacle (wall, item, door swing) is also filtered by vertical span (spec §20.2).
 - `describe.ts` — `conflictLines`: Korean text for the warning detail.
 
 ## materials/
@@ -65,7 +66,8 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## catalog/
 - `products.ts` — `CATALOG` product data (dimensions, clearance, power) and categories.
-- `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`); `index.ts` dispatches and disposes. Missing builders: spec §7 (plan 5).
+- `elevation.ts` — effective installation height (item → product → legacy mountHeight → mount rule), ceiling height = max wall height (230 default).
+- `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`, `standAc`, `builtInAppliance`, `cabinetRun`, `ceilingAc`, `chair`, `wardrobe`, `toilet`, `basin`, `shower`); `index.ts` dispatches and disposes. `parts.ts` gained `cylinder`/`glass` primitives.
 
 ## electrical/
 - `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius).
@@ -94,6 +96,8 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `FinishPicker.tsx` — generic preset-chip + material `<select>` + color `<input type="color">` picker for `FloorFinish`/`WallFinish` (colour previews locally, commits once on the native `change` event); used by `RoomProperties` (room floor/wall) and `StructurePanel` (plan defaults). Exports `FLOOR_MATERIALS`/`WALL_MATERIALS` option lists.
 - `styles.css` (src root) — wood-tone design tokens on `:root` (spec §19.4); colors only via tokens, 2D selection accent stays blue (`--accent`).
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
+- `catalogFilter.ts` — `filterCatalog`: name/model substring filter for `CatalogPanel`'s 제품 찾기 input.
+- `properties/ItemProperties.tsx` — 설치 높이 `NumberField` (`itemElevationCm`, commits `item.elevation`) with a 기본값 reset button shown only when the item has an explicit elevation.
 
 ## scripts/ (Node, outside the app bundle)
 - `check-dist.ts` — post-build Pages bundle guard: no images, no home-preset markers, all index.html refs under `/sn-house-interior/` (deploy design §7). `npm run check:dist`.
