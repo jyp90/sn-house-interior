@@ -94,3 +94,8 @@ export function openingObb(w: Wall, o: Opening): OBB | null {
   if (e <= s) return null;
   return segmentObb(w, s, e);
 }
+
+// 벽 밖으로 완전히 나간 개구부(openingObb가 null)를 되돌리기 위한 벽 끝 지점(spec §31)
+export function strayOpeningAnchor(w: Wall, o: Opening): Vec2 {
+  return o.offset < 0 ? w.a : w.b;
+}

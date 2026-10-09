@@ -210,6 +210,7 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .opening-glass { stroke: #4f9dde; stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
 .opening-middle-label { fill: #2b6cb0; pointer-events: none; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
+.opening-stray { fill: var(--danger); stroke: #fff; }
 .room-name { fill: #6b5e4b; }
 .room-selected { fill: var(--accent); font-weight: 600; }
 .room-area { stroke: none; cursor: pointer; }

@@ -17,7 +17,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## geometry/ (pure)
 - `vertical.ts` — vertical span overlap (touching ≠ overlap).
 - `obb.ts` — 2D OBB + SAT overlap, `itemObb`.
-- `walls.ts` — wall pieces split by openings, wall OBBs for collision. `openingObb(w, o)` clamps to `clampToWall` first and returns `null` (not a degenerate OBB) when the opening is fully outside the wall; callers (`Openings2D.tsx`, `export/planSvg.ts`) skip drawing the gap when `null` (spec §31).
+- `walls.ts` — wall pieces split by openings, wall OBBs for collision. `openingObb(w, o)` clamps to `clampToWall` first and returns `null` (not a degenerate OBB) when the opening is fully outside the wall; callers (`Openings2D.tsx`, `export/planSvg.ts`) skip drawing the gap when `null`. `strayOpeningAnchor(w, o)` gives the nearer wall endpoint (`a`/`b`) so `Openings2D.tsx` can still render a selectable/draggable marker for a stray opening (spec §31).
 - `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan. `doorLeaves` clamps `o.offset`/`o.width` to the wall via `walls.ts`'s `clampToWall` before computing leaves, so an opening past the wall end stays inside it (spec §30.2).
 - `distance.ts` — 4-direction nearest-wall rays for the selected item.
 - `snap.ts` — item-to-wall snap (`WALL_SNAP_CM`).

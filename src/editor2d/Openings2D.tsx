@@ -2,7 +2,7 @@ import { useContext, useRef, type PointerEvent } from 'react';
 import { doorLeaves } from '../geometry/clearance';
 import { corners } from '../geometry/obb';
 import { fitOpening } from '../geometry/structure';
-import { clampToWall, openingObb, wallDir, wallLength } from '../geometry/walls';
+import { clampToWall, openingObb, strayOpeningAnchor, wallDir, wallLength } from '../geometry/walls';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
 import { pointsAttr, sectorPath } from './svg';
@@ -83,6 +83,7 @@ export function Openings2D({ px }: { px: number }) {
         const a = { x: w.a.x + u.x * s, y: w.a.y + u.y * s };
         const b = { x: w.a.x + u.x * e, y: w.a.y + u.y * e };
         const gap = openingObb(w, o);
+        const strayAnchor = gap ? null : strayOpeningAnchor(w, o);
         const leaves = o.kind === 'door' ? doorLeaves(w, o) : [];
         const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -96,7 +97,12 @@ export function Openings2D({ px }: { px: number }) {
             onPointerUp={interactive ? onUp : undefined}
             onPointerCancel={interactive ? onUp : undefined}
           >
-            {gap && <polygon points={pointsAttr(corners(gap))} className="opening-gap" data-testid={`opening-gap-${o.id}`} />}
+            {gap ? (
+              <polygon points={pointsAttr(corners(gap))} className="opening-gap" data-testid={`opening-gap-${o.id}`} />
+            ) : (
+              // 벽 밖으로 완전히 나간 개구부: 가까운 벽 끝에 빨간 점을 남겨 선택·드래그로 되돌릴 수 있게 한다(spec §31)
+              <circle cx={strayAnchor!.x} cy={strayAnchor!.y} r={8} className="opening-gap opening-stray" data-testid={`opening-gap-${o.id}`} />
+            )}
             {o.kind === 'window' && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="opening-window" />}
             {o.kind === 'opening' && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="opening-open" />}
             {leaves.map((l, i) => (
