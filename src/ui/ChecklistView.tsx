@@ -83,7 +83,7 @@ export function ChecklistView() {
           <div>
             <h2>공사 체크리스트</h2>
             <p className="muted">자동 항목은 현재 배치안({activeLayout(plan).name})과 전기 계획에서 만들어집니다.</p>
-            <DocLinks mode="checklist" />
+            <DocLinks mode="checklist" editable />
           </div>
           <div className="cl-total">
             <strong>{percent(done, items.length)}%</strong>

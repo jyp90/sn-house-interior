@@ -6,3 +6,7 @@
 .doc-link-label { font-weight: 600; }
 .doc-link-note { color: var(--text-3); }
 .doc-link-arrow { color: var(--brass); }
+.doc-links-edit { font-size: 12px; padding: 4px 10px; border-radius: 999px; }
+.doc-links-form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-width: 560px; }
+.doc-links-form textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; resize: vertical; }
+.doc-links-actions { display: flex; gap: 6px; }
