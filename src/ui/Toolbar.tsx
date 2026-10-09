@@ -24,6 +24,7 @@ export function Toolbar() {
   const tool = useUi((s) => s.tool);
   const saveStatus = useUi((s) => s.saveStatus);
   const historyOpen = useUi((s) => s.historyOpen);
+  const viewOnly = useUi((s) => s.viewOnly);
   const ui = useUi.getState();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -71,8 +72,10 @@ export function Toolbar() {
           ))}
         </div>
       )}
-      <button type="button" aria-pressed={snap} onClick={() => ui.toggleSnap()}>{snap ? '스냅 켜짐' : '스냅 꺼짐'}</button>
-      {(mode === 'structure' || mode === 'place' || mode === 'electric') && (
+      {!viewOnly && (
+        <button type="button" aria-pressed={snap} onClick={() => ui.toggleSnap()}>{snap ? '스냅 켜짐' : '스냅 꺼짐'}</button>
+      )}
+      {!viewOnly && (mode === 'structure' || mode === 'place' || mode === 'electric') && (
         <button
           type="button"
           aria-pressed={tool === 'measure'}
@@ -87,15 +90,19 @@ export function Toolbar() {
       <span className="sep" />
       <button type="button" onClick={() => fileRef.current?.click()}>JSON 열기</button>
       <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="open-json" onChange={onOpen} />
-      <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'sn-house-interior-plan.json')}>JSON 저장</button>
-      {mode === 'place' && <ExportButtons />}
-      <span className="sep" />
-      <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
-      <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
-      <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
-      {import.meta.env.DEV && <UpdateButton />}
-      <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
-      <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
+      {!viewOnly && (
+        <>
+          <button type="button" onClick={() => downloadText(planToJson(store.getState().plan), 'sn-house-interior-plan.json')}>JSON 저장</button>
+          {mode === 'place' && <ExportButtons />}
+          <span className="sep" />
+          <button type="button" aria-pressed={historyOpen} onClick={() => ui.setHistoryOpen(!historyOpen)}>이력</button>
+          <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
+          <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
+          {import.meta.env.DEV && <UpdateButton />}
+          <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
+          <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
+        </>
+      )}
     </header>
   );
 }

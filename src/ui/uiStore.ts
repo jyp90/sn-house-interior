@@ -34,6 +34,8 @@ type UiState = {
   areaSession: number;
   measure: Measure | null;
   itemListOpen: boolean;
+  // 화면 폭 820px 이하(모바일): 보기 전용. matchMedia 구독으로 App이 설정한다(스펙 §32)
+  viewOnly: boolean;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -57,6 +59,7 @@ type UiState = {
   measureClick(p: Vec2): void;
   clearMeasure(): void;
   setItemListOpen(open: boolean): void;
+  setViewOnly(viewOnly: boolean): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -79,6 +82,7 @@ export const useUi = create<UiState>()((set, get) => ({
   areaSession: 0,
   measure: null,
   itemListOpen: true,
+  viewOnly: false,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null, measure: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null, measure: null }),
@@ -114,4 +118,5 @@ export const useUi = create<UiState>()((set, get) => ({
   },
   clearMeasure: () => set({ measure: null }),
   setItemListOpen: (open) => set({ itemListOpen: open }),
+  setViewOnly: (viewOnly) => set({ viewOnly }),
 }));

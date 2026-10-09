@@ -107,6 +107,19 @@ describe('구조 단축키', () => {
   });
 });
 
+it('보기 전용(모바일)에서는 실행 취소/다시 실행 외 편집 단축키를 무시한다', () => {
+  const { store, press } = setup();
+  const p = (key: string, o: { mod?: boolean; shiftKey?: boolean } = {}) =>
+    applyShortcut(store.getState(), { key, shiftKey: !!o.shiftKey, mod: !!o.mod, viewOnly: true });
+  expect(p('Delete')).toBe(false);
+  expect(p('r')).toBe(false);
+  expect(p('ArrowRight')).toBe(false);
+  expect(p('d', { mod: true })).toBe(false);
+  expect(activeItems(store.getState().plan)).toHaveLength(1);
+  press('ArrowRight'); // undo 스택에 변경을 하나 남긴다
+  expect(p('z', { mod: true })).toBe(true);
+});
+
 it('잠긴 아이템은 방향키와 R을 무시한다', () => {
   const { store, id, press } = setup();
   store.getState().updateItem(id, { locked: true });

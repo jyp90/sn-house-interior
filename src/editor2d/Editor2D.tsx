@@ -143,11 +143,11 @@ export function Editor2D() {
     setVb((v) => zoomAt(v, p, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
   };
   const onDragOver = (e: DragEvent) => {
-    if (mode === 'place' && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
+    if (mode === 'place' && !useUi.getState().viewOnly && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
   };
   const onDrop = (e: DragEvent) => {
     const data = e.dataTransfer.getData(DND_MIME);
-    if (!data || mode !== 'place') return;
+    if (!data || mode !== 'place' || useUi.getState().viewOnly) return; // 보기 전용: 카탈로그 추가·드래그 금지(스펙 §32)
     e.preventDefault();
     const [productId, variantId] = data.split('|');
     const p = toPlan(e);
