@@ -5,7 +5,7 @@ import { isSimplePolygon, isValidPolygon, pointInPolygon } from '../geometry/pol
 import { distanceToWall } from '../geometry/structure';
 import { wallLength } from '../geometry/walls';
 import { SAMPLE_PLAN } from '../model/samplePlan';
-import { HOME_IMAGE_REF, prepareHomePreset } from './homePreset';
+import { HOME_IMAGE_REF, markPresetSeen, presetFingerprint, PRESET_SEEN_KEY, prepareHomePreset } from './homePreset';
 import { memoryImageStore } from './images';
 import { parsePlan } from './parse';
 
@@ -96,10 +96,10 @@ describe.skipIf(!existsSync(PRESET))('우리 집 프리셋 (private)', () => {
 const HOME_PLAN = new URL('../../home/plan.json', import.meta.url);
 
 describe('home/plan.json', () => {
-  it('파싱되고 방 8개 모두 polygon이 있으며 라벨은 그 안에 있다', () => {
+  it('파싱되고 방 9개 모두 polygon이 있으며 라벨은 그 안에 있다', () => {
     const r = parsePlan(JSON.parse(readFileSync(HOME_PLAN, 'utf8')));
     if (!r.ok) throw new Error(r.error);
-    expect(r.plan.rooms).toHaveLength(8);
+    expect(r.plan.rooms).toHaveLength(9);
     for (const room of r.plan.rooms) {
       expect(room.polygon, room.id).toBeDefined();
       expect(isValidPolygon(room.polygon!) && isSimplePolygon(room.polygon!), room.id).toBe(true);
@@ -107,10 +107,29 @@ describe('home/plan.json', () => {
     }
     const living = r.plan.rooms.find((room) => room.id === 'living')!.polygon!;
     expect([...living].sort((a, b) => a.x - b.x || a.y - b.y)).toEqual([
-      { x: 10, y: 396 },
-      { x: 10, y: 680 },
-      { x: 504, y: 396 },
-      { x: 504, y: 680 },
+      { x: 9, y: 370 },
+      { x: 9, y: 720 },
+      { x: 584, y: 370 },
+      { x: 584, y: 720 },
     ]);
+  });
+});
+
+describe('프리셋 갱신 안내 (스펙 §39.4)', () => {
+  const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), m }; };
+  it('지문은 같은 JSON에 같고 다른 JSON에 다르다', () => {
+    expect(presetFingerprint({ a: 1 })).toBe(presetFingerprint({ a: 1 }));
+    expect(presetFingerprint({ a: 1 })).not.toBe(presetFingerprint({ a: 2 }));
+  });
+  it('새 지문이면 true를 돌려주고 기억해 두 번째부터는 false', () => {
+    const s = mem();
+    expect(markPresetSeen('x', s)).toBe(true);
+    expect(s.m.get(PRESET_SEEN_KEY)).toBe('x');
+    expect(markPresetSeen('x', s)).toBe(false);
+    expect(markPresetSeen('y', s)).toBe(true);
+  });
+  it('저장소가 없거나 던지면 안내하지 않는다', () => {
+    expect(markPresetSeen('x', undefined)).toBe(false);
+    expect(markPresetSeen('x', { getItem: () => { throw new Error('blocked'); }, setItem: () => {} })).toBe(false);
   });
 });
