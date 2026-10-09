@@ -3,8 +3,8 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-09 기준 `main` `64042d9`(PR #23 `feat/room-labels`, §37 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §37.
-- 테스트(`main`): typecheck 통과, `npm test` 575 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 578 통과·0 skip), e2e 39 통과(17 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- 2026-10-09 기준 `main` `6f44ff7`(PR #26 `feat/preset-planner5d`, §39 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §39.
+- 테스트(`main`): typecheck 통과, `npm test` 585 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 588 통과·0 skip), e2e 40 통과(17 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 Pages 주소(§33 보기 전용 포함).
 
@@ -12,6 +12,8 @@
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
 | §34 | — | 체크리스트 탭에 1차·2차 문서 링크 추가(`private/doc-links.local.json` 데이터만, 코드 변경 없음) | 560 / 37 (변경 없음) |
+| §39 | #26 | 우리 집 프리셋 v2(Planner 5D 실내 치수·벽 18cm·창고·확장 거실 샷시·중문 틀·현관 단), 프리셋 갱신 안내 배너(`homePreset.ts` `presetFingerprint`/`markPresetSeen`) | 585 / 40 |
+| §38 | #25 | 집 영역 밖 배치 금지(`geometry/houseArea.ts`, 방 이름·영역·설비 클릭 거부, 설비 드래그 clamp) | 582 / 40 |
 | §37 | #23 | 2D 도면 자리 흰 종이(`BackgroundImage` `background-paper`, 프리셋 배경 `opacity` 0), 방 라벨 20px + `(면적㎡)` 줄(`Rooms2D`) | 575 / 39 |
 | §36 | #22 | 페이지 타이틀 「우리집 인테리어 by 송뇽」, 탭 ↔ URL hash(`src/ui/modeHash.ts`, `e2e/modeHash.spec.ts`) | 575 / 39 |
 | §35 | #21 | 배경 도면 흑백화(`BackgroundImage` grayscale), 닫힌 벽 영역 자동 인식(`geometry/enclosure.ts`, `autoRoomPolygon(s)`, 방 속성·구조 패널 버튼), `home/plan.json` 방 8개 polygon | 572 / 38 |
@@ -38,6 +40,7 @@
 라운드별 상세(QA 절차·보류 사유)는 `archive/*/HANDOFF.md`(로컬 전용). 스펙 §별 코드 위치는 `docs/README.md` Feature map.
 
 ## 다음 할 일
+0. 배포본 사용자 작업: 배포 후 구조 탭 「우리 집 기본 평면 불러오기」로 프리셋 v2 적용(갱신 배너가 안내). 옛 배경 이미지(`home/floorplan.jpg`)는 v2 치수와 안 맞으므로 투명도를 올리면 어긋남 — 새 도면 이미지로 교체·재보정은 별도 라운드.
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인(§33 보기 전용 포함); 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
 2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품 13개의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). `private/make-our-home.mjs`는 아직 `version: 3`(로드 시 v8로 마이그레이션되므로 급하지 않음; 손볼 때 현재 `CURRENT_VERSION`으로). **다시 돌릴 때 §35로 넣은 방 8개 `polygon`을 보존해야 함**(스크립트에 polygon을 넣거나, 돌린 뒤 앱의 「영역 없는 방 자동 인식」으로 다시 채우고 JSON 저장).
 3. 보류 minor(§20–§33 누적): `Product.brand`가 UI 어디에도 표시되지 않음; 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택); 상판 위 가전 자동 높이·적층 스냅 없음; 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만); 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨; 대각선 벽의 개구부 라벨 간격 미검증; e2e flake 2건은 §30에서 12회 반복으로 재현 안 됨; pdf e2e 쪽수 하한이 §25 이후(17쪽)에도 유효한지 미확인; FixtureProperties/ExportView 컴포넌트 테스트 없음; 캔버스 픽셀 검증 e2e 없음.
