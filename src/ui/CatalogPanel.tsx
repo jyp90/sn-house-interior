@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CATALOG, CATEGORY_LABEL, CATEGORY_ORDER } from '../catalog/products';
 import { planCenter } from '../geometry/bounds';
 import type { Product } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
+import { filterCatalog } from './catalogFilter';
 import { CustomBoxForm } from './CustomBoxForm';
 import { DND_MIME } from './dnd';
 import { LayoutBar } from './LayoutBar';
@@ -10,10 +11,11 @@ import { LayoutBar } from './LayoutBar';
 export function CatalogPanel() {
   const store = usePlanStore();
   const custom = usePlan((s) => s.plan.customProducts);
+  const [query, setQuery] = useState('');
   const groups = useMemo(() => {
-    const all = [...CATALOG, ...custom];
+    const all = filterCatalog([...CATALOG, ...custom], query);
     return CATEGORY_ORDER.map((cat) => [cat, all.filter((p) => p.category === cat)] as const).filter(([, list]) => list.length > 0);
-  }, [custom]);
+  }, [custom, query]);
 
   const addAtCenter = (p: Product) => {
     const s = store.getState();
@@ -23,6 +25,11 @@ export function CatalogPanel() {
   return (
     <div className="catalog">
       <LayoutBar />
+      <label className="field">
+        제품 찾기
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름·모델명" aria-label="제품 찾기" />
+      </label>
+      {groups.length === 0 && <p className="muted">일치하는 제품이 없습니다.</p>}
       {groups.map(([cat, list]) => (
         <section key={cat}>
           <h3>{CATEGORY_LABEL[cat]}</h3>

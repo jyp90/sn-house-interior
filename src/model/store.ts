@@ -84,7 +84,10 @@ const normalizeDeg = (d: number) => ((Math.round(d) % 360) + 360) % 360;
 const roundVec = (p: Vec2): Vec2 => ({ x: Math.round(p.x), y: Math.round(p.y) });
 
 function normalizeItem(item: Item): Item {
-  return { ...item, x: Math.round(item.x), y: Math.round(item.y), rotation: normalizeDeg(item.rotation) };
+  const next: Item = { ...item, x: Math.round(item.x), y: Math.round(item.y), rotation: normalizeDeg(item.rotation) };
+  if (item.elevation === undefined) delete next.elevation;
+  else next.elevation = Math.max(0, Math.round(item.elevation));
+  return next;
 }
 
 function normalizeFixture(f: Fixture): Fixture {
@@ -140,6 +143,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
           delete next.x;
           delete next.y;
           delete next.rotation;
+          delete next.elevation;
           if (Object.keys(next).length === 0) return;
         }
         commit(withItems((items) => items.map((i) => (i.id === id ? normalizeItem({ ...i, ...next }) : i))));

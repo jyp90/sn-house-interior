@@ -117,13 +117,34 @@ describe('buildPdf', () => {
     ]);
   });
 
-  it('제품 목록: 번호·모델·이름·치수(미확인 ≈)·소비전력·전용회로', () => {
+  it('제품 목록: 번호·모델·이름·치수(미확인 ≈)·설치 높이·소비전력·전용회로', () => {
     const products = buildPdf(withActiveItems(SAMPLE_PLAN, [sofa('s1'), washer]), input).pages[10] as TablePage;
-    expect(products.columns.map((c) => c.label)).toEqual(['번호', '모델명', '이름', 'W×D×H (cm)', '소비전력', '전용회로']);
+    expect(products.columns.map((c) => c.label)).toEqual(['번호', '모델명', '이름', 'W×D×H (cm)', '설치 높이', '소비전력', '전용회로']);
     expect(products.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
-      ['1', '-', '3인 소파', '≈210×90×80', '-', '-'],
-      ['2', '그랑데 세탁기 (샘플 치수)', '그랑데 드럼세탁기', '≈70×85×110', '2000W', '필요 (콘센트 없음)'],
+      ['1', '-', '3인 소파', '≈210×90×80', '-', '-', '-'],
+      ['2', '그랑데 세탁기 (샘플 치수)', '그랑데 드럼세탁기', '≈70×85×110', '-', '2000W', '필요 (콘센트 없음)'],
     ]);
+  });
+
+  it('제품 목록·빌트인 상세에 설치 높이가 들어간다', () => {
+    const upper: Product = {
+      id: 'c-upper', brand: 'custom', model: '', name: '상부장', category: 'kitchen',
+      dims: { w: 240, d: 35, h: 70 }, variants: [{ id: 'v', label: '기본', colors: {} }],
+      builder: 'cabinet-run', clearances: [], builtIn: true, mount: 'wall', elevation: 145,
+    };
+    const plan: Plan = {
+      ...withActiveItems(SAMPLE_PLAN, [
+        { id: 'u', productId: 'c-upper', variantId: 'v', x: 150, y: 40, rotation: 0 },
+        { id: 'u2', productId: 'c-upper', variantId: 'v', x: 150, y: 300, rotation: 0, elevation: 160 },
+      ]),
+      customProducts: [upper],
+    };
+    const doc = buildPdf(plan, input);
+    const products = doc.pages.find((p) => p.title.startsWith('제품 목록')) as TablePage;
+    expect(products.rows.map((r) => r[4].join(' '))).toEqual(['145cm', '160cm']);
+    const builtIn = doc.pages.find((p) => p.title === '빌트인 상세') as TablePage;
+    expect(builtIn.rows[0][3].join(' ')).toMatch(/, 바닥에서 145cm$/);
+    expect(builtIn.rows[1][3].join(' ')).toMatch(/, 바닥에서 160cm$/);
   });
 
   it('빌트인 상세: 번호·제품·치수(미확인 ≈)·벽 기준 위치', () => {

@@ -8,8 +8,8 @@ describe('parsePlan', () => {
   });
 
   it('parsePlan은 버전이 다르면 실패한다', () => {
-    const r = parsePlan({ ...SAMPLE_PLAN, version: 5 });
-    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 5' });
+    const r = parsePlan({ ...SAMPLE_PLAN, version: 6 });
+    expect(r).toEqual({ ok: false, error: '지원하지 않는 파일 버전입니다: 6' });
   });
 
   it('객체가 아니면 실패한다', () => {
@@ -26,7 +26,7 @@ describe('parsePlan', () => {
   it('v3 파일은 v4로 올라가고 마감 필드 없이도 통과한다', () => {
     const r = parsePlan({ ...JSON.parse(JSON.stringify(SAMPLE_PLAN)), version: 3 });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.plan.version).toBe(4);
+    if (r.ok) expect(r.plan.version).toBe(5);
   });
 
   it('방 영역·마감과 기본 마감을 받는다', () => {
@@ -45,11 +45,31 @@ describe('parsePlan', () => {
     raw2.rooms[0] = { ...raw2.rooms[0], floor: { material: 'wood', color: 'red' } };
     expect(parsePlan(raw2).ok).toBe(false);
   });
+
+  it('v4 파일은 v5로 올라가고 elevation 없이도 통과한다', () => {
+    const r = parsePlan({ ...JSON.parse(JSON.stringify(SAMPLE_PLAN)), version: 4 });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.plan.version).toBe(5);
+  });
+
+  it('v5: 아이템 elevation은 0 이상 정수, 제품 mount는 ceiling도 된다', () => {
+    const raw = JSON.parse(JSON.stringify(SAMPLE_PLAN));
+    raw.customProducts = [{
+      id: 'c1', brand: '일반', model: '', name: '천장 박스', category: 'bath', dims: { w: 80, d: 80, h: 25 },
+      variants: [{ id: 'v', label: '기본', colors: {} }], builder: 'ceiling-ac', clearances: [], builtIn: false, mount: 'ceiling', elevation: 205,
+    }];
+    raw.layouts[0].items = [{ id: 'i1', productId: 'c1', variantId: 'v', x: 100, y: 100, rotation: 0, elevation: 200 }];
+    expect(parsePlan(raw).ok).toBe(true);
+    raw.layouts[0].items[0].elevation = -1;
+    expect(parsePlan(raw).ok).toBe(false);
+    raw.layouts[0].items[0].elevation = 1.5;
+    expect(parsePlan(raw).ok).toBe(false);
+  });
 });
 
 describe('migrate', () => {
   it('현재 버전은 그대로 돌려준다', () => {
-    const raw = { version: 4, a: 1 };
+    const raw = { version: 5, a: 1 };
     expect(migrate(raw)).toBe(raw);
   });
 
@@ -62,7 +82,7 @@ describe('migrate', () => {
 
   it('변환이 없거나 현재보다 높은 버전은 null', () => {
     expect(migrate({ version: 0 })).toBeNull();
-    expect(migrate({ version: 5 })).toBeNull();
+    expect(migrate({ version: 6 })).toBeNull();
     expect(migrate({})).toBeNull();
   });
 
@@ -89,7 +109,7 @@ describe('migrate', () => {
     };
     const r = parsePlan(v1);
     if (!r.ok) throw new Error(r.error);
-    expect(r.plan.version).toBe(4);
+    expect(r.plan.version).toBe(5);
     expect(r.plan.layouts).toEqual([{ id: 'layout-a', name: 'A안', items: [item] }]);
     expect(r.plan.activeLayoutId).toBe('layout-a');
   });

@@ -53,6 +53,7 @@ export const ItemSchema = z.object({
   x: cm,
   y: cm,
   rotation: z.number(),
+  elevation: cm.nonnegative().optional(), // 바닥에서 밑면까지 설치 높이(cm). 없으면 제품 기본값(catalog/elevation.ts)
   label: z.string().optional(),
   locked: z.boolean().optional(),
   verified: z.boolean().optional(),
@@ -88,9 +89,10 @@ export const ClearanceSchema = z.discriminatedUnion('kind', [
 export const BuilderIdSchema = z.enum([
   'box', 'fridge', 'front-loader', 'tv', 'sofa', 'bed', 'table',
   'stand-ac', 'built-in-appliance', 'cabinet-run', 'chair', 'wardrobe',
+  'toilet', 'basin', 'shower', 'ceiling-ac',
 ]);
 
-export const CategorySchema = z.enum(['kitchen', 'laundry', 'tv', 'climate', 'living', 'furniture', 'custom']);
+export const CategorySchema = z.enum(['kitchen', 'laundry', 'tv', 'climate', 'living', 'furniture', 'bath', 'custom']);
 
 export const VariantSchema = z.object({
   id,
@@ -111,7 +113,8 @@ export const ProductSchema = z.object({
   clearances: z.array(ClearanceSchema),
   power: z.object({ watts: z.number().nonnegative(), dedicatedCircuit: z.boolean() }).optional(),
   builtIn: z.boolean(),
-  mount: z.enum(['floor', 'wall']),
+  mount: z.enum(['floor', 'wall', 'ceiling']),
+  elevation: cm.nonnegative().optional(), // 제품 기본 설치 높이(cm). item.elevation → 이 값 → builderParams.mountHeight → mount 규칙
   sourceUrl: z.string().optional(),
 });
 
@@ -147,7 +150,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(4),
+    version: z.literal(5),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

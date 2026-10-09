@@ -1,3 +1,4 @@
+import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
 import { PHASES } from '../checklist/defaults';
 import { checklistEntry, checklistItems } from '../checklist/items';
@@ -151,6 +152,12 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
     const dims = `${product.dims.w}×${product.dims.d}×${product.dims.h}`;
     return item.verified ? dims : `≈${dims}`;
   };
+  const ceiling = ceilingHeightCm(plan);
+  const elevationCm = (item: Item, product: Product) => itemElevationCm(item, product, ceiling);
+  const elevationSuffix = (item: Item, product: Product) => {
+    const e = elevationCm(item, product);
+    return e > 0 ? `, 바닥에서 ${e}cm` : '';
+  };
 
   const drawing = (title: string, svg: ReturnType<typeof planSvg>, notes: string[]): DrawingPage => ({
     kind: 'drawing',
@@ -244,7 +251,7 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
           String(numbers.get(item.id)),
           product.model ? `${product.name}\n${product.model}` : product.name,
           sizeText(item, product),
-          wallReferenceText(plan, item, product),
+          wallReferenceText(plan, item, product) + elevationSuffix(item, product),
         ]),
       '빌트인 항목이 없습니다',
     ),
@@ -252,19 +259,22 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
       `제품 목록 (${layout.name})`,
       [
         { label: '번호', width: 15 },
-        { label: '모델명', width: 75 },
-        { label: '이름', width: 60 },
+        { label: '모델명', width: 60 },
+        { label: '이름', width: 50 },
         { label: 'W×D×H (cm)', width: 42 },
-        { label: '소비전력', width: 35 },
+        { label: '설치 높이', width: 30 },
+        { label: '소비전력', width: 30 },
         { label: '전용회로', width: 40 },
       ],
       placed.map(({ item, product }) => {
         const circuit = product.power?.dedicatedCircuit ? (missing.has(item.id) ? '필요 (콘센트 없음)' : '필요') : '-';
+        const e = elevationCm(item, product);
         return [
           String(numbers.get(item.id)),
           product.model || '-',
           product.name,
           sizeText(item, product),
+          e > 0 ? `${e}cm` : '-',
           product.power ? `${product.power.watts}W` : '-',
           circuit,
         ];

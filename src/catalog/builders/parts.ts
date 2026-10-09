@@ -40,3 +40,19 @@ export function color(colors: Record<string, string>, key: string, fallback: str
 export function meters(dims: { w: number; d: number; h: number }) {
   return { W: cmToM(dims.w), D: cmToM(dims.d), H: cmToM(dims.h) };
 }
+
+// 세로(y축) 원기둥, 중심 (x,y,z)
+export function cylinder(r: number, h: number, c: string, x: number, y: number, z: number): THREE.Mesh {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), material(c));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+
+// 반투명 유리(공유 재질, 해제하지 않음)
+const glassMaterial = new THREE.MeshStandardMaterial({ color: '#cfe3ea', transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0 });
+export function glass(w: number, h: number, d: number, x: number, y: number, z: number): THREE.Mesh {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), glassMaterial);
+  mesh.position.set(x, y, z);
+  mesh.name = 'glass';
+  return mesh;
+}
