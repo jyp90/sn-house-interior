@@ -885,3 +885,18 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 45.3 테스트
 - 단위 `github.test.ts`(fetch mock): 한국어 base64 왕복, GET 경로·헤더(토큰 있을 때만 `Authorization`), PUT 본문(`sha`, `branch`, `content`), 401/404/409/네트워크 오류 문구. `sync.test.ts`: 기본값, 저장/읽기/지우기, 깨진 JSON → 기본값, 저장소 예외 무시.
 - e2e `e2e/sync.spec.ts`(`page.route('https://api.github.com/**')`로 메모리 파일 흉내): 동기화 열기 → 토큰 입력 → 「GitHub에 저장」 → PUT 본문에 현재 제목 포함·상태 줄 갱신 → 원격 내용을 다른 제목으로 바꾼 뒤 「불러오기」 → 제목 바뀜·실행 취소로 복귀 → 원격 sha를 바꾼 뒤 저장 → confirm 수락 → PUT 전송. 새로고침 후 설정(토큰 제외 표시) 유지.
+
+## 46. 34차 반영: 폰에서 잠금 화면 크기·키보드 닫으면 입장·7일 기억 (2026-10-10)
+
+사용자 보고: 폰에서 열면 반응형 기준이 아예 사라진 것 같다 → 확인 결과 §44의 viewport `width=1200`이 **PIN 잠금 화면(§42)에도** 적용돼 카드가 손톱만 하게 보였다. 앱 본체는 의도대로 PC 레이아웃 축소. 추가 요청: 비밀번호 입력 뒤 키보드를 닫으면 바로 인증, 한 번 맞히면 최소 하루 기억.
+
+### 46.1 잠금 화면 viewport
+- 잠금이 켜진 빌드에서는 `main.tsx`가 viewport를 바꾸지 않고 `Gate`가 맡는다: 잠겨 있는 동안 `width=device-width, initial-scale=1.0`(`smallScreen.ts` `resetViewport`), 들어간 순간 `applyViewport`(작은 화면이면 `width=1200`). 잠금이 꺼진 빌드(테스트·`HOMEFIT_SAMPLE=1`)는 §44 그대로 `main.tsx`에서 적용.
+
+### 46.2 입장과 기억
+- 입력창 `onBlur`에서도 제출한다(iOS 숫자 키패드는 「완료」가 없어 키보드를 닫으면 blur). `enterKeyHint="done"`. 폼 제출과 blur가 겹쳐도 `busy` ref로 한 번만 센다. 빈 입력의 blur는 무시.
+- 맞히면 `localStorage` `homefit:gate:unlocked:v2`에 **만료 시각**(지금 + 7일, `GATE_UNLOCK_MS`)을 저장하고, 그 전까지는 같은 브라우저의 어느 탭·새로고침에서도 다시 묻지 않는다. 옛 `sessionStorage` 표시(v1)는 더 쓰지 않는다. `isUnlocked(storage, now)`/`markUnlocked(storage, now)`.
+
+### 46.3 테스트
+- 단위 `gate.test.ts`: 만료 시각 저장, 7일 경계, 깨진 값·옛 `'1'` 값은 잠김. `smallScreen.test.ts`: `resetViewport`.
+- e2e `gate.spec.ts`: 입장 후 `until`이 하루 이상 뒤 → 새로고침 유지 → 만료 과거로 → 다시 묻기 / 390px: 잠금 화면 `device-width` → `fill` + `blur`로 입장 → `width=1200` / 틀린 PIN blur는 한 번만 센다.

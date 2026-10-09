@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { applyViewport, isSmallScreen, viewportContent } from './smallScreen';
+import { applyViewport, isSmallScreen, resetViewport, viewportContent } from './smallScreen';
 
 describe('smallScreen', () => {
   it('기기 화면 폭 1000px 미만이면 작은 화면이다', () => {
@@ -22,5 +22,7 @@ describe('smallScreen', () => {
     doc.head.appendChild(meta);
     applyViewport(doc, 390);
     expect(meta.getAttribute('content')).toBe('width=1200');
+    resetViewport(doc);
+    expect(meta.getAttribute('content')).toBe('width=device-width, initial-scale=1.0');
   });
 });

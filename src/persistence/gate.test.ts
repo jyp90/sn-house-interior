@@ -4,6 +4,7 @@ import {
   GATE_MAX_ATTEMPTS,
   GATE_STATE_KEY,
   GATE_UNLOCK_KEY,
+  GATE_UNLOCK_MS,
   gateStatus,
   hashPin,
   isGateEnabled,
@@ -85,13 +86,19 @@ describe('storage', () => {
     expect(readGateState(undefined)).toEqual({ fails: 0, lockedUntil: null });
   });
 
-  it('잠금 해제는 sessionStorage 표시로 기억한다', () => {
-    const ss = new MemStorage();
-    expect(isUnlocked(ss)).toBe(false);
-    markUnlocked(ss);
-    expect(ss.getItem(GATE_UNLOCK_KEY)).toBe('1');
-    expect(isUnlocked(ss)).toBe(true);
-    expect(isUnlocked(undefined)).toBe(false);
+  it('잠금 해제는 만료 시각으로 기억하고 7일 뒤에는 다시 묻는다', () => {
+    const st = new MemStorage();
+    expect(isUnlocked(st, T0)).toBe(false);
+    markUnlocked(st, T0);
+    expect(st.getItem(GATE_UNLOCK_KEY)).toBe(String(T0 + GATE_UNLOCK_MS));
+    expect(isUnlocked(st, T0)).toBe(true);
+    expect(isUnlocked(st, T0 + GATE_UNLOCK_MS - 1)).toBe(true);
+    expect(isUnlocked(st, T0 + GATE_UNLOCK_MS)).toBe(false);
+    expect(isUnlocked(undefined, T0)).toBe(false);
+    st.setItem(GATE_UNLOCK_KEY, 'abc');
+    expect(isUnlocked(st, T0)).toBe(false);
+    st.setItem(GATE_UNLOCK_KEY, '1'); // 옛 v1 값 형식은 만료로 본다
+    expect(isUnlocked(st, T0)).toBe(false);
   });
 });
 

@@ -4,7 +4,9 @@
 export const GATE_MAX_ATTEMPTS = 5;
 export const GATE_LOCK_MS = 60 * 60 * 1000;
 export const GATE_STATE_KEY = 'homefit:gate:v1';
-export const GATE_UNLOCK_KEY = 'homefit:gate:unlocked';
+export const GATE_UNLOCK_KEY = 'homefit:gate:unlocked:v2';
+/** 한 번 맞히면 이 기기 브라우저에서 7일 동안 다시 묻지 않는다(스펙 §46.2) */
+export const GATE_UNLOCK_MS = 7 * 24 * 60 * 60 * 1000;
 /** SHA-256('0809') hex. PIN 자체는 번들에 두지 않는다 */
 export const PIN_HASH = '3bd62f7f9ccb2821f5330bd3a68629ed8b8a1a19370adf7d74636e76a698d430';
 
@@ -62,17 +64,20 @@ export function writeGateState(storage: Storage | undefined, state: GateState): 
   }
 }
 
-export function isUnlocked(session: Storage | undefined): boolean {
+export function isUnlocked(storage: Storage | undefined, now: number): boolean {
   try {
-    return session?.getItem(GATE_UNLOCK_KEY) === '1';
+    const raw = storage?.getItem(GATE_UNLOCK_KEY);
+    if (!raw) return false;
+    const until = Number(raw);
+    return Number.isFinite(until) && now < until;
   } catch {
     return false;
   }
 }
 
-export function markUnlocked(session: Storage | undefined): void {
+export function markUnlocked(storage: Storage | undefined, now: number): void {
   try {
-    session?.setItem(GATE_UNLOCK_KEY, '1');
+    storage?.setItem(GATE_UNLOCK_KEY, String(now + GATE_UNLOCK_MS));
   } catch {
     /* 저장 불가: 새로고침마다 다시 묻는다 */
   }

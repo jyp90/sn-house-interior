@@ -25,9 +25,6 @@ declare global {
   }
 }
 
-// 모바일에서도 PC 레이아웃 그대로(스펙 §44)
-applyViewport(document, window.screen.width);
-
 const stored = readStoredPlan();
 let initialPlan = SAMPLE_PLAN;
 const seenStore = typeof localStorage === 'undefined' ? undefined : localStorage;
@@ -87,6 +84,8 @@ if (import.meta.env.DEV) window.__homefit = { store, ui: useUi };
 
 // 진입 PIN(스펙 §42): 우리 집 프리셋이 실린 빌드에서만. 테스트·HOMEFIT_SAMPLE=1은 꺼지고 dev의 ?gate=1로 강제한다
 const gated = isGateEnabled({ preset: homePreset !== null, search: window.location.search, dev: import.meta.env.DEV });
+// 모바일에서도 PC 레이아웃 그대로(스펙 §44). 잠금이 켜져 있으면 Gate가 들어간 뒤에 적용한다(§46.1)
+if (!gated) applyViewport(document, window.screen.width);
 const app = gated ? (
   <Gate>
     <App />

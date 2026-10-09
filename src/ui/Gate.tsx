@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   gateStatus,
   hashPin,
@@ -9,17 +9,11 @@ import {
   recordAttempt,
   writeGateState,
 } from '../persistence/gate';
+import { applyViewport, resetViewport } from './smallScreen';
 
 function local(): Storage | undefined {
   try {
     return globalThis.localStorage;
-  } catch {
-    return undefined;
-  }
-}
-function session(): Storage | undefined {
-  try {
-    return globalThis.sessionStorage;
   } catch {
     return undefined;
   }
@@ -30,14 +24,21 @@ export function remainingLabel(until: number, now: number): string {
   return `${min}분 뒤 다시 시도할 수 있습니다.`;
 }
 
-/** 진입 PIN 잠금 화면(스펙 §42). 탭 안에서 한 번 풀면 sessionStorage로 기억한다 */
+/** 진입 PIN 잠금 화면(스펙 §42, §46). 한 번 풀면 localStorage 만료 시각으로 7일 동안 기억한다 */
 export function Gate({ children }: { children: ReactNode }) {
-  const [unlocked, setUnlocked] = useState(() => isUnlocked(session()));
+  const [unlocked, setUnlocked] = useState(() => isUnlocked(local(), Date.now()));
   const [state, setState] = useState(() => readGateState(local()));
   const [pin, setPin] = useState('');
   const [wrong, setWrong] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const status = gateStatus(state, now);
+  const busy = useRef(false);
+
+  // 잠금 화면은 기기 폭 그대로(폰에서 읽히게), 들어간 뒤에만 PC 레이아웃 viewport(스펙 §46.1)
+  useEffect(() => {
+    if (unlocked) applyViewport(document, window.screen.width);
+    else resetViewport(document);
+  }, [unlocked]);
 
   // 잠긴 동안 남은 시간을 1분마다 갱신
   useEffect(() => {
@@ -48,21 +49,28 @@ export function Gate({ children }: { children: ReactNode }) {
 
   if (unlocked) return <>{children}</>;
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  // 폼 제출과 입력창 blur(폰에서 키보드를 닫을 때) 둘 다 여기로 온다. 동시에 두 번 세지 않도록 진행 중이면 무시한다
+  const submit = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (busy.current || pin.length === 0) return;
     const t = Date.now();
     setNow(t);
     if (gateStatus(state, t).kind === 'locked') return;
-    const ok = (await hashPin(pin)) === PIN_HASH;
-    const next = recordAttempt(state, ok, t);
-    writeGateState(local(), next);
-    setState(next);
-    setPin('');
-    if (ok) {
-      markUnlocked(session());
-      setUnlocked(true);
-    } else {
-      setWrong(true);
+    busy.current = true;
+    try {
+      const ok = (await hashPin(pin)) === PIN_HASH;
+      const next = recordAttempt(state, ok, t);
+      writeGateState(local(), next);
+      setState(next);
+      setPin('');
+      if (ok) {
+        markUnlocked(local(), t);
+        setUnlocked(true);
+      } else {
+        setWrong(true);
+      }
+    } finally {
+      busy.current = false;
     }
   };
 
@@ -88,7 +96,9 @@ export function Gate({ children }: { children: ReactNode }) {
           autoFocus
           disabled={locked}
           value={pin}
+          enterKeyHint="done"
           onChange={(e) => setPin(e.target.value)}
+          onBlur={() => void submit()}
         />
         <button type="submit" className="gate-submit" disabled={locked || pin.length === 0}>
           들어가기
