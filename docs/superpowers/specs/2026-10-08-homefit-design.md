@@ -675,3 +675,37 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 
 - §15.4 보강: 체크리스트 탭에도 견적 요청서(1차)·상세 요구사항(2차) 링크를 단다(내보내기 탭 링크는 그대로). 상담하면서 세 문서를 한 화면에서 새 탭으로 열기 위함.
 - 코드 변경 없음. `private/doc-links.local.json`에 `mode: "checklist"` 항목을 더하는 데이터 변경이며, 공유 키 URL은 계속 `private/`에만 두고 빌드·Pages에는 들어가지 않는다(§15.4 규칙 유지).
+
+## 35. 23차 반영: 배경 도면 흑백화·닫힌 벽 영역 자동 인식 (2026-10-09)
+
+출처: 사용자 요청 — 우리 집 프리셋의 배경 도면(`home/floorplan.jpg`) 색이 2D에 비쳐 방이 칠해진 것처럼 보이고, 프리셋 방 8개에 `polygon`이 없어 바닥재·3D 벽 마감이 적용되지 않는다. §19.5에서 보류한 「닫힌 벽에서 영역 자동 인식」을 구현한다.
+
+### 35.1 배경 도면 흑백화
+
+- `editor2d/BackgroundImage.tsx`의 `<image>`에 CSS `filter: grayscale(1)`을 항상 적용한다(스키마 변경 없음, 토글 없음). 선·벽·해치(욕실 벽 포함)는 그대로 보이고 색만 사라진다. 투명도 슬라이더는 그대로.
+- 배경 이미지는 PNG/PDF/`planSvg`에 원래 들어가지 않으므로 내보내기는 영향 없음.
+
+### 35.2 닫힌 벽 영역 자동 인식 (`geometry/enclosure.ts`, 순수 함수)
+
+- `enclosedPolygon(seed: Vec2, walls: Wall[], cellCm = 5): Vec2[] | null`.
+  - 모든 벽의 `wallObb`(개구부 무시 — 문·창이 있어도 벽은 경계)를 장애물로 두고, 벽 전체 바운딩 박스를 한 칸씩 넓힌 격자(`cellCm`)에서 씨앗 칸부터 4방향 flood fill. 칸의 중심이 어느 벽 OBB 안(허용 0.5cm)에 있으면 막힌 칸.
+  - 씨앗 칸이 막혀 있거나, 채움이 넓힌 테두리 칸에 닿으면(= 벽이 닫히지 않음) `null`.
+  - 채운 칸 집합의 바깥 경계 변을 모아 고리로 잇고, 가장 긴 고리(외곽)만 취한다(안쪽 섬·기둥은 무시). 공선 꼭짓점을 제거한다.
+  - 각 꼭짓점을 `wallFaceCorners`·`tJunctionCorners`(§19.2·§22의 마감면 모서리) 중 `1.5 × cellCm` 안의 가장 가까운 점으로 스냅하고, 스냅되지 않은 꼭짓점은 x·y를 각각 축 정렬 벽의 마감면 좌표(`1.5 × cellCm` 안)로 당긴다. 그 뒤 다시 공선·중복 꼭짓점을 제거한다. 결과는 정수 cm이며 `isValidPolygon`·`isSimplePolygon`을 통과해야 하고, 아니면 `null`.
+- store 액션(`model/store.ts`, 실행 취소 한 단위):
+  - `autoRoomPolygon(id): boolean` — 씨앗 = `room.label`. 성공 시 `setRoomPolygon`과 같은 규칙으로 저장(라벨은 다각형 안이면 유지). 실패 시 `false`, 평면 변경 없음.
+  - `autoRoomPolygons(): { done: string[]; failed: string[] }` — `polygon`이 없는 모든 방에 대해 한 번의 커밋으로 처리. 이미 영역이 있는 방은 건드리지 않는다.
+- UI(구조 모드):
+  - 방 속성 패널 「바닥 영역」에 「영역 자동 인식」 버튼(영역이 있으면 「영역 다시 인식」). 실패 배너: 「벽으로 닫힌 영역을 찾지 못했습니다. 영역을 직접 그리세요.」
+  - 구조 패널 「기본 마감」 위에 「영역 없는 방 자동 인식」 버튼. 결과 배너: 「N개 방의 영역을 인식했습니다.」 + 실패한 방 이름 나열(있을 때). 영역 없는 방이 없으면 버튼 비활성.
+  - 인식된 영역은 §19의 기존 경로(2D `Rooms2D` 채우기, 방 선택 → `FinishPicker`, 3D `Floor`·`Walls3D` `FaceStrip`)를 그대로 탄다. 그래서 벽지 프리셋을 고르면 3D 벽면에 방별 벽지 질감이 입혀진다(코드 변경 없음, QA 확인 항목).
+- 우리 집 프리셋: `home/plan.json`의 방 8개에 `autoRoomPolygons`로 얻은 `polygon`을 넣어 배포한다(거실(확장)은 발코니 쪽 x=150 벽 아래까지 포함된 닫힌 영역). `private/make-our-home.mjs`는 사용자 소유이므로 다음에 다시 돌릴 때 polygon을 보존하도록 사용자가 맞춘다(HANDOFF 「다음 할 일」).
+
+### 35.3 범위 밖
+
+영역 토글/다중 선택, 기둥·섬 구멍, 각진 벽의 마감면 스냅(격자 근사만), 이미지 색 토글.
+
+### 35.4 테스트
+
+- 단위: `geometry/enclosure.test.ts`(직사각형 방 = 마감면 좌표 정확, L자 방, 문이 있는 벽도 경계, 벽이 안 닫힘 → null, 씨앗이 벽 안 → null, 샘플 평면 r1·r2), store `autoRoomPolygon`/`autoRoomPolygons`(실행 취소 1단계, 기존 영역 유지), `home/plan.json` 방 8개 모두 polygon 보유(`persistence/homePreset.test.ts` 또는 새 테스트, `virtual:home-preset`이 null인 테스트 환경에서는 파일을 직접 읽는다).
+- e2e(`e2e/roomFinish.spec.ts` 추가 케이스): 구조 모드 → 「영역 없는 방 자동 인식」 → `room-area-r1`·`room-area-r2` 표시, 거실 polygon이 (10,10)-(344,390) 마감면 좌표 → 방 선택 후 벽지 프리셋 「베이지」 → `plan.rooms[0].wall.material === 'wallpaper'` → 3D 전환 후 캔버스 존재. 배경 이미지 `filter` 스타일 확인은 단위(컴포넌트 렌더) 또는 e2e 중 하나.
