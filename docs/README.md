@@ -5,7 +5,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Specs and plans
 | Doc | Status |
 |---|---|
-| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §25 PDF finish/opening schedules + room areas, §26 custom box editing / item notes, §27 switch groups / 3D electrical fixtures, §28 placed item list panel (latest) |
+| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §25 PDF finish/opening schedules + room areas, §26 custom box editing / item notes, §27 switch groups / 3D electrical fixtures, §28 placed item list panel, §29 corner cabinets / range hood (latest) |
 | `docs/references/2026-10-08-planner5d-research-design.md` | User-provided research; source of requirement IDs F01–F12 |
 | `docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` | Plan 1 done |
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
@@ -29,7 +29,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Distance measurement tool (측정, screen-only) | `src/ui/uiStore.ts` `measure`, `src/editor2d/tools.ts` `measureToolPoint`, `src/editor2d/ToolPreview.tsx`, `src/ui/Toolbar.tsx` | §21 |
 | Background image + scale calibration (same-size re-upload keeps scale/offset) | `src/editor2d/calibration.ts`, `src/editor2d/BackgroundImage.tsx`, `src/persistence/images.ts` | §6, §14.1 F01 |
 | 3D view, drag placement, camera, projected DOM labels, door/window parts | `src/scene3d/`, `src/scene3d/labelBridge.ts`, `src/scene3d/LabelOverlay.tsx`, `src/scene3d/openingParts.ts`, `src/scene3d/Openings3D.tsx` | §6 배치 모드, §22, §23 |
-| Catalog and procedural product builders (16 builders, 29 products, name filter) | `src/catalog/products.ts`, `src/catalog/builders/`, `src/ui/catalogFilter.ts` | §7, §20.3, §20.4 |
+| Catalog and procedural product builders (17 builders, 32 products, name/category filter) | `src/catalog/products.ts`, `src/catalog/builders/`, `src/ui/catalogFilter.ts` | §7, §20.3, §20.4, §29 |
 | Item elevation (설치 높이: resolver, 2D dashed, 3D height, panel, PDF/checklist) | `src/catalog/elevation.ts`, `src/ui/properties/ItemProperties.tsx`, `src/editor2d/Items2D.tsx`, `src/scene3d/Items3D.tsx` | §20.1, §20.4 |
 | Validation (OBB collision, vertical spans, wall distance, door swing, conflict reasons) | `src/geometry/`, `src/geometry/vertical.ts`, `src/validation/` | §6 충돌 규칙, §14.1 F08, §20.2 |
 | Layouts A/B and compare overlay, placed item list | `src/model/layout.ts`, `src/model/itemList.ts`, `src/ui/LayoutBar.tsx`, `src/ui/ItemListPanel.tsx` | §14.1 F09, §28 |
