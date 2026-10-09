@@ -17,7 +17,7 @@ Read spec §7 and §13 first. Collision, wall-gap and door-swing checks are only
 | `sourceUrl` | required for real products: the spec page you read |
 | `power` | `watts` from spec; `dedicatedCircuit: true` for oven/induction/dryer/AC class |
 | `clearances` | door `swing` (hinge, radius = door width) and/or `front` depth needed to use it |
-| `builder` / `builderParams` | from `BuilderIdSchema`; params express model differences (`cabinet-run` part/doors/counter/sink, `built-in-appliance` panel door/drawer/top, `wardrobe` doors, `basin` cabinet) |
+| `builder` / `builderParams` | from `BuilderIdSchema`; params express model differences (`cabinet-run` part/doors/counter/sink, `built-in-appliance` panel door/drawer/top, `wardrobe` doors, `basin` cabinet, `corner-cabinet` part/arm) |
 | `mount`, `builtIn`, `category`, `variants` (≥1, colors) | as the spec says |
 
 Verify dims with WebFetch/WebSearch on the official page; never guess. Can't find it → ask the user, keep `-sample`.

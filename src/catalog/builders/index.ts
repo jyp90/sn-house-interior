@@ -7,6 +7,7 @@ import { buildBuiltInAppliance } from './builtInAppliance';
 import { buildCabinetRun } from './cabinetRun';
 import { buildCeilingAc } from './ceilingAc';
 import { buildChair } from './chair';
+import { buildCornerCabinet } from './cornerCabinet';
 import { buildFridge } from './fridge';
 import { buildFrontLoader } from './frontLoader';
 import { buildShower } from './shower';
@@ -32,6 +33,7 @@ const BUILDERS: Record<BuilderId, Builder> = {
   'cabinet-run': buildCabinetRun,
   'ceiling-ac': buildCeilingAc,
   chair: buildChair,
+  'corner-cabinet': buildCornerCabinet,
   wardrobe: buildWardrobe,
   toilet: buildToilet,
   basin: buildBasin,

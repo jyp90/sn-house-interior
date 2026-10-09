@@ -71,7 +71,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## catalog/
 - `products.ts` — `CATALOG` product data (dimensions, clearance, power) and categories.
 - `elevation.ts` — effective installation height (item → product → legacy mountHeight → mount rule), ceiling height = max wall height (230 default).
-- `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`, `standAc`, `builtInAppliance`, `cabinetRun`, `ceilingAc`, `chair`, `wardrobe`, `toilet`, `basin`, `shower`); `index.ts` dispatches and disposes. `parts.ts` gained `cylinder`/`glass` primitives.
+- `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`, `standAc`, `builtInAppliance`, `cabinetRun`, `ceilingAc`, `chair`, `wardrobe`, `toilet`, `basin`, `shower`, `cornerCabinet`); `index.ts` dispatches and disposes. `parts.ts` gained `cylinder`/`glass` primitives. `cornerCabinet.ts` — L-shaped corner cabinet/hood housing (`corner-cabinet` builder, spec §29): two `body` boxes (back/left arms), two `door` panels, `base` part adds one named `counter` group (upper has none).
 
 ## electrical/
 - `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius). `switchGroups` (switch/light with `group`, name order `ko`) and `switchLinks` (switch × light pairs per group) feed 2D `Fixtures2D` dashed `switch-link-<s>-<l>` lines (electric mode only), `ElectricPanel` 「스위치 그룹」 list, `planSvg` 전기 계획도 dashes, `auto-switch-<h>` checklist item (spec §27).

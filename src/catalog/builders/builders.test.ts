@@ -118,8 +118,31 @@ describe('buildProduct', () => {
     expect(countNamed(buildProduct(s, s.variants[0].id), 'glass')).toBe(2);
   });
 
+  it('코너장: 몸통은 L자 두 조각, 문짝 2개, 하부장만 상판(counter) 1개', () => {
+    const base = CATALOG.find((x) => x.id === 'kitchen-corner-base-90')!;
+    const baseGroup = buildProduct(base, base.variants[0].id);
+    expect(countNamed(baseGroup, 'body')).toBe(2);
+    expect(countNamed(baseGroup, 'door')).toBe(2);
+    expect(countNamed(baseGroup, 'counter')).toBe(1);
+
+    const upper = CATALOG.find((x) => x.id === 'kitchen-corner-upper-60')!;
+    const upperGroup = buildProduct(upper, upper.variants[0].id);
+    expect(countNamed(upperGroup, 'body')).toBe(2);
+    expect(countNamed(upperGroup, 'door')).toBe(2);
+    expect(countNamed(upperGroup, 'counter')).toBe(0);
+  });
+
   it('욕실 분류가 카탈로그 순서에 있다', () => {
     expect(CATEGORY_ORDER.indexOf('bath')).toBeGreaterThan(CATEGORY_ORDER.indexOf('furniture'));
     expect(CATEGORY_LABEL.bath).toBe('욕실');
+  });
+
+  it('코너장의 arm이 자리보다 크면 잘라내 경계 상자가 그대로다', () => {
+    const base = CATALOG.find((x) => x.id === 'kitchen-corner-base-90')!;
+    const p: Product = { ...base, builderParams: { ...base.builderParams, arm: 500 } };
+    const size = bounds(p).getSize(new THREE.Vector3());
+    expect(size.x).toBeCloseTo(0.9, 4);
+    expect(size.z).toBeCloseTo(0.9, 4);
+    expect(bounds(p).min.y).toBeCloseTo(0, 4);
   });
 });

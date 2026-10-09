@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- `feat/corner-cabinet`: 스펙 §29 — `corner-cabinet` builder(ㄱ자 몸통·문짝 2·L자 상판, 팔 깊이 클램프), 제품 코너 하부장 90·코너 상부장 60·레인지후드 60, 스키마 v8(builder id). 테스트: typecheck 통과, `npm test` 543 통과·3 skip, e2e 35 통과. 탐색 QA(샘플): 코너에 하부장·상부장·후드 3D 표시, 오류 없음.
 - `feat/item-list-panel`: 스펙 §28 — 배치 모드 왼쪽 「배치된 가구 (N)」 접이식 목록(방별 묶음, PDF와 같은 번호, 충돌/경고/잠금 표시, 클릭 선택; `model/itemList.ts` `groupItemsByRoom`, `itemNumbers`는 `model/layout.ts`로 이동). 테스트: typecheck 통과, `npm test` 535 통과·3 skip, e2e 35 통과(`e2e/itemList.spec.ts` 신규). 탐색 QA(샘플): 4개 추가 → 「방 미지정 (4)」·번호·충돌 배지, 오류 없음.
 - `feat/switch-groups-3d-fixtures`: 스펙 §27 — 스위치 그룹(`Fixture.group`, 스키마 v7; 속성 패널 「스위치 그룹」+datalist, 전기 모드 2D 점선, 전기 패널 그룹 목록, 자동 체크리스트 「스위치 회로 전달」, PDF 전기 계획도 점선·설비 목록 「그룹」 열) + 3D 전기 설비(`scene3d/fixtureParts.ts`·`Fixtures3D.tsx`: 벽면 판·천장 조명 원반·비부착 상자, raycast 없음). 테스트: typecheck 통과, `npm test` 526 통과·3 skip, e2e 34 통과(`e2e/switchGroups.spec.ts` 신규). 탐색 QA(샘플, 5186): 설비 6개 배치·그룹 「거실」 → 점선 2개·패널 「거실 — 스위치 1 · 조명 2」·체크리스트 항목·3D 천장 원반, 오류 없음.
 - `feat/pdf-schedules`: 스펙 §25 — PDF에 「방 마감표」(면적·바닥재·벽 마감, 기본 행)·「창호 일람」(D/W/O 번호, 문짝, 폭×높이, 바닥 높이, 열림) 추가, 치수 평면도에 창호 번호 접두어·방 면적 라벨(`openingNumbers`는 `geometry/structure.ts`, `finishLabel`은 `materials/presets.ts`). 테스트: typecheck 통과, `npm test` 508 통과·3 skip, e2e 33 통과. 탐색 QA(샘플, 5185): 영역 그린 방이 마감표에 면적과 함께, PDF 17쪽, 2D PNG에는 번호 접두어 없음, 오류 없음.
