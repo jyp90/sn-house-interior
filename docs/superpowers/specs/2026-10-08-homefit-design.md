@@ -356,3 +356,89 @@ PDF 평면도에 방 영역·면적 표기, 닫힌 벽에서 영역 자동 인�
 
 - 단위: 스키마·마이그레이션 v3→v4, `geometry/polygon.ts`(면적·무게중심·내부 판정·닫힘 판정), 널판·타일 배치 함수(순수, 캔버스 제외), `materials/wallFaces.ts`, store 액션(`setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, 영역 도구로 방 생성), `editor2d/tools.ts` 영역 도구.
 - e2e 1개: 구조 모드에서 영역 도구로 4점 클릭 → 방 생성 → 바닥 프리셋 변경 → 2D pattern 확인 → 3D 전환 후 캔버스 존재.
+
+## 20. 8차 반영: 카탈로그 확충·설치 높이 (2026-10-09)
+
+출처: 사용자 요청("실제 인테리어용으로 부족한 점을 찾아 개선"). 조사 결과 카탈로그가 샘플 6개뿐이라 우리 집 배치안이 비어 있고(아이템 0개), 벽걸이·상부장·천장형 가전의 설치 높이를 정할 수 없으며 충돌 검사가 높이를 무시한다. 삼성 모델 목록(§13)은 아직 없으므로 **일반 치수의 제품**으로 먼저 채우고, 목록을 받으면 `adding-catalog-product` 절차로 치수·`sourceUrl`만 교체한다. 계획 5(§14.5-5)의 "나머지 builder" 부분을 이 라운드가 맡는다.
+
+### 20.1 데이터 (스키마 v5)
+
+- `Item.elevation?: number` — 바닥에서 아이템 **밑면**까지 높이(정수 cm, 0 이상). 없으면 제품 기본값을 쓴다(아래). 실제 높이는 항상 `itemElevation(item, product, plan)`(순수 함수, `catalog/elevation.ts`)으로 읽는다.
+- `Product.mount: 'floor' | 'wall' | 'ceiling'`(`'ceiling'` 추가), `Product.elevation?: number`(제품 기본 설치 높이, cm). 실제 높이 우선순위: `item.elevation` → `product.elevation` → `builderParams.mountHeight`(기존 제품 호환) → mount 규칙(`floor` 0, `wall` 90, `ceiling` 천장 높이 − `dims.h`). 천장 높이는 평면 벽 높이의 최댓값(벽이 없으면 230).
+- `Product.category`에 `'bath'`(욕실) 추가. 표시 순서: 주방가전, 세탁·건조, TV, 냉난방, 생활가전, 가구, 욕실, 사용자 정의.
+- `BuilderIdSchema`에 `'toilet' | 'basin' | 'shower' | 'ceiling-ac'` 추가(§20.3).
+- 스키마 버전 5. 모두 선택 필드·enum 확장이라 v4→v5 변환은 버전만 올린다(마이그레이션 테스트 포함). `customProducts`도 같은 `ProductSchema`를 쓰므로 함께 넓어진다.
+
+### 20.2 높이를 고려한 충돌 검사
+
+- 아이템마다 세로 구간 `[elevation, elevation + dims.h]`를 둔다.
+- **아이템끼리**: 평면 OBB가 겹치고 **세로 구간도 겹칠 때만**(경계가 닿기만 하면 겹침 아님: `a.lo < b.hi && b.lo < a.hi`) 충돌. 지금의 "벽걸이는 다른 아이템과 비교하지 않음" 규칙은 이 규칙으로 대체된다(벽걸이 TV 90–186cm 위 소파 0–80cm는 충돌 아님, 냉장고 0–185cm는 충돌). 상판 위 인덕션(87–93cm)과 하부장(0–87cm)은 충돌 아님.
+- **벽**: 모든 아이템이 벽과 평면 충돌을 검사한다(지금과 같음). 벽 높이 구간 `[0, wall.height]`와 세로 구간이 겹치지 않으면 제외한다.
+- **문 열림 영역(blocksDoor)**: 문 높이 구간 `[sill, sill + height]`와 겹치는 아이템만 검사한다(천장형 에어컨 205–230cm는 문 210cm와 겹침 → 검사 대상; 벽 상단 150–230cm 상부장도 대상).
+- **제품 clearance(앞 공간·문짝 반경)**: 장애물(벽·아이템)의 세로 구간이 아이템의 세로 구간과 겹칠 때만 막힌 것으로 본다. 상부장 앞 냉장고는 막힘, 상부장 아래 식탁은 아님.
+- `validatePlan`의 서명은 유지하고 내부에 세로 구간 필터를 넣는다. 세로 구간 겹침은 `geometry/vertical.ts` 순수 함수.
+
+### 20.3 builder와 제품
+
+새 builder(`src/catalog/builders/`, 모두 `builders.test.ts`의 경계 상자 = `dims` 자동 검사를 통과해야 한다):
+
+| builder | 표현 | params |
+|---|---|---|
+| `stand-ac` | 좁고 긴 기둥, 상단 토출구 띠, 모서리 둥글게 보이도록 앞면 패널 분할 | — |
+| `built-in-appliance` | 본체는 짙은 회색, 전면 패널·손잡이만 변형 색(하부장 매립 가정) | `panel: 'door' \| 'drawer'` |
+| `cabinet-run` | 하부장: 몸통 + 상판(4cm) + 문짝 줄눈; 상부장: 몸통 + 문짝 줄눈. `sink`가 있으면 상판에 싱크 홈, `cooktop`은 상판 위 검은 판 | `part: 'base' \| 'upper'`, `doors: number`, `counter?: boolean`, `sink?: boolean` |
+| `chair` | 좌판·등받이·다리 4개 | — |
+| `wardrobe` | 몸통 + 문짝 줄눈 + 손잡이(`doors` 개) | `doors: number` |
+| `toilet` | 물탱크 박스 + 변기 몸통(둥근 앞) | — |
+| `basin` | 다리(또는 하부장) + 세면볼 + 수전 | `cabinet?: boolean` |
+| `shower` | 바닥 트레이 + 유리 패널 2면(반투명 재질, `parts.ts`에 `glass()` 추가) | — |
+| `ceiling-ac` | 납작한 사각 박스 + 토출구 4면(천장 매립형) | — |
+
+제품(`src/catalog/products.ts`): 가전은 `brand: '삼성'`, 치수는 일반값이므로 id 끝에 `-sample`(§7, 스킬 규칙). 가구·욕실은 `brand: '일반'`. 모두 `verified`가 아닌 "≈" 표시 대상이다.
+
+| 분류 | 제품(W×D×H cm) | builder / mount / 기타 |
+|---|---|---|
+| 주방가전 | 김치냉장고 4도어 92×80×185 | `fridge`, 문짝 반경 46 |
+| 주방가전 | 인덕션 3구 60×52×6 | `built-in-appliance`, `builtIn`, 전용회로, `elevation` 87 |
+| 주방가전 | 빌트인 식기세척기 60×57×82 | `built-in-appliance` door, `builtIn`, 전용회로, 앞 공간 60 |
+| 주방가전 | 빌트인 오븐 60×57×45 | `built-in-appliance` door, `builtIn`, 전용회로, `elevation` 60 |
+| 주방가전 | 싱크대 하부장 240×60×87 | `cabinet-run` base, doors 4, counter, sink |
+| 주방가전 | 싱크대 하부장 180×60×87 | `cabinet-run` base, doors 3, counter |
+| 주방가전 | 상부장 240×35×70 | `cabinet-run` upper, doors 4, `mount: 'wall'`, `elevation` 145 |
+| 세탁·건조 | 건조기 60×66×85 | `front-loader`, 전용회로, 앞 공간 60(세탁기 위 직렬은 elevation을 세탁기 높이로) |
+| 냉난방 | 스탠드 에어컨 38×36×188 | `stand-ac`, 전용회로 |
+| 냉난방 | 벽걸이 에어컨 85×25×30 | `box`, `mount: 'wall'`, `elevation` 195, 전용회로 |
+| 냉난방 | 천장형 시스템 에어컨 84×84×25 | `ceiling-ac`, `mount: 'ceiling'`, 전용회로 |
+| 생활가전 | 공기청정기 37×37×60 | `box` |
+| 가구 | 붙박이장 240×60×230 | `wardrobe` doors 4, `builtIn` |
+| 가구 | 옷장 120×60×200 | `wardrobe` doors 2, 문짝 반경 60 좌·우 |
+| 가구 | 신발장 120×40×180 | `wardrobe` doors 2 |
+| 가구 | 책상 140×70×73 | `table` |
+| 가구 | 의자 45×50×85 | `chair` |
+| 가구 | TV장 180×40×45 | `cabinet-run` base, doors 3, counter 없음 |
+| 가구 | 슈퍼싱글 침대 110×205×100 | `bed` |
+| 욕실 | 양변기 38×70×78 | `toilet` |
+| 욕실 | 세면대 55×45×85 | `basin` |
+| 욕실 | 샤워부스 90×90×200 | `shower` |
+| 욕실 | 욕조 150×75×55 | `box` |
+
+비고: 인덕션·오븐처럼 `floor`지만 바닥에서 띄우는 제품은 `product.elevation`으로 기본 높이를 준다(§20.1 우선순위). 기존 TV 샘플의 `builderParams.mountHeight: 90`은 그대로 동작한다.
+
+### 20.4 화면
+
+- 아이템 속성 패널에 「설치 높이」 숫자 입력(cm, 0 이상, 잠금 시 비활성). 값은 실제 높이(기본값 포함)를 보여 주고, 바꾸면 `item.elevation`에 기록. 「기본값」 버튼으로 `elevation`을 지운다. 변경은 실행 취소 한 단위.
+- 2D: 실제 높이가 0보다 큰 아이템은 점선 외곽선, `ceiling`은 점선 + 채움 50% 투명. 라벨은 그대로.
+- 3D: 아이템 그룹의 y = 실제 높이(지금의 `mountHeightCm` 자리).
+- 카탈로그 패널: 제품이 30개 가까이 되므로 맨 위에 이름 필터 입력(로컬 문자열 포함 검색, 빈 분류는 숨김). §12의 "앱 내 제품 검색"(외부 검색)과는 다르다.
+- PDF 제품 목록: 「설치 높이」 열 추가(0이면 "-"). 열 너비 15/60/50/42/30/30/40(합 267 유지). 빌트인 상세의 「벽 기준 위치」 뒤에 높이가 0이 아니면 ", 바닥에서 Ncm"을 덧붙인다.
+- 체크리스트 자동 항목 「빌트인 치수 전달」에도 같은 높이 문구를 덧붙인다.
+
+### 20.5 테스트
+
+- 단위: 스키마 v5·마이그레이션 v4→v5, `catalog/elevation.ts`(우선순위·천장 기본값), `geometry/vertical.ts`, `validatePlan` 세로 구간 사례(벽걸이 TV 위 소파·냉장고, 상판 위 인덕션, 상부장 앞 냉장고, 천장형 에어컨과 문), 새 builder 9종 경계 상자(기존 자동 검사), `pages.ts` 설치 높이 열, 카탈로그 필터.
+- e2e 1개: 배치 모드에서 상부장을 드래그해 놓고 속성 패널에서 설치 높이 변경 → 2D 점선 확인 → 아래에 식탁을 놓아도 충돌 배지 없음 → 새로고침 후 높이 유지.
+- 탐색 QA(샘플, 5181): 새 제품 전부 3D에서 모양·치수 확인, 직렬 건조기, 천장형 에어컨, PDF 제품 목록 열.
+
+### 20.6 범위 밖
+
+삼성 공식 치수·`sourceUrl`(모델 목록 수령 후), 상판 위 가전의 자동 높이 맞춤, 벽 높이와 다른 천장(우물천장), 아이템 적층 자동 스냅.
