@@ -17,8 +17,10 @@ import { corners, itemObb } from '../geometry/obb';
 import { areaM2 } from '../geometry/polygon';
 import { openingNumbers } from '../geometry/structure';
 import { openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
-import { activeItems, activeLayout } from '../model/layout';
+import { activeItems, activeLayout, itemNumbers } from '../model/layout';
 import type { Plan } from '../model/schema';
+
+export { itemNumbers };
 
 export const EXPORT_PX_PER_CM = 2;
 
@@ -79,12 +81,6 @@ export type PlanSvgOptions = {
   dimensionLines?: boolean; // 벽 치수선과 개구부 위치(벽 시작점 기준)
   highlightIds?: string[]; // 주황 테두리로 강조할 가구
 };
-
-// 배치도 번호 = 제품 목록 번호. 제품을 찾을 수 없는 가구는 목록에 없으므로 번호도 없다
-export function itemNumbers(plan: Plan): Map<string, number> {
-  const known = activeItems(plan).filter((item) => findProduct(plan, item.productId));
-  return new Map(known.map((item, i) => [item.id, i + 1]));
-}
 
 const mark = (n: number, verified: boolean | undefined) => (verified ? `${n}` : `≈${n}`);
 

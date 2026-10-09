@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeItems, activeLayout, compareItems, nextLayoutName, withActiveItems } from './layout';
+import { activeItems, activeLayout, compareItems, itemNumbers, nextLayoutName, withActiveItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 
 describe('layout', () => {
@@ -39,5 +39,15 @@ describe('nextLayoutName / compareItems', () => {
     expect(compareItems(plan, 'layout-a')).toEqual([]);
     expect(compareItems(plan, 'nope')).toEqual([]);
     expect(compareItems(plan, null)).toEqual([]);
+  });
+});
+
+describe('itemNumbers', () => {
+  it('배치 순서대로 1부터 매기고, 제품을 찾을 수 없는 아이템은 건너뛴다', () => {
+    const sofa = { id: 's', productId: 'sofa-3seat', variantId: 'gray', x: 100, y: 100, rotation: 0 };
+    const ghost = { id: 'g', productId: 'no-such-product', variantId: 'x', x: 150, y: 100, rotation: 0 };
+    const table = { id: 't', productId: 'table-dining-4', variantId: 'oak', x: 200, y: 100, rotation: 0 };
+    const plan = withActiveItems(SAMPLE_PLAN, [sofa, ghost, table]);
+    expect(itemNumbers(plan)).toEqual(new Map([['s', 1], ['t', 2]]));
   });
 });

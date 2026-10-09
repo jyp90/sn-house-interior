@@ -33,6 +33,7 @@ type UiState = {
   // 「영역 그리기」를 누를 때마다 늘어난다. Editor2D가 이 값이 바뀌면 그리던 영역을 버린다(도구가 이미 area여도)
   areaSession: number;
   measure: Measure | null;
+  itemListOpen: boolean;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -55,6 +56,7 @@ type UiState = {
   setCompareLayout(id: string | null): void;
   measureClick(p: Vec2): void;
   clearMeasure(): void;
+  setItemListOpen(open: boolean): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -76,6 +78,7 @@ export const useUi = create<UiState>()((set, get) => ({
   areaTarget: null,
   areaSession: 0,
   measure: null,
+  itemListOpen: true,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null, measure: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null, measure: null }),
@@ -110,4 +113,5 @@ export const useUi = create<UiState>()((set, get) => ({
     set({ measure: { a: m.a, b: p } });
   },
   clearMeasure: () => set({ measure: null }),
+  setItemListOpen: (open) => set({ itemListOpen: open }),
 }));

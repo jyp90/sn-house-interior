@@ -89,4 +89,12 @@ describe('useUi', () => {
     ui.measureClick({ x: 0, y: 0 });
     expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: null });
   });
+
+  it('배치 아이템 목록 패널은 기본 펼침이고 토글된다', () => {
+    expect(useUi.getState().itemListOpen).toBe(true);
+    useUi.getState().setItemListOpen(false);
+    expect(useUi.getState().itemListOpen).toBe(false);
+    useUi.getState().setItemListOpen(true);
+    expect(useUi.getState().itemListOpen).toBe(true);
+  });
 });
