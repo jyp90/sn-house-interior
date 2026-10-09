@@ -1,7 +1,16 @@
 import { findProduct } from '../catalog/products';
 import { itemColor, MISSING_COLOR } from '../editor2d/itemColor';
 import { pointsAttr, sectorPath } from '../editor2d/svg';
-import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, fixtureNumbers, type FixtureKind } from '../electrical/fixtures';
+import {
+  FIXTURE_GLYPH,
+  FIXTURE_KINDS,
+  FIXTURE_LABEL,
+  FIXTURE_R_CM,
+  fixtureNumbers,
+  SWITCH_LINK_COLOR,
+  switchLinks,
+  type FixtureKind,
+} from '../electrical/fixtures';
 import { planBounds } from '../geometry/bounds';
 import { doorLeaves } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
@@ -169,7 +178,15 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
     }
   }
 
-  if (fixtures) for (const f of plan.fixtures) parts.push(glyphShape(f.kind, f.pos.x, f.pos.y));
+  if (fixtures) {
+    // 스위치 그룹 점선(spec §27.2): 마커 아래 레이어
+    for (const l of switchLinks(plan.fixtures)) {
+      parts.push(
+        `<line x1="${l.a.x}" y1="${l.a.y}" x2="${l.b.x}" y2="${l.b.y}" stroke="${SWITCH_LINK_COLOR}" stroke-width="1.5" stroke-dasharray="6 4"/>`,
+      );
+    }
+    for (const f of plan.fixtures) parts.push(glyphShape(f.kind, f.pos.x, f.pos.y));
+  }
 
   if (dimensionLines) {
     const line = (x1: number, y1: number, x2: number, y2: number) =>

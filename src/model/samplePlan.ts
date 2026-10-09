@@ -13,7 +13,7 @@ export function emptyPlanFields(): Pick<Plan, 'layouts' | 'activeLayoutId' | 'fi
 
 // 익명 샘플: 600×400cm, 칸막이 하나와 문 하나
 export const SAMPLE_PLAN: Plan = {
-  version: 6,
+  version: 7,
   info: { title: '샘플 평면' },
   walls: [
     { id: 'w1', a: { x: 0, y: 0 }, b: { x: 600, y: 0 }, thickness: 20, height: 230 },

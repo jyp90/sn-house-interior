@@ -100,6 +100,9 @@ function normalizeFixture(f: Fixture): Fixture {
   const memo = next.memo?.trim();
   if (memo) next.memo = memo;
   else delete next.memo;
+  const group = next.group?.trim();
+  if (group) next.group = group;
+  else delete next.group;
   return next;
 }
 

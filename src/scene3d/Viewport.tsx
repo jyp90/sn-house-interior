@@ -7,6 +7,7 @@ import { useUi } from '../ui/uiStore';
 import { CameraRig } from './CameraRig';
 import { CaptureBridge } from './CaptureBridge';
 import { DropBridge, screenToFloor } from './DropBridge';
+import { Fixtures3D } from './Fixtures3D';
 import { Floor } from './Floor';
 import { Items3D } from './Items3D';
 import { LabelOverlay } from './LabelOverlay';
@@ -69,6 +70,7 @@ export function Viewport({ active }: { active: boolean }) {
         <Floor />
         <Walls3D />
         <Openings3D />
+        <Fixtures3D />
         <Items3D />
         <Overlays />
         <DropBridge />

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, type PointerEvent } from 'react';
-import { FIXTURE_GLYPH, FIXTURE_R_CM, snapFixture } from '../electrical/fixtures';
+import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
+import { FIXTURE_GLYPH, FIXTURE_R_CM, snapFixture, switchLinks } from '../electrical/fixtures';
 import type { Fixture } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
@@ -20,6 +20,8 @@ export function Fixtures2D() {
   const svgRef = useContext(SvgContext);
   const drag = useRef<Drag | null>(null);
   const interactive = mode === 'electric' && tool === 'select';
+  // 스위치 그룹 점선은 전기 모드에서만, 설비 아래 레이어(spec §27.2)
+  const links = useMemo(() => (mode === 'electric' ? switchLinks(fixtures) : []), [mode, fixtures]);
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
 
   const onDown = (e: PointerEvent<SVGGElement>, f: Fixture) => {
@@ -61,6 +63,21 @@ export function Fixtures2D() {
 
   return (
     <g className={interactive ? 'fixtures2d fixtures2d-interactive' : 'fixtures2d'}>
+      {links.length > 0 && (
+        <g className="switch-links">
+          {links.map((l) => (
+            <line
+              key={`${l.switchId}-${l.lightId}`}
+              x1={l.a.x}
+              y1={l.a.y}
+              x2={l.b.x}
+              y2={l.b.y}
+              className="switch-link"
+              data-testid={`switch-link-${l.switchId}-${l.lightId}`}
+            />
+          ))}
+        </g>
+      )}
       {fixtures.map((f) => {
         const g = FIXTURE_GLYPH[f.kind];
         const r = FIXTURE_R_CM;

@@ -37,12 +37,14 @@ export function TextField({
   onCommit,
   allowEmpty = false,
   disabled = false,
+  list,
 }: {
   label: string;
   value: string;
   onCommit: (v: string) => void;
   allowEmpty?: boolean;
   disabled?: boolean;
+  list?: string; // 제안 목록 <datalist> id
 }) {
   const [text, setText] = useState(value);
   useEffect(() => setText(value), [value]);
@@ -57,6 +59,7 @@ export function TextField({
       <input
         value={text}
         disabled={disabled}
+        list={list}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => {

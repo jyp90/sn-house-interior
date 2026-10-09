@@ -57,6 +57,25 @@ describe('autoChecklist', () => {
     expect(items.map((i) => i.id)).toEqual([`auto-circuit-${shortHash(items[0].text)}`, 'auto-outlets']);
   });
 
+  it('스위치 그룹이 있으면 스위치 회로 전달 항목(그룹 이름 순, 한쪽이 비면 「없음」)을 콘센트 공유 뒤에 만든다', () => {
+    const f = (id: string, kind: 'switch' | 'light' | 'outlet', group?: string) => ({
+      id, kind, pos: { x: 100, y: 100 }, height: 120, ...(group ? { group } : {}),
+    });
+    const plan: Plan = {
+      ...SAMPLE_PLAN,
+      fixtures: [f('s1', 'switch', '침실1'), f('s2', 'switch', '거실'), f('l1', 'light', '거실'), f('l2', 'light', '거실'), f('o1', 'outlet', '거실'), f('l3', 'light')],
+    };
+    const items = autoChecklist(plan, resolve(plan), clean);
+    const text = '스위치 회로 전달: 거실(스위치 1·조명 2), 침실1(스위치 1·조명 없음)';
+    expect(items.map((i) => i.id)).toEqual(['auto-outlets', `auto-switch-${shortHash(text)}`]);
+    expect(items[1]).toEqual({ id: `auto-switch-${shortHash(text)}`, phase: 'carpentry', auto: true, text });
+  });
+
+  it('그룹이 없으면 스위치 회로 항목이 없다', () => {
+    const plan: Plan = { ...SAMPLE_PLAN, fixtures: [{ id: 's', kind: 'switch', pos: { x: 1, y: 1 }, height: 120 }] };
+    expect(autoChecklist(plan, resolve(plan), clean).some((i) => i.id.startsWith('auto-switch'))).toBe(false);
+  });
+
   it('빌트인 제품마다 치수(미확인 ≈)와 벽 기준 위치', () => {
     const builtIn: Product = {
       id: 'custom-dw', brand: 'custom', model: '', name: '식기세척기', category: 'kitchen',

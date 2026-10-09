@@ -104,11 +104,13 @@ export function refitFixtures(oldWalls: Wall[], newWalls: Wall[], fixtures: Fixt
   });
 }
 
-// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 뗀다
+// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 떼고, 콘센트 종류는 스위치 그룹을 지운다
 export function kindChangePatch(fixture: Fixture, kind: FixtureKind): Partial<Omit<Fixture, 'id'>> {
   const patch: Partial<Omit<Fixture, 'id'>> = { kind };
   if (fixture.height === FIXTURE_DEFAULT_HEIGHT[fixture.kind]) patch.height = FIXTURE_DEFAULT_HEIGHT[kind];
   if (kind === 'light') patch.wallId = undefined;
+  // 스위치 그룹은 스위치·조명에만 의미가 있다(spec §27.1)
+  if (kind !== 'switch' && kind !== 'light') patch.group = undefined;
   return patch;
 }
 
@@ -117,4 +119,31 @@ export function keepWallIdAfterMove(walls: Wall[], fixture: Fixture, pos: Vec2):
   const wall = walls.find((w) => w.id === fixture.wallId);
   if (!wall) return undefined;
   return distanceToWall(wall, pos) <= wall.thickness / 2 + 1 ? wall.id : undefined;
+}
+
+export type SwitchGroup = { name: string; switches: Fixture[]; lights: Fixture[] };
+
+// 스위치 그룹(spec §27): 그룹 이름이 있는 스위치·조명만, 이름 순. 콘센트의 group은 무시한다
+export function switchGroups(fixtures: Fixture[]): SwitchGroup[] {
+  const byName = new Map<string, SwitchGroup>();
+  for (const f of fixtures) {
+    if (!f.group || (f.kind !== 'switch' && f.kind !== 'light')) continue;
+    let g = byName.get(f.group);
+    if (!g) {
+      g = { name: f.group, switches: [], lights: [] };
+      byName.set(f.group, g);
+    }
+    (f.kind === 'switch' ? g.switches : g.lights).push(f);
+  }
+  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+}
+
+export type SwitchLink = { switchId: string; lightId: string; a: Vec2; b: Vec2 };
+export const SWITCH_LINK_COLOR = '#4338ca';
+
+// 같은 그룹의 스위치마다 그 그룹의 조명 각각으로 잇는 선(2D 전기 모드·PDF 전기 계획도 공용)
+export function switchLinks(fixtures: Fixture[]): SwitchLink[] {
+  return switchGroups(fixtures).flatMap((g) =>
+    g.switches.flatMap((s) => g.lights.map((l) => ({ switchId: s.id, lightId: l.id, a: s.pos, b: l.pos }))),
+  );
 }

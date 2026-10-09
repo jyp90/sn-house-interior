@@ -536,6 +536,17 @@ describe('배치안', () => {
       expect(s.getState().plan.fixtures[0].height).toBe(0);
     });
 
+    it('updateFixture는 스위치 그룹을 다듬고 빈 그룹은 지우며 실행 취소 한 번에 돌아간다', () => {
+      const s = createPlanStore(SAMPLE_PLAN);
+      const id = s.getState().addFixture({ ...outlet, kind: 'switch', height: 120 });
+      s.getState().updateFixture(id, { group: '  거실 ' });
+      expect(s.getState().plan.fixtures[0].group).toBe('거실');
+      s.getState().updateFixture(id, { group: '   ' });
+      expect(s.getState().plan.fixtures[0]).not.toHaveProperty('group');
+      s.getState().undo();
+      expect(s.getState().plan.fixtures[0].group).toBe('거실');
+    });
+
     it('dragFixture는 드래그 중에만 움직이고 끝나면 실행 취소 한 번으로 돌아간다', () => {
       const s = createPlanStore(SAMPLE_PLAN);
       const id = s.getState().addFixture(outlet);
