@@ -33,7 +33,8 @@ test('배치된 가구 목록이 방별로 묶이고, 행을 클릭하면 그 �
   await page.getByTestId('catalog-card-table-dining-4').getByRole('button', { name: '추가' }).click();
   await expect(itemList).toContainText('방 미지정 (2)');
 
-  // 거실(r1) 영역을 그려서 두 아이템(배치 중심 부근)을 거실 안에 넣는다
+  // 거실(r1) 영역을 그려서 두 아이템(배치 중심 부근)을 거실 안에 넣는다.
+  // planCenter(SAMPLE_PLAN) = (300,200)이고, 이 영역은 (20,20)-(330,20)-(330,380)-(20,380)이므로 중심이 그 안에 든다
   await page.getByRole('button', { name: '구조', exact: true }).click();
   await page.getByTestId('room-r1').click();
   await page.getByTestId('properties-panel').getByRole('button', { name: '영역 그리기' }).click();

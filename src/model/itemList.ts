@@ -19,6 +19,7 @@ export function groupItemsByRoom(plan: Plan, resolve: (productId: string) => Pro
   const byRoom = new Map<string, ItemListEntry[]>();
   const unassigned: ItemListEntry[] = [];
   for (const entry of entries) {
+    // find()는 plan.rooms 순서를 따른다: 경계를 공유하는 두 방 다 "안"이면(pointInPolygon은 경계를 내부로 봄) 더 앞선 방이 이긴다
     const room = plan.rooms.find((r) => r.polygon && pointInPolygon({ x: entry.item.x, y: entry.item.y }, r.polygon));
     if (!room) {
       unassigned.push(entry);

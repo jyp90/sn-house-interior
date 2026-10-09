@@ -67,4 +67,21 @@ describe('groupItemsByRoom', () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].room).toBeNull();
   });
+
+  it('두 방이 맞닿은 경계 위의 아이템은 plan.rooms에서 더 앞선 방으로 간다', () => {
+    // r1·r2가 x=350 변을 공유하고, 아이템 중심이 그 변 위에 있다. pointInPolygon은 경계를 내부로 보므로
+    // 두 방 모두 "안"이지만, 먼저 찾는(=plan.rooms 순서가 앞선) r1로 묶인다
+    const planWithAdjacentRooms: Plan = {
+      ...SAMPLE_PLAN,
+      rooms: [
+        { ...SAMPLE_PLAN.rooms[0], polygon: [{ x: 20, y: 20 }, { x: 350, y: 20 }, { x: 350, y: 380 }, { x: 20, y: 380 }] },
+        { ...SAMPLE_PLAN.rooms[1], polygon: [{ x: 350, y: 20 }, { x: 580, y: 20 }, { x: 580, y: 380 }, { x: 350, y: 380 }] },
+      ],
+    };
+    const onEdge = { id: 'edge', productId: 'sofa-3seat', variantId: 'gray', x: 350, y: 200, rotation: 0 };
+    const plan = withActiveItems(planWithAdjacentRooms, [onEdge]);
+    const groups = groupItemsByRoom(plan, resolve(plan));
+    expect(groups).toHaveLength(1);
+    expect(groups[0].room?.id).toBe('r1');
+  });
 });
