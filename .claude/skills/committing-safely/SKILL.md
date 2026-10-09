@@ -23,14 +23,19 @@ Several sessions share this checkout. A commit is "safe" only when it contains e
    ```
    Body (Korean): 변경 요약, 스펙 §, `npm test` pass/skip, e2e pass count, QA table summary, then the PR attribution line from the system reminder. Run checking-privacy on the body too.
 8. **Up to date.** `git fetch origin && git rebase origin/main`; if anything came in, rerun step 2 and `git push --force-with-lease`.
-9. **Merge + clean up.**
+9. **Merge now (no need to ask, never "waits for the user to merge").**
    ```bash
    gh pr merge <n> --merge --delete-branch
+   ```
+10. **Clean up automatically** — worktree, local branch, remote branch, in the same session:
+   ```bash
    git -C ~/Projects/homefit worktree remove ../homefit-<topic>
    git -C ~/Projects/homefit branch -D <branch>
-   git -C ~/Projects/homefit fetch origin
+   git -C ~/Projects/homefit push origin --delete <branch> 2>/dev/null || true
+   git -C ~/Projects/homefit fetch --prune origin && git -C ~/Projects/homefit worktree prune
+   git -C ~/Projects/homefit worktree list && git -C ~/Projects/homefit branch -r   # must not show the merged branch
    ```
-   Report the PR URL and merge commit. Never push directly to `main`, force-push `main` or others' branches, make the repo public or deploy Pages without the user's OK.
+   Report the PR URL and merge commit. A leftover worktree/branch/remote ref after the report is a defect. Never push directly to `main`, force-push `main` or others' branches, make the repo public or deploy Pages without the user's OK.
 
 ## Red flags
 - "These other changes look related, I'll include them" → not yours.

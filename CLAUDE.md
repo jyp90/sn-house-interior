@@ -44,13 +44,21 @@ Single test file: `npx vitest run src/geometry/obb.test.ts`. Single e2e: `npx pl
   ```
   `private/` is not in worktrees: dev/QA/e2e use the sample plan; `scan.sh` reads terms from the main checkout. Before `npm run e2e`, check `lsof -i :5180` is free — Playwright reuses an existing server, which may belong to another worktree.
 - Commits: Conventional Commits, one branch + one PR per request.
-- **Default finish for every development request** (no need to ask): local checks → PR → merge.
+- **Default finish for every development request** (no need to ask, never wait for the user between steps): local checks → PR → merge → delete worktree + local/remote branch.
   1. `npm run typecheck && npm test && npm run e2e` all green, then exploratory QA in a real browser (spec §11: reviews alone missed runtime bugs before). Any failure → fix and rerun; never open a PR on red.
   2. Docs synced, privacy scan clean, commit on the branch (`committing-safely`).
   3. `git push -u origin <branch>` and `gh pr create --base main` (Korean title/body: 변경 요약, 테스트 결과 수치, QA 결과, 스펙 §).
   4. `main` moved meanwhile → `git rebase origin/main`, rerun step 1, `git push --force-with-lease` (own branch only). Conflict you can't resolve without guessing intent → ask.
-  5. `gh pr merge <n> --merge --delete-branch`, then clean up: `git -C ~/Projects/homefit worktree remove ../homefit-<topic>`, `git -C ~/Projects/homefit branch -D <branch>`, `git -C ~/Projects/homefit fetch origin`.
-  6. Report the PR URL and merge commit.
+  5. **Merge immediately** with `gh pr merge <n> --merge --delete-branch`. Never leave a PR open "for the user to merge": once step 1–4 are green the PR is merged in the same session. The only exceptions are the user-OK items in Non-negotiable rules (public, Pages, direct push to `main`) and a conflict you cannot resolve.
+  6. **Clean up automatically** (worktree, local branch, remote branch), no need to ask:
+     ```bash
+     git -C ~/Projects/homefit worktree remove ../homefit-<topic>
+     git -C ~/Projects/homefit branch -D <branch>
+     git -C ~/Projects/homefit push origin --delete <branch> 2>/dev/null || true   # in case --delete-branch did not run
+     git -C ~/Projects/homefit fetch --prune origin && git -C ~/Projects/homefit worktree prune
+     ```
+     A merged branch, its worktree or its remote ref still existing after the report is a defect of that round.
+  7. Report the PR URL and merge commit.
 - Handoffs: `handoff/{yyyyMMdd}-{issue}/HANDOFF.md` + `MESSAGE.md` while open, moved to `archive/` when done (both gitignored). Format: `~/Projects/claude-command-center/.claude/skills/handoff/SKILL.md`.
 
 ## Project skills (`.claude/skills/`)
