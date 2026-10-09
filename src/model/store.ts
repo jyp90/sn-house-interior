@@ -1,4 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
+import { findProduct } from '../catalog/products';
+import { checklistItems } from '../checklist/items';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
 import { refitFixtures } from '../electrical/fixtures';
 import { wallLength } from '../geometry/walls';
@@ -444,11 +446,14 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const next: ChecklistState = { itemId, checked: merged.checked, ...(memo ? { memo } : {}) };
         const keep = next.checked || !!next.memo;
         if (current ? current.checked === next.checked && current.memo === next.memo : !keep) return;
-        const checklist = current
+        const mergedList = current
           ? keep
             ? plan.checklist.map((c) => (c.itemId === itemId ? next : c))
             : plan.checklist.filter((c) => c.itemId !== itemId)
           : [...plan.checklist, next];
+        // 더 이상 자동 생성되지 않는 auto- 항목(예: 전용회로 경고가 사라진 경우)은 저장 시점에 함께 지운다(spec §31)
+        const liveIds = new Set(checklistItems(plan, (id) => findProduct(plan, id)).map((i) => i.id));
+        const checklist = mergedList.filter((c) => !c.itemId.startsWith('auto-') || liveIds.has(c.itemId));
         commit({ ...plan, checklist });
       },
 
