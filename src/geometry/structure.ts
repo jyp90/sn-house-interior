@@ -1,4 +1,4 @@
-import type { Opening, Vec2, Wall } from '../model/schema';
+import type { Opening, Plan, Vec2, Wall } from '../model/schema';
 import { wallDir, wallLength } from './walls';
 
 export function roomRectWalls(origin: Vec2, w: number, d: number, thickness: number, height: number): Omit<Wall, 'id'>[] {
@@ -79,4 +79,17 @@ export function moveEndpoint(walls: Wall[], from: Vec2, to: Vec2): Wall[] {
 export function setWallLength(wall: Wall, length: number): Wall {
   const u = wallDir(wall);
   return { ...wall, b: { x: Math.round(wall.a.x + u.x * length), y: Math.round(wall.a.y + u.y * length) } };
+}
+
+const OPENING_PREFIX: Record<Opening['kind'], string> = { door: 'D', window: 'W', opening: 'O' };
+
+// 종류별 순서 번호(D1, D2…/W1…/O1…), plan.openings 순서대로. 평면도·창호 일람 표가 공유한다
+export function openingNumbers(plan: Pick<Plan, 'openings'>): Map<string, string> {
+  const counts: Record<Opening['kind'], number> = { door: 0, window: 0, opening: 0 };
+  const numbers = new Map<string, string>();
+  for (const o of plan.openings) {
+    counts[o.kind] += 1;
+    numbers.set(o.id, `${OPENING_PREFIX[o.kind]}${counts[o.kind]}`);
+  }
+  return numbers;
 }

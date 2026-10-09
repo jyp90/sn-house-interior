@@ -3,9 +3,12 @@ import { findProduct } from '../catalog/products';
 import { PHASES } from '../checklist/defaults';
 import { checklistEntry, checklistItems } from '../checklist/items';
 import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
+import { openingNumbers } from '../geometry/structure';
 import { wallReferenceText } from '../geometry/wallReference';
+import { areaM2 } from '../geometry/polygon';
+import { finishLabel, planFinish, roomFloor, roomWall } from '../materials/presets';
 import { activeItems, activeLayout } from '../model/layout';
-import type { Item, Plan, Product } from '../model/schema';
+import type { Item, Opening, Plan, Product } from '../model/schema';
 import { PHOTO_REQUESTS, QUOTE_GROUPS, QUOTE_QUESTIONS, QUOTE_SPECS } from '../quote/request';
 import { itemNumbers, pdfFileName, planSvg, unverifiedCount } from './planSvg';
 
@@ -135,6 +138,38 @@ function coverRows(plan: Plan, now: Date): CoverPage['rows'] {
     .map(([label, value, max]) => ({ label, lines: clampLines(wrapText(value.trim(), units), max) }));
 }
 
+function roomFinishRows(plan: Plan): string[][] {
+  const rows = plan.rooms.map((room) => [
+    room.name,
+    room.polygon ? areaM2(room.polygon).toFixed(1) : '-',
+    finishLabel(roomFloor(room, plan)),
+    finishLabel(roomWall(room, plan)),
+  ]);
+  if (rows.length === 0) return rows;
+  const def = planFinish(plan);
+  rows.push(['기본(미지정 방)', '-', finishLabel(def.floor), finishLabel(def.wall)]);
+  return rows;
+}
+
+const OPENING_KIND_LABEL: Record<Opening['kind'], string> = { door: '문', window: '창', opening: '개구부' };
+const LEAVES_LABEL: Record<NonNullable<Opening['leaves']>, string> = { single: '외여닫이', double: '양여닫이', asym: '비대칭 양개' };
+
+function openingRows(plan: Plan): string[][] {
+  const numbers = openingNumbers(plan);
+  return plan.openings.map((o) => {
+    const size = `${o.width}×${o.height}`;
+    return [
+      numbers.get(o.id) ?? '-',
+      o.kind === 'door' && o.middle ? '중문' : OPENING_KIND_LABEL[o.kind],
+      o.kind === 'door' ? LEAVES_LABEL[o.leaves ?? 'single'] : '-',
+      o.verified ? size : `≈${size}`,
+      String(o.sill),
+      o.kind === 'door' ? (o.swingIn ? '안쪽' : '바깥쪽') : '-',
+      o.verified ? '-' : '실측 미확인',
+    ];
+  });
+}
+
 export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
   const resolve = (id: string) => findProduct(plan, id);
   const layout = activeLayout(plan);
@@ -212,6 +247,31 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
       `≈ 표시는 실측 미확인 치수 (${unverifiedCount(plan)}개)`,
       '개구부 아래 숫자는 벽 시작점 기준 위치(cm)',
     ]),
+    ...tablePages(
+      '방 마감표',
+      [
+        { label: '방', width: 40 },
+        { label: '면적(㎡)', width: 30 },
+        { label: '바닥재', width: 98 },
+        { label: '벽 마감', width: 99 },
+      ],
+      roomFinishRows(plan),
+      '방이 없습니다',
+    ),
+    ...tablePages(
+      '창호 일람',
+      [
+        { label: '번호', width: 18 },
+        { label: '종류', width: 24 },
+        { label: '문짝', width: 36 },
+        { label: '폭×높이 (cm)', width: 42 },
+        { label: '바닥 높이', width: 30 },
+        { label: '열림', width: 27 },
+        { label: '비고', width: 90 },
+      ],
+      openingRows(plan),
+      '창호가 없습니다',
+    ),
     drawing(`가구·가전 배치도 (${layout.name})`, planSvg(plan, { ...base, items: 'number' }), [
       '번호는 제품 목록의 번호와 같습니다',
       '회색 부채꼴은 방문 열림 반경입니다',

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Opening, Wall } from '../model/schema';
 import {
-  distanceToWall, fitOpening, moveEndpoint, nearestWall, openingAtPoint, refitOpenings, roomRectWalls, setWallLength,
+  distanceToWall, fitOpening, moveEndpoint, nearestWall, openingAtPoint, openingNumbers, refitOpenings, roomRectWalls, setWallLength,
 } from './structure';
 
 const wall = (id: string, ax: number, ay: number, bx: number, by: number): Wall => ({
@@ -82,5 +82,19 @@ describe('moveEndpoint / setWallLength', () => {
 
   it('a를 고정하고 방향을 유지해 길이를 바꾼다', () => {
     expect(setWallLength(wall('w', 0, 0, 300, 400), 1000).b).toEqual({ x: 600, y: 800 });
+  });
+});
+
+describe('openingNumbers', () => {
+  it('종류별로 순서 번호를 매긴다(문·창·개구부 섞인 순서)', () => {
+    const d1 = door({ id: 'd1' });
+    const w1: Opening = { id: 'w1', wallId: 'w', kind: 'window', offset: 0, width: 180, height: 120, sill: 90, hinge: 'start', swingIn: false };
+    const d2 = door({ id: 'd2', middle: true });
+    const o1: Opening = { id: 'op1', wallId: 'w', kind: 'opening', offset: 0, width: 100, height: 210, sill: 0, hinge: 'start', swingIn: true };
+    const numbers = openingNumbers({ openings: [d1, w1, d2, o1] });
+    expect(numbers.get('d1')).toBe('D1');
+    expect(numbers.get('w1')).toBe('W1');
+    expect(numbers.get('d2')).toBe('D2');
+    expect(numbers.get('op1')).toBe('O1');
   });
 });

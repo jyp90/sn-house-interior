@@ -35,13 +35,15 @@ describe('buildPdf', () => {
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [washer]), input);
     expect(doc.header).toBe('샘플 평면 · A안');
     expect(doc.fileName).toBe('sn-house-interior-샘플-평면-A안.pdf');
-    expect(doc.pages.slice(0, 12).map((p) => [p.kind, p.title])).toEqual([
+    expect(doc.pages.slice(0, 14).map((p) => [p.kind, p.title])).toEqual([
       ['cover', '샘플 평면'],
       ['table', '견적 요청 — 공정별 항목'],
       ['table', '견적서에 함께 적어주실 내용'],
       ['table', '사양 결정사항'],
       ['table', '사진 기록 요청'],
       ['drawing', '치수 평면도'],
+      ['table', '방 마감표'],
+      ['table', '창호 일람'],
       ['drawing', '가구·가전 배치도 (A안)'],
       ['drawing', '전기 계획도'],
       ['table', '전기 설비 목록'],
@@ -49,7 +51,7 @@ describe('buildPdf', () => {
       ['table', '제품 목록 (A안)'],
       ['views', '3D 보기'],
     ]);
-    const rest = doc.pages.slice(12);
+    const rest = doc.pages.slice(14);
     expect(rest.length).toBeGreaterThanOrEqual(1);
     expect(rest.every((p) => p.kind === 'table' && p.title.startsWith('공사 체크리스트'))).toBe(true);
   });
@@ -146,7 +148,7 @@ describe('buildPdf', () => {
   });
 
   it('제품 목록: 번호·모델·이름·치수(미확인 ≈)·설치 높이·소비전력·전용회로', () => {
-    const products = buildPdf(withActiveItems(SAMPLE_PLAN, [sofa('s1'), washer]), input).pages[10] as TablePage;
+    const products = buildPdf(withActiveItems(SAMPLE_PLAN, [sofa('s1'), washer]), input).pages.find((p) => p.title.startsWith('제품 목록')) as TablePage;
     expect(products.columns.map((c) => c.label)).toEqual(['번호', '모델명', '이름', 'W×D×H (cm)', '설치 높이', '소비전력', '전용회로']);
     expect(products.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
       ['1', '-', '3인 소파', '≈210×90×80', '-', '-', '-'],
@@ -185,12 +187,12 @@ describe('buildPdf', () => {
       ...withActiveItems(SAMPLE_PLAN, [sofa('s1'), { id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0 }]),
       customProducts: [builtIn],
     };
-    const table = buildPdf(plan, input).pages[9] as TablePage;
+    const table = buildPdf(plan, input).pages.find((p) => p.title === '빌트인 상세') as TablePage;
     expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
       ['2', '식기세척기', '≈60×60×85', '왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm'],
     ]);
     const verified = withActiveItems(plan, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0, verified: true }]);
-    expect((buildPdf(verified, input).pages[9] as TablePage).rows[0][2]).toEqual(['60×60×85']);
+    expect((buildPdf(verified, input).pages.find((p) => p.title === '빌트인 상세') as TablePage).rows[0][2]).toEqual(['60×60×85']);
   });
 
   it('제품이 많으면 여러 쪽으로 나누고 행을 잃지 않는다', () => {
@@ -222,12 +224,12 @@ describe('buildPdf', () => {
 
   it('빌트인이 없으면 안내 문구, 3D 캡처가 없으면 안내 문구', () => {
     const doc = buildPdf(SAMPLE_PLAN, input);
-    const builtin = doc.pages[9] as TablePage;
+    const builtin = doc.pages.find((p) => p.title === '빌트인 상세') as TablePage;
     expect(builtin.rows).toEqual([]);
     expect(builtin.emptyText).toBe('빌트인 항목이 없습니다');
-    const views = doc.pages[11];
+    const views = doc.pages.find((p) => p.kind === 'views')!;
     expect(views.kind === 'views' && views.views).toEqual([]);
-    const withViews = buildPdf(SAMPLE_PLAN, { views: [{ label: '위에서 본 전체', dataUrl: 'data:image/jpeg;base64,AA' }], now: NOW }).pages[11];
+    const withViews = buildPdf(SAMPLE_PLAN, { views: [{ label: '위에서 본 전체', dataUrl: 'data:image/jpeg;base64,AA' }], now: NOW }).pages.find((p) => p.kind === 'views')!;
     expect(withViews.kind === 'views' && withViews.views.map((v) => v.label)).toEqual(['위에서 본 전체']);
   });
 
@@ -236,7 +238,7 @@ describe('buildPdf', () => {
       ...withActiveItems(SAMPLE_PLAN, [washer]),
       fixtures: [{ id: 'f', kind: 'outlet', pos: { x: 10, y: 100 }, wallId: 'w4', height: 30, memo: 'TV 뒤' }],
     };
-    const electric = buildPdf(plan, input).pages[7];
+    const electric = buildPdf(plan, input).pages.find((p) => p.title === '전기 계획도')!;
     expect(electric.kind === 'drawing' && electric.notes).toEqual([
       '설비: 콘센트 1개',
       '설비별 높이·메모는 다음 쪽 전기 설비 목록 참고',
@@ -247,7 +249,7 @@ describe('buildPdf', () => {
 
   it('주석이 많으면 8줄로 줄이고 나머지 줄 수를 알린다', () => {
     const washers = Array.from({ length: CAP_WASHERS }, (_, i) => ({ ...washer, id: `wa${i}`, x: 100 + i }));
-    const electric = buildPdf(withActiveItems(SAMPLE_PLAN, washers), input).pages[7];
+    const electric = buildPdf(withActiveItems(SAMPLE_PLAN, washers), input).pages.find((p) => p.title === '전기 계획도')!;
     if (electric.kind !== 'drawing') throw new Error('drawing 아님');
     expect(electric.notes).toHaveLength(8);
     expect(electric.notes.at(-1)).toBe('외 7줄은 앱에서 확인하세요');
@@ -261,7 +263,7 @@ describe('buildPdf', () => {
         { id: 'f2', kind: 'light', pos: { x: 200, y: 200 }, height: 230 },
       ],
     };
-    const table = buildPdf(plan, input).pages[8] as TablePage;
+    const table = buildPdf(plan, input).pages.find((p) => p.title === '전기 설비 목록') as TablePage;
     expect(table.title).toBe('전기 설비 목록');
     expect(table.columns).toEqual([
       { label: '번호', width: 18 },
@@ -274,7 +276,7 @@ describe('buildPdf', () => {
       ['E1', '콘센트', '30cm', '예', 'TV 뒤'],
       ['E2', '조명', '230cm', '아니오', ''],
     ]);
-    const empty = buildPdf(SAMPLE_PLAN, input).pages[8] as TablePage;
+    const empty = buildPdf(SAMPLE_PLAN, input).pages.find((p) => p.title === '전기 설비 목록') as TablePage;
     expect(empty.title).toBe('전기 설비 목록');
     expect(empty.rows).toEqual([]);
     expect(empty.emptyText).toBe('배치된 전기 설비가 없습니다');
@@ -286,5 +288,72 @@ describe('buildPdf', () => {
     expect(dims.svg).toContain('<line ');
     expect(dims.svg).toContain('>250–340<');
     expect(dims.notes).toContain('개구부 아래 숫자는 벽 시작점 기준 위치(cm)');
+  });
+
+  it('방 마감표: 방별 면적·마감(프리셋 라벨·hex)과 기본 행', () => {
+    const table = buildPdf(SAMPLE_PLAN, input).pages.find((p) => p.title === '방 마감표') as TablePage;
+    expect(table.columns).toEqual([
+      { label: '방', width: 40 },
+      { label: '면적(㎡)', width: 30 },
+      { label: '바닥재', width: 98 },
+      { label: '벽 마감', width: 99 },
+    ]);
+    expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
+      ['거실', '-', '마루 · 내추럴 오크', '페인트 · 화이트'],
+      ['방', '-', '마루 · 내추럴 오크', '페인트 · 화이트'],
+      ['기본(미지정 방)', '-', '마루 · 내추럴 오크', '페인트 · 화이트'],
+    ]);
+    const plan: Plan = {
+      ...SAMPLE_PLAN,
+      rooms: [
+        { id: 'r2', name: '방', label: { x: 475, y: 200 }, polygon: [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 300 }, { x: 0, y: 300 }], floor: { material: 'tile', color: '#123456' } },
+      ],
+    };
+    const withArea = buildPdf(plan, input).pages.find((p) => p.title === '방 마감표') as TablePage;
+    expect(withArea.rows[0].map((c) => c.join(' '))).toEqual(['방', '12.0', '타일 · #123456', '페인트 · 화이트']);
+  });
+
+  it('방이 없으면 안내 문구', () => {
+    const table = buildPdf({ ...SAMPLE_PLAN, rooms: [] }, input).pages.find((p) => p.title === '방 마감표') as TablePage;
+    expect(table.rows).toEqual([]);
+    expect(table.emptyText).toBe('방이 없습니다');
+  });
+
+  it('창호 일람: 번호·종류·문짝·치수·바닥 높이·열림·비고', () => {
+    const table = buildPdf(SAMPLE_PLAN, input).pages.find((p) => p.title === '창호 일람') as TablePage;
+    expect(table.columns).toEqual([
+      { label: '번호', width: 18 },
+      { label: '종류', width: 24 },
+      { label: '문짝', width: 36 },
+      { label: '폭×높이 (cm)', width: 42 },
+      { label: '바닥 높이', width: 30 },
+      { label: '열림', width: 27 },
+      { label: '비고', width: 90 },
+    ]);
+    expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
+      ['D1', '문', '외여닫이', '≈90×210', '0', '안쪽', '실측 미확인'],
+      ['W1', '창', '-', '≈180×120', '90', '-', '실측 미확인'],
+    ]);
+  });
+
+  it('창호 일람: 중문·개구부 종류, verified면 ≈ 없이 비고는 -', () => {
+    const plan: Plan = {
+      ...SAMPLE_PLAN,
+      openings: [
+        { ...SAMPLE_PLAN.openings[0], middle: true, leaves: 'asym', verified: true },
+        { id: 'o3', wallId: 'w3', kind: 'opening', offset: 0, width: 100, height: 210, sill: 0, hinge: 'start', swingIn: true },
+      ],
+    };
+    const table = buildPdf(plan, input).pages.find((p) => p.title === '창호 일람') as TablePage;
+    expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([
+      ['D1', '중문', '비대칭 양개', '90×210', '0', '안쪽', '-'],
+      ['O1', '개구부', '-', '≈100×210', '0', '-', '실측 미확인'],
+    ]);
+  });
+
+  it('창호가 없으면 안내 문구', () => {
+    const table = buildPdf({ ...SAMPLE_PLAN, openings: [] }, input).pages.find((p) => p.title === '창호 일람') as TablePage;
+    expect(table.rows).toEqual([]);
+    expect(table.emptyText).toBe('창호가 없습니다');
   });
 });

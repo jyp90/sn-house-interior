@@ -29,3 +29,22 @@ export function roomFloor(room: Room, plan: Pick<Plan, 'finish'>): FloorFinish {
 export function roomWall(room: Room, plan: Pick<Plan, 'finish'>): WallFinish {
   return room.wall ?? planFinish(plan).wall;
 }
+
+const MATERIAL_LABEL: Record<FloorFinish['material'] | WallFinish['material'], string> = {
+  wood: '마루',
+  tile: '타일',
+  plain: '단색',
+  paint: '페인트',
+  wallpaper: '벽지',
+};
+
+function presetLabel(finish: FloorFinish | WallFinish): string | undefined {
+  const presets: readonly { finish: FloorFinish | WallFinish; label: string }[] =
+    finish.material === 'paint' || finish.material === 'wallpaper' ? WALL_PRESETS : FLOOR_PRESETS;
+  return presets.find((p) => p.finish.material === finish.material && p.finish.color === finish.color)?.label;
+}
+
+// PDF 표용: 프리셋이면 「재질 · 라벨」, 아니면 「재질 · #rrggbb」
+export function finishLabel(finish: FloorFinish | WallFinish): string {
+  return `${MATERIAL_LABEL[finish.material]} · ${presetLabel(finish) ?? finish.color}`;
+}

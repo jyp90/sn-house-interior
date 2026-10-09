@@ -5,6 +5,8 @@ import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, fixtureNumbe
 import { planBounds } from '../geometry/bounds';
 import { doorLeaves } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
+import { areaM2 } from '../geometry/polygon';
+import { openingNumbers } from '../geometry/structure';
 import { openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
 import { activeItems, activeLayout } from '../model/layout';
 import type { Plan } from '../model/schema';
@@ -24,6 +26,8 @@ const OPENING_LABEL_GAP_CM_BY_HEIGHT = 16;
 const OPENING_LABEL_GAP_CM_BY_WIDTH = 46;
 // 「중문」 글자: 벽 면에서 열리는 쪽으로, 벽 길이 글자(14)와 겹치지 않는 거리
 const MIDDLE_LABEL_OFF_CM = 30;
+// 방 이름 아래 면적 글자까지의 거리
+const ROOM_AREA_LABEL_OFF_CM = 14;
 
 const r2 = (n: number) => Math.round(n * 100) / 100 + 0;
 
@@ -188,6 +192,7 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const off = wall.thickness / 2 + 14;
       parts.push(label((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), '#3f3a33', center));
     }
+    const openNumbers = openingNumbers(plan);
     for (const o of plan.openings) {
       const wall = wallById.get(o.wallId);
       if (!wall) continue;
@@ -200,12 +205,16 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
         const off2 = off - gap;
         parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
       }
-      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
+      const n = openNumbers.get(o.id);
+      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, `${n} ${mark(o.width, o.verified)}`, '#4f6b8a', center));
     }
   }
 
   parts.push(...middleLabels);
-  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
+  for (const r of plan.rooms) {
+    parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
+    if (r.polygon) parts.push(label(r.label.x, r.label.y + ROOM_AREA_LABEL_OFF_CM, 11, `${areaM2(r.polygon).toFixed(1)}㎡`, '#6b5e4b', center));
+  }
 
   for (const { item, product } of placed) {
     if (itemMode === 'name') {
