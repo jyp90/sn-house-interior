@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { withActiveItems } from '../model/layout';
+import { FIXTURE_KINDS, FIXTURE_LABEL } from '../electrical/fixtures';
 import { SAMPLE_PLAN } from '../model/samplePlan';
 import { escapeXml, exportFileName, itemNumbers, pdfFileName, planSvg, unverifiedCount } from './planSvg';
 
@@ -204,15 +205,55 @@ describe('planSvg 옵션', () => {
     expect(off).not.toContain('>250–340<');
   });
 
-  it('개구부 위치 글자는 폭 글자보다 16cm 더 바깥쪽이고, 폭 글자가 나중에 그려져 항상 위에 보인다', () => {
+  it('개구부 위치 글자는 폭 글자보다 바깥쪽이고(가로 벽 16cm, 세로 벽은 글자 폭 기준 46cm), 폭 글자가 나중에 그려져 항상 위에 보인다', () => {
     // o1: wallId w5 (350,0)→(350,400) 수직, offset 250, width 90 → mid 295, 법선 바깥쪽
     const on = planSvg(plan, { dimensionLines: true }).svg;
     // 폭 글자(font-size 11): off = -(thickness/2 + 14) = -20 → x = 350 + 20 = 370
     expect(on).toContain('<text x="370" y="295" font-size="11"');
-    // 위치 글자(font-size 9): off2 = off - 16 = -36 → x = 350 + 36 = 386 (폭 글자보다 16cm 바깥)
-    expect(on).toContain('<text x="386" y="295" font-size="9"');
+    // 세로 벽: 법선이 가로라 글자 폭이 겹친다 → off2 = off - 46 = -66 → x = 350 + 66 = 416
+    expect(on).toContain('<text x="416" y="295" font-size="9"');
+    // o2: wallId w1 (0,0)→(600,0) 가로, offset 80, width 180 → mid 170, off = -(10 + 14) = -24, off2 = -40
+    expect(on).toContain('<text x="170" y="-24" font-size="11"');
+    expect(on).toContain('<text x="170" y="-40" font-size="9"');
     // 위치 글자를 먼저 그리고 폭 글자를 나중에 그려, 겹치더라도 폭 글자가 항상 위에 보인다
     expect(on.indexOf('>250–340<')).toBeLessThan(on.indexOf('<text x="370" y="295" font-size="11"'));
+  });
+
+  it('세로 벽 문의 폭 글자(≈90)와 위치 글자(250–340)는 x가 35cm 이상 떨어진다', () => {
+    const on = planSvg(SAMPLE_PLAN, { header: false, items: 'none', dimensionLines: true }).svg;
+    const xOf = (re: RegExp) => Number(on.match(re)![1]);
+    const width = xOf(/<text x="([-\d.]+)" y="295" font-size="11"[^>]*fill="#4f6b8a"[^>]*>≈90</);
+    const pos = xOf(/<text x="([-\d.]+)" y="295" font-size="9"[^>]*fill="#4f6b8a"[^>]*>250–340</);
+    expect(Math.abs(pos - width)).toBeGreaterThanOrEqual(35);
+  });
+
+  it('좁은 도면에서는 전기 범례를 여러 줄로 감싸 도면 폭을 넘지 않는다', () => {
+    const narrow = {
+      ...SAMPLE_PLAN,
+      walls: [
+        { id: 'a', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 20, height: 230 },
+        { id: 'b', a: { x: 400, y: 0 }, b: { x: 400, y: 300 }, thickness: 20, height: 230 },
+        { id: 'c', a: { x: 400, y: 300 }, b: { x: 0, y: 300 }, thickness: 20, height: 230 },
+        { id: 'd', a: { x: 0, y: 300 }, b: { x: 0, y: 0 }, thickness: 20, height: 230 },
+      ],
+      openings: [],
+      rooms: [],
+      fixtures: FIXTURE_KINDS.map((kind, i) => ({ id: `f${i}`, kind, pos: { x: 50 + i * 60, y: 150 }, height: 30 })),
+    };
+    const { svg, height } = planSvg(narrow, { fixtures: true, header: false });
+    const [vx, , vw] = svg.match(/viewBox="([^"]+)"/)![1].split(' ').map(Number);
+    const right = vx + vw;
+    for (const k of FIXTURE_KINDS) {
+      const m = svg.match(new RegExp(`<text x="([-\\d.]+)" y="([-\\d.]+)" font-size="14"[^>]*>${FIXTURE_LABEL[k]}</text>`));
+      expect(m, k).not.toBeNull();
+      expect(Number(m![1]) + FIXTURE_LABEL[k].length * 14).toBeLessThanOrEqual(right);
+    }
+    const glyphYs = new Set(
+      FIXTURE_KINDS.map((k) => svg.match(new RegExp(`<text x="[-\\d.]+" y="([-\\d.]+)" font-size="14"[^>]*>${FIXTURE_LABEL[k]}</text>`))![1]),
+    );
+    expect(glyphYs.size).toBe(2);
+    // 범례 두 줄 → 50cm × 2 = 100cm × 2px
+    expect(height).toBe(planSvg(narrow, { header: false }).height + 200);
   });
 
   it('제품을 찾을 수 없는 가구는 번호를 매기지 않는다', () => {

@@ -13,11 +13,15 @@ export const EXPORT_PX_PER_CM = 2;
 
 const MARGIN = 80;
 const HEADER = 70;
+// 범례 한 줄 높이와 한 칸 폭. 도면 폭(+여백)에 들어가는 칸 수만큼 한 줄에 놓고 나머지는 다음 줄로
 const LEGEND = 50;
 const LEGEND_STEP = 150;
 const HIGHLIGHT = '#c2410c';
-// 개구부 폭 글자(font 11)와 위치 글자(font 9) 사이 간격: half-heights 5.5+4.5 + halo 1.5+1.5 + 여유
-const OPENING_LABEL_GAP_CM = 16;
+// 개구부 폭 글자(font 11)와 위치 글자(font 9) 사이 간격, 벽 법선 방향.
+// 가로 벽(법선이 세로): 글자 높이 기준 half-heights 5.5+4.5 + halo 1.5+1.5 + 여유
+const OPENING_LABEL_GAP_CM_BY_HEIGHT = 16;
+// 세로 벽(법선이 가로): 글자 폭 기준. 「≈90」 반폭 ~9 + 「250–340」 반폭 ~18 + halo + 여유
+const OPENING_LABEL_GAP_CM_BY_WIDTH = 46;
 // 「중문」 글자: 벽 면에서 열리는 쪽으로, 벽 길이 글자(14)와 겹치지 않는 거리
 const MIDDLE_LABEL_OFF_CM = 30;
 
@@ -100,7 +104,8 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
   const b = planBounds(plan);
   const legendKinds = fixtures ? FIXTURE_KINDS.filter((k) => plan.fixtures.some((f) => f.kind === k)) : [];
   const headerH = header ? HEADER : 0;
-  const legendH = legendKinds.length > 0 ? LEGEND : 0;
+  const legendCols = Math.max(1, Math.floor((b.maxX - b.minX + MARGIN) / LEGEND_STEP));
+  const legendH = Math.ceil(legendKinds.length / legendCols) * LEGEND;
   const x0 = b.minX - MARGIN;
   const y0 = b.minY - MARGIN - headerH;
   const w = b.maxX - b.minX + MARGIN * 2;
@@ -191,7 +196,8 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const off = -(wall.thickness / 2 + 14);
       // 위치 글자를 먼저 그려서, 두 글자가 닿아도 더 중요한 폭 글자가 항상 위에 오도록 한다
       if (dimensionLines) {
-        const off2 = off - OPENING_LABEL_GAP_CM;
+        const gap = Math.abs(u.x) >= Math.abs(u.y) ? OPENING_LABEL_GAP_CM_BY_HEIGHT : OPENING_LABEL_GAP_CM_BY_WIDTH;
+        const off2 = off - gap;
         parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
       }
       parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
@@ -225,9 +231,9 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
     for (const f of plan.fixtures) {
       parts.push(label(f.pos.x + FIXTURE_R_CM + 2, f.pos.y, 9, `E${fxNumbers.get(f.id)}`, '#1f2328', 'dominant-baseline="middle"'));
     }
-    const ly = b.maxY + MARGIN + LEGEND / 2;
     legendKinds.forEach((k, i) => {
-      const cx = b.minX + i * LEGEND_STEP + FIXTURE_R_CM;
+      const ly = b.maxY + MARGIN + LEGEND / 2 + Math.floor(i / legendCols) * LEGEND;
+      const cx = b.minX + (i % legendCols) * LEGEND_STEP + FIXTURE_R_CM;
       const g = FIXTURE_GLYPH[k];
       parts.push(glyphShape(k, cx, ly));
       parts.push(text(cx, ly, 10, g.letter, `fill="${g.letterFill}" font-weight="bold" ${center}`));
