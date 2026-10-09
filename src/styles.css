@@ -226,6 +226,8 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .opening-open { stroke: #9a8f7f; stroke-dasharray: 4 3; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .opening-swing { fill: rgba(139, 139, 139, 0.15); stroke: #8b8b8b; stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
 .opening-glass { stroke: #4f9dde; stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
+.opening-leaf { stroke: #3f3a33; stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none; }
+.opening-slide { fill: none; stroke: #3f3a33; stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
 .opening-middle-label { fill: #2b6cb0; pointer-events: none; }
 .opening-selected .opening-gap { stroke: var(--accent); stroke-width: 2; }
 .opening-stray { fill: var(--danger); stroke: #fff; }

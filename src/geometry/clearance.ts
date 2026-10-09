@@ -44,7 +44,7 @@ export function itemClearances(item: Item, product: Product): ClearanceShape[] {
   });
 }
 
-// 문짝 폭: [경첩(o.hinge) 쪽, 반대쪽]. 외여닫이는 반대쪽이 0
+// 문짝 폭: [경첩(o.hinge) 쪽, 반대쪽]. 외여닫이·외짝 슬라이딩은 반대쪽이 0
 export function leafWidths(o: Opening): [number, number] {
   if (o.leaves === 'double') return [o.width / 2, o.width / 2];
   if (o.leaves === 'asym') {
@@ -54,8 +54,10 @@ export function leafWidths(o: Opening): [number, number] {
   return [o.width, 0];
 }
 
-// 문짝마다 열림 영역을 따로 계산한다. 모든 문짝은 같은 쪽(swingIn)으로 연다
+// 문짝마다 열림 영역을 따로 계산한다. 모든 문짝은 같은 쪽(swingIn)으로 연다.
+// 슬라이딩(spec §47)은 스윙이 없어 빈 배열 → 충돌 검사·2D 호·3D 바닥 오버레이·PDF 부채꼴이 모두 빠진다
 export function doorLeaves(w: Wall, o: Opening): DoorLeaf[] {
+  if (o.leaves === 'sliding') return [];
   const [start, end] = clampToWall(o, wallLength(w));
   const clamped: Opening = { ...o, offset: start, width: Math.max(0, end - start) };
   const u = wallDir(w);
@@ -80,4 +82,35 @@ export function doorSwings(plan: Plan): ClearanceShape[] {
     const w = walls.get(o.wallId);
     return w && o.kind === 'door' ? doorLeaves(w, o).map((l) => l.swing) : [];
   });
+}
+
+// 외짝 슬라이딩 문짝(spec §47.2): 레일 면(swingIn 쪽 법선)으로 두께/2 + 3cm 띄운 선분.
+// a = 경첩 반대쪽 끝, b = hinge 쪽 끝, dir = 열 때 문짝이 밀려가는 단위 벡터(hinge가 end면 +u, start면 -u)
+export const SLIDING_RAIL_GAP_CM = 3;
+export type SlidingLeaf = { a: Vec2; b: Vec2; dir: Vec2 };
+
+export function slidingLeaf(w: Wall, o: Opening): SlidingLeaf | null {
+  if (o.kind !== 'door' || o.leaves !== 'sliding') return null;
+  const [start, end] = clampToWall(o, wallLength(w));
+  if (end - start <= 0) return null;
+  const u = wallDir(w);
+  const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
+  const off = w.thickness / 2 + SLIDING_RAIL_GAP_CM;
+  const at = (along: number): Vec2 => ({ x: w.a.x + u.x * along + n.x * off, y: w.a.y + u.y * along + n.y * off });
+  const [aT, bT] = o.hinge === 'end' ? [start, end] : [end, start];
+  const dir = o.hinge === 'end' ? u : { x: -u.x, y: -u.y };
+  return { a: at(aT), b: at(bT), dir };
+}
+
+// 문짝 선 중앙에서 dir로 25cm 화살표(spec §47.3): 자루 from→tip, 화살촉 h1·h2. 2D·PNG/PDF가 같은 점을 쓴다
+export const SLIDE_ARROW_CM = 25;
+export type SlideArrow = { from: Vec2; tip: Vec2; h1: Vec2; h2: Vec2 };
+
+export function slideArrow({ a, b, dir }: SlidingLeaf): SlideArrow {
+  const from = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const tip = { x: from.x + dir.x * SLIDE_ARROW_CM, y: from.y + dir.y * SLIDE_ARROW_CM };
+  const n = { x: -dir.y, y: dir.x };
+  const h1 = { x: tip.x - dir.x * 6 + n.x * 4, y: tip.y - dir.y * 6 + n.y * 4 };
+  const h2 = { x: tip.x - dir.x * 6 - n.x * 4, y: tip.y - dir.y * 6 - n.y * 4 };
+  return { from, tip, h1, h2 };
 }

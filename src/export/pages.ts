@@ -161,7 +161,7 @@ function roomFinishRows(plan: Plan): string[][] {
 }
 
 const OPENING_KIND_LABEL: Record<Opening['kind'], string> = { door: '문', window: '창', opening: '개구부' };
-const LEAVES_LABEL: Record<NonNullable<Opening['leaves']>, string> = { single: '외여닫이', double: '양여닫이', asym: '비대칭 양개' };
+const LEAVES_LABEL: Record<NonNullable<Opening['leaves']>, string> = { single: '외여닫이', double: '양여닫이', asym: '비대칭 양개', sliding: '슬라이딩' };
 
 function openingRows(plan: Plan): string[][] {
   const numbers = openingNumbers(plan);
@@ -173,7 +173,7 @@ function openingRows(plan: Plan): string[][] {
       o.kind === 'door' ? LEAVES_LABEL[o.leaves ?? 'single'] : '-',
       o.verified ? size : `≈${size}`,
       String(o.sill),
-      o.kind === 'door' ? (o.swingIn ? '안쪽' : '바깥쪽') : '-',
+      o.kind === 'door' ? (o.leaves === 'sliding' ? '—' : o.swingIn ? '안쪽' : '바깥쪽') : '-',
       o.verified ? '-' : '실측 미확인',
     ];
   });

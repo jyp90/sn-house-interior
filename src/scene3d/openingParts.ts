@@ -1,5 +1,5 @@
 // 개구부(문·창) 3D 부품 계산 — 순수 함수, React/three 의존 없음 (spec §23)
-import { leafWidths } from '../geometry/clearance';
+import { leafWidths, SLIDING_RAIL_GAP_CM } from '../geometry/clearance';
 import { clampToWall, wallDir, wallLength } from '../geometry/walls';
 import type { Opening, Vec2, Wall } from '../model/schema';
 
@@ -79,7 +79,21 @@ export function openingParts(wall: Wall, o: Opening): OpeningPart[] {
     });
   }
 
-  if (o.kind === 'door') {
+  if (o.kind === 'door' && o.leaves === 'sliding') {
+    // 외짝 슬라이딩(spec §47): 개구부 폭 전체 문짝 한 장을 레일 면(swingIn 쪽 법선)으로 두께/2 + 3cm 띄워 닫힌 상태로.
+    // 회전 없음. 손잡이는 hinge 반대쪽 끝에서 6cm 안쪽, 문짝 면 양쪽으로 2cm씩 나온다
+    const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
+    const off = T / 2 + SLIDING_RAIL_GAP_CM;
+    const railAt = (along: number): Vec2 => {
+      const p = at(wall, along);
+      return { x: p.x + n.x * off, y: p.y + n.y * off };
+    };
+    const leafH = height - FRAME_CM - 1;
+    const centerP = railAt(offset + width / 2);
+    parts.push({ kind: 'leaf', cx: centerP.x, cy: centerP.y, yCenter: o.sill + leafH / 2, w: width, h: leafH, d: LEAF_CM, angle, glassLeaf: !!o.middle });
+    const handleP = railAt(o.hinge === 'start' ? offset + width - 6 : offset + 6);
+    parts.push({ kind: 'handle', cx: handleP.x, cy: handleP.y, yCenter: HANDLE_H_CM, w: 2, h: 2, d: LEAF_CM + 4, angle });
+  } else if (o.kind === 'door') {
     // 벽 끝으로 잘린 개구부라면 문짝 폭도 잘린 폭(width) 기준으로 나눈다
     const [hingeSide, otherSide] = leafWidths({ ...o, width });
     // startAtOffset: 문짝 경첩이 offset 쪽(true)인지 offset+width 쪽(false)인지

@@ -12,7 +12,7 @@ import {
   type FixtureKind,
 } from '../electrical/fixtures';
 import { planBounds } from '../geometry/bounds';
-import { doorLeaves } from '../geometry/clearance';
+import { doorLeaves, slideArrow, slidingLeaf } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
 import { areaM2 } from '../geometry/polygon';
 import { openingNumbers } from '../geometry/structure';
@@ -138,6 +138,16 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const leaves = doorLeaves(wall, o);
       for (const { swing: s } of leaves) {
         parts.push(`<path d="${sectorPath(s.center, s.radius, s.start, s.end)}" fill="none" stroke="#8b8b8b" stroke-width="1"/>`);
+      }
+      const sliding = slidingLeaf(wall, o);
+      if (sliding) {
+        // 외짝 슬라이딩(spec §47): 레일 면에 문짝 선(중문이면 유리 스타일) + 선 중앙에서 밀림 방향으로 25cm 화살표. 부채꼴 없음
+        const seg = `x1="${r2(sliding.a.x)}" y1="${r2(sliding.a.y)}" x2="${r2(sliding.b.x)}" y2="${r2(sliding.b.y)}"`;
+        if (o.middle) parts.push(`<line ${seg} data-part="sliding-leaf" stroke="#4f9dde" stroke-width="3"/>`, `<line ${seg} stroke="#ffffff" stroke-width="1"/>`);
+        else parts.push(`<line ${seg} data-part="sliding-leaf" stroke="#3f3a33" stroke-width="2"/>`);
+        const { from, tip, h1, h2 } = slideArrow(sliding);
+        const d = `M ${r2(from.x)} ${r2(from.y)} L ${r2(tip.x)} ${r2(tip.y)} M ${r2(h1.x)} ${r2(h1.y)} L ${r2(tip.x)} ${r2(tip.y)} L ${r2(h2.x)} ${r2(h2.y)}`;
+        parts.push(`<path d="${d}" data-part="sliding-arrow" fill="none" stroke="#3f3a33" stroke-width="1"/>`);
       }
       if (o.middle) {
         // 중문: 유리 문짝(하늘색 굵은 선 + 흰 심) 과 「중문」 글자

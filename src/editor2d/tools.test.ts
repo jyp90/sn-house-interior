@@ -6,7 +6,7 @@ import { useUi } from '../ui/uiStore';
 import { applyToolClick, areaSnapPoints, areaToolPoint, finishArea, finishWall, measureSnapPoints } from './tools';
 
 const plan = () => ({
-  version: 8 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
+  version: 9 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
   walls: [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 }],
 });
 

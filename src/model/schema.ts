@@ -26,7 +26,7 @@ export const OpeningSchema = z.object({
   hinge: z.enum(['start', 'end']),
   swingIn: z.boolean(), // true: 벽 방향 u를 +90° 돌린 쪽(-uy, ux)으로 열림
   middle: z.boolean().optional(), // 현관 중문 (door만 의미)
-  leaves: z.enum(['single', 'double', 'asym']).optional(), // 외여닫이 / 양여닫이 / 비대칭 양개, 없으면 single
+  leaves: z.enum(['single', 'double', 'asym', 'sliding']).optional(), // 외여닫이 / 양여닫이 / 비대칭 양개 / 외짝 슬라이딩, 없으면 single
   verified: z.boolean().optional(),
 });
 
@@ -153,7 +153,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(8),
+    version: z.literal(9),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

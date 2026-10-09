@@ -48,9 +48,9 @@ test('잘못된 JSON을 열면 오류 배너가 뜨고 배치는 유지된다', 
   await page.getByTestId('open-json').setInputFiles({
     name: 'bad.json',
     mimeType: 'application/json',
-    buffer: Buffer.from(JSON.stringify({ version: 9 })),
+    buffer: Buffer.from(JSON.stringify({ version: 10 })),
   });
-  await expect(page.getByTestId('banner')).toContainText('지원하지 않는 파일 버전입니다: 9');
+  await expect(page.getByTestId('banner')).toContainText('지원하지 않는 파일 버전입니다: 10');
   expect(await itemCount(page)).toBe(1);
 });
 

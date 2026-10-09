@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Item, Plan, Product } from '../model/schema';
 import { SAMPLE_PLAN } from '../model/samplePlan';
-import { doorLeaves, doorSwings, itemClearances } from './clearance';
+import { doorLeaves, doorSwings, itemClearances, leafWidths, slideArrow, slidingLeaf } from './clearance';
 import type { Opening, Wall } from '../model/schema';
 
 const product = (clearances: Product['clearances']): Product => ({
@@ -125,5 +125,50 @@ describe('doorLeaves', () => {
 
   it('벽 밖으로 완전히 나간 문은 문짝이 없다', () => {
     expect(doorLeaves(wall, { ...door, offset: 500, width: 90 })).toHaveLength(0);
+  });
+});
+
+describe('sliding (spec §47)', () => {
+  const wall: Wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 };
+  const door: Opening = { id: 'o', wallId: 'w', kind: 'door', offset: 100, width: 120, height: 210, sill: 0, hinge: 'start', swingIn: true, leaves: 'sliding' };
+
+  it('leafWidths는 폭 전체 한 장, doorLeaves·doorSwings는 비어 있다', () => {
+    expect(leafWidths(door)).toEqual([120, 0]);
+    expect(doorLeaves(wall, door)).toEqual([]);
+    expect(doorSwings({ ...SAMPLE_PLAN, walls: [wall], openings: [door] })).toEqual([]);
+  });
+
+  it('slidingLeaf: 레일 면(swingIn 쪽)으로 두께/2+3cm 띄운 선분, b가 hinge 쪽, dir는 밀림 방향', () => {
+    const l = slidingLeaf(wall, door);
+    if (!l) throw new Error('leaf 기대');
+    expect(l.a).toEqual({ x: 220, y: 8 });
+    expect(l.b).toEqual({ x: 100, y: 8 });
+    expect(l.dir).toEqual({ x: -1, y: -0 });
+  });
+
+  it('slidingLeaf: hinge end·바깥 레일이면 반대 면에서 +u 방향', () => {
+    const l = slidingLeaf(wall, { ...door, hinge: 'end', swingIn: false });
+    if (!l) throw new Error('leaf 기대');
+    expect(l.a).toEqual({ x: 100, y: -8 });
+    expect(l.b).toEqual({ x: 220, y: -8 });
+    expect(l.dir).toEqual({ x: 1, y: 0 });
+  });
+
+  it('slidingLeaf: 벽 끝을 넘으면 잘리고, 완전히 나가거나 슬라이딩이 아니면 null', () => {
+    const l = slidingLeaf(wall, { ...door, offset: 350, width: 90 });
+    if (!l) throw new Error('leaf 기대');
+    expect(l.a).toEqual({ x: 400, y: 8 });
+    expect(l.b).toEqual({ x: 350, y: 8 });
+    expect(slidingLeaf(wall, { ...door, offset: 500 })).toBeNull();
+    expect(slidingLeaf(wall, { ...door, leaves: 'single' })).toBeNull();
+    expect(slidingLeaf(wall, { ...door, kind: 'window' })).toBeNull();
+  });
+
+  it('slideArrow: 문짝 선 중앙에서 dir로 25cm, 화살촉은 끝에서 6cm 뒤 ±4cm', () => {
+    const arrow = slideArrow({ a: { x: 220, y: 8 }, b: { x: 100, y: 8 }, dir: { x: -1, y: 0 } });
+    expect(arrow.from).toEqual({ x: 160, y: 8 });
+    expect(arrow.tip).toEqual({ x: 135, y: 8 });
+    expect(arrow.h1).toEqual({ x: 141, y: 4 });
+    expect(arrow.h2).toEqual({ x: 141, y: 12 });
   });
 });

@@ -24,7 +24,7 @@ const products: Record<string, Product> = {
 const resolve = (id: string) => products[id];
 const item = (id: string, productId: string, x: number, y: number, rotation = 0, elevation?: number): Item => ({ id, productId, variantId: 'v', x, y, rotation, ...(elevation === undefined ? {} : { elevation }) });
 const plan = ({ items = [], ...over }: Partial<Plan> & { items?: Item[] }): Plan =>
-  withActiveItems({ version: 8, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over }, items);
+  withActiveItems({ version: 9, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields(), ...over }, items);
 
 describe('validatePlan', () => {
   it('겹친 두 아이템은 둘 다 충돌', () => {
@@ -56,6 +56,13 @@ describe('validatePlan', () => {
     const openings = [{ id: 'o', wallId: 'w', kind: 'door' as const, offset: 100, width: 80, height: 210, sill: 0, hinge: 'start' as const, swingIn: true }];
     const s = validatePlan(plan({ walls, openings, items: [item('a', 'cube', 140, 60)] }), resolve);
     expect(s.a).toMatchObject({ collides: false, clearanceBlocked: false, blocksDoor: true });
+  });
+
+  it('슬라이딩 문 앞의 아이템은 blocksDoor가 아니다 (spec §47)', () => {
+    const walls = [{ id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 }];
+    const openings = [{ id: 'o', wallId: 'w', kind: 'door' as const, offset: 100, width: 80, height: 210, sill: 0, hinge: 'start' as const, swingIn: true, leaves: 'sliding' as const }];
+    const s = validatePlan(plan({ walls, openings, items: [item('a', 'cube', 140, 60)] }), resolve);
+    expect(s.a).toMatchObject({ collides: false, clearanceBlocked: false, blocksDoor: false, conflicts: [] });
   });
 
   it('알 수 없는 제품은 오류 없이 상태 false이고 다른 아이템에 영향을 주지 않는다', () => {

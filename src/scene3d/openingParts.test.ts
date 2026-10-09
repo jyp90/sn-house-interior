@@ -171,6 +171,35 @@ describe('openingParts', () => {
     expect(parts).toEqual([]);
   });
 
+  it('sliding door (외짝 슬라이딩, spec §47): 문짝 한 장을 레일 면으로 두께/2+3cm 띄우고 손잡이는 경첩 반대쪽', () => {
+    const parts = openingParts(wall, { ...door, leaves: 'sliding' });
+    expect(byKind(parts, 'frame')).toHaveLength(3);
+    expect(byKind(parts, 'leaf')).toHaveLength(1);
+    expect(byKind(parts, 'handle')).toHaveLength(1);
+    const leaf = byKind(parts, 'leaf')[0];
+    expect(leaf.cx).toBeCloseTo(145);
+    expect(leaf.cy).toBeCloseTo(8); // swingIn: 법선 (-uy, ux) = (0, 1) 쪽으로 10/2 + 3
+    expect(leaf.w).toBeCloseTo(90);
+    expect(leaf.h).toBeCloseTo(204);
+    expect(leaf.d).toBeCloseTo(LEAF_CM);
+    expect(leaf.glassLeaf).toBeFalsy();
+    const handle = byKind(parts, 'handle')[0];
+    expect(handle.cx).toBeCloseTo(100 + 90 - 6); // hinge start → 손잡이는 end 쪽 끝에서 6cm 안쪽
+    expect(handle.cy).toBeCloseTo(8);
+    expect(handle.d).toBeCloseTo(LEAF_CM + 4);
+    expect(handle.yCenter).toBeCloseTo(HANDLE_H_CM);
+  });
+
+  it('sliding door hinge end·바깥 레일·중문: 반대 면, 손잡이는 start 쪽, 유리', () => {
+    const parts = openingParts(wall, { ...door, leaves: 'sliding', hinge: 'end', swingIn: false, middle: true });
+    const leaf = byKind(parts, 'leaf')[0];
+    expect(leaf.cy).toBeCloseTo(-8);
+    expect(leaf.glassLeaf).toBe(true);
+    const handle = byKind(parts, 'handle')[0];
+    expect(handle.cx).toBeCloseTo(106);
+    expect(handle.cy).toBeCloseTo(-8);
+  });
+
   it('FRAME_CM/LEAF_CM constants', () => {
     expect(FRAME_CM).toBe(5);
     expect(LEAF_CM).toBe(4);
