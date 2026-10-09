@@ -18,8 +18,11 @@ test('자동 항목이 배치에서 만들어지고, 체크와 메모가 새로�
 
   const row = list.getByTestId('checklist-i-demo-1');
   await row.getByRole('checkbox').check();
-  await row.hover();
-  await row.getByRole('button', { name: '+ 메모' }).click();
+  // 체크 직후 저장 상태 표시 등으로 레이아웃이 밀리면 마우스가 행을 벗어나 호버 전용 버튼이 숨는다 → 다시 올려 누른다
+  await expect(async () => {
+    await row.hover();
+    await row.getByRole('button', { name: '+ 메모' }).click({ timeout: 1000 });
+  }).toPass();
   await row.getByLabel('메모').fill('거실 붙박이장 포함');
   await row.getByLabel('메모').press('Enter');
   await expect.poll(async () => (await getPlan(page)).checklist).toEqual([{ itemId: 'i-demo-1', checked: true, memo: '거실 붙박이장 포함' }]);

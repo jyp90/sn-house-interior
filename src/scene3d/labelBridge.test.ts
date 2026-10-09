@@ -24,6 +24,12 @@ describe('projectToScreen', () => {
     expect(p.x).toBeCloseTo(200);
     expect(p.y).toBeCloseTo(100);
   });
+  it('화면(0..width × 0..height) 밖으로 투영되는 점은 null', () => {
+    const cam = topCamera();
+    expect(projectToScreen([6, 0, 0], cam, size)).toBeNull();
+    expect(projectToScreen([0, 0, -6], cam, size)).toBeNull();
+    expect(projectToScreen([4.9, 0, 4.9], cam, size)).not.toBeNull();
+  });
   it('카메라 뒤는 null', () => {
     const cam = new THREE.PerspectiveCamera(50, 2, 0.1, 100);
     cam.position.set(0, 0, 0);

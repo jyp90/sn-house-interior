@@ -24,7 +24,7 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     const missingNames = dedicated.filter((p) => missing.has(p.item.id)).map((p) => p.product.name);
     const warn = missingNames.length > 0 ? ` (${DEDICATED_RADIUS_CM}cm 이내 전용회로 콘센트 없음: ${missingNames.join(', ')})` : '';
     const text = `전용회로 확인: ${dedicated.map((p) => p.product.name).join(', ')}${warn}`;
-    // 문구 해시를 붙여, 내용이 바뀌면 이전 체크가 새 항목에 따라오지 않는다(spec §22)
+    // 문구 전체 해시: 내용이 바뀌면 이전 체크가 새 항목에 따라오지 않는다(spec §22)
     out.push({ id: `auto-circuit-${shortHash(text)}`, phase: 'carpentry', auto: true, text });
   }
 
@@ -38,7 +38,8 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     const e = itemElevationCm(item, product, ceiling);
     const text = `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}${e > 0 ? `, 바닥에서 ${e}cm` : ''}`;
     out.push({
-      id: `auto-builtin-${item.id}-${shortHash(text)}`,
+      // 빌트인은 제품·치수·확인 여부만 해시: 옮겨도(벽 기준 거리만 바뀌면) 체크·메모가 유지된다
+      id: `auto-builtin-${item.id}-${shortHash(`${product.name} ${w}×${d}×${h} ${item.verified ? '확인' : '미확인'}`)}`,
       phase: product.category === 'kitchen' ? 'kitchen' : 'carpentry',
       auto: true,
       text,

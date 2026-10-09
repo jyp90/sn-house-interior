@@ -69,12 +69,31 @@ describe('autoChecklist', () => {
     };
     const text = '빌트인 치수 전달: 식기세척기 ≈60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm';
     expect(autoChecklist(plan, resolve(plan), clean)).toEqual([
-      { id: `auto-builtin-dw-${shortHash(text)}`, phase: 'kitchen', auto: true, text },
+      { id: `auto-builtin-dw-${shortHash('식기세척기 60×60×85 미확인')}`, phase: 'kitchen', auto: true, text },
     ]);
     const verified = withActiveItems(plan, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0, verified: true }]);
     expect(autoChecklist(verified, resolve(verified), clean)[0].text).toBe(
       '빌트인 치수 전달: 식기세척기 60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm',
     );
+  });
+
+  it('빌트인 항목 id는 제품·치수·확인 여부만 해시해, 옮겨도 유지되고 치수·이름이 바뀌면 바뀐다', () => {
+    const base: Product = {
+      id: 'custom-dw', brand: 'custom', model: '', name: '식기세척기', category: 'kitchen',
+      dims: { w: 60, d: 60, h: 85 }, variants: [{ id: 'v', label: '기본', colors: {} }],
+      builder: 'box', clearances: [], builtIn: true, mount: 'floor',
+    };
+    const at = (product: Product, x: number, verified?: boolean): Plan => ({
+      ...withActiveItems(SAMPLE_PLAN, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x, y: 60, rotation: 0, ...(verified ? { verified } : {}) }]),
+      customProducts: [product],
+    });
+    const id = (p: Plan) => autoChecklist(p, resolve(p), clean)[0].id;
+    const original = id(at(base, 100));
+    expect(id(at(base, 101))).toBe(original);
+    expect(autoChecklist(at(base, 101), resolve(at(base, 101)), clean)[0].text).not.toBe(autoChecklist(at(base, 100), resolve(at(base, 100)), clean)[0].text);
+    expect(id(at({ ...base, dims: { w: 59, d: 60, h: 85 } }, 100))).not.toBe(original);
+    expect(id(at({ ...base, name: '식기세척기 14인용' }, 100))).not.toBe(original);
+    expect(id(at(base, 100, true))).not.toBe(original);
   });
 
   it('빌트인 제품에 설치 높이가 있으면 치수 뒤에 바닥에서 높이를 덧붙인다', () => {
