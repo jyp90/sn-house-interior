@@ -6,7 +6,7 @@ import { App } from './App';
 import { SAMPLE_PLAN } from './model/samplePlan';
 import { createPlanStore, type PlanState } from './model/store';
 import { PlanStoreContext } from './model/StoreContext';
-import { prepareHomePreset } from './persistence/homePreset';
+import { markPresetSeen, presetFingerprint, PRESET_UPDATED_TEXT, prepareHomePreset } from './persistence/homePreset';
 import { getDefaultImageStore } from './persistence/images';
 import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
@@ -22,9 +22,13 @@ declare global {
 
 const stored = readStoredPlan();
 let initialPlan = SAMPLE_PLAN;
+const seenStore = typeof localStorage === 'undefined' ? undefined : localStorage;
 if (stored.status === 'ok') {
   initialPlan = stored.plan;
+  // 프리셋이 바뀌었는데 예전 저장 평면으로 시작하면 한 번 안내한다(스펙 §39.4)
+  if (homePreset && markPresetSeen(presetFingerprint(homePreset.plan), seenStore)) useUi.getState().showBanner({ kind: 'info', text: PRESET_UPDATED_TEXT });
 } else if (stored.status === 'empty' && homePreset) {
+  markPresetSeen(presetFingerprint(homePreset.plan), seenStore);
   // 저장된 평면이 없으면 우리 집 기본 평면으로 시작한다(스펙 §15.1, §24). 테스트·HOMEFIT_SAMPLE=1에서는 프리셋이 null
   const r = await prepareHomePreset(homePreset, getDefaultImageStore());
   if (r.ok) {
