@@ -92,7 +92,7 @@ export const ClearanceSchema = z.discriminatedUnion('kind', [
 export const BuilderIdSchema = z.enum([
   'box', 'fridge', 'front-loader', 'tv', 'sofa', 'bed', 'table',
   'stand-ac', 'built-in-appliance', 'cabinet-run', 'chair', 'wardrobe',
-  'toilet', 'basin', 'shower', 'ceiling-ac',
+  'toilet', 'basin', 'shower', 'ceiling-ac', 'corner-cabinet',
 ]);
 
 export const CategorySchema = z.enum(['kitchen', 'laundry', 'tv', 'climate', 'living', 'furniture', 'bath', 'custom']);
@@ -153,7 +153,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(7),
+    version: z.literal(8),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

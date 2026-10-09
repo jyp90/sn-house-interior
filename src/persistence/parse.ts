@@ -5,7 +5,7 @@ export type ParseResult = { ok: true; plan: Plan } | { ok: false; error: string 
 
 type RawPlan = Record<string, unknown>;
 
-export const CURRENT_VERSION = 7;
+export const CURRENT_VERSION = 8;
 
 // version N → N+1 변환. 스키마 버전을 올릴 때 여기에 추가한다.
 const MIGRATIONS: Record<number, (raw: RawPlan) => RawPlan> = {
@@ -26,6 +26,8 @@ const MIGRATIONS: Record<number, (raw: RawPlan) => RawPlan> = {
   5: (raw) => ({ ...raw, version: 6 }),
   // v7: 설비 스위치 그룹(group) 추가. 선택 필드라 버전만 올린다
   6: (raw) => ({ ...raw, version: 7 }),
+  // v8: 코너 싱크대·레인지후드 builder(corner-cabinet) 추가. 확장이라 버전만 올린다
+  7: (raw) => ({ ...raw, version: 8 }),
 };
 
 export function migrate(raw: RawPlan, steps = MIGRATIONS, current = CURRENT_VERSION): RawPlan | null {

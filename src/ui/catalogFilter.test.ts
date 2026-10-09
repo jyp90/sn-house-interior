@@ -11,6 +11,9 @@ describe('filterCatalog', () => {
     expect(filterCatalog(CATALOG, 'tv').length).toBeGreaterThan(0);
     expect(filterCatalog(CATALOG, '없는제품')).toEqual([]);
   });
+  it('코너장을 이름으로 찾는다', () => {
+    expect(filterCatalog(CATALOG, '코너').map((p) => p.id)).toEqual(['kitchen-corner-base-90', 'kitchen-corner-upper-60']);
+  });
   it('분류명(욕실·가구 등)으로도 찾는다', () => {
     expect(filterCatalog(CATALOG, '욕실').map((p) => p.id)).toEqual(['toilet-std', 'basin-std', 'shower-90', 'bathtub-150']);
     expect(filterCatalog(CATALOG, '세탁·건조').every((p) => p.category === 'laundry')).toBe(true);
