@@ -4,7 +4,7 @@
 
 ## 지금 상태
 - 2026-10-09 기준 `main` `bbc5d85`(PR #19 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §34(코드 변경 없는 문서 라운드).
-- 테스트(`main`): typecheck 통과, `npm test` 560 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 563 통과·0 skip), e2e 37 통과(16 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- 테스트(`main`): typecheck 통과, `npm test` 572 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 575 통과·0 skip), e2e 38 통과(16 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 Pages 주소(§33 보기 전용 포함).
 
@@ -12,6 +12,7 @@
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
 | §34 | — | 체크리스트 탭에 1차·2차 문서 링크 추가(`private/doc-links.local.json` 데이터만, 코드 변경 없음) | 560 / 37 (변경 없음) |
+| §35 | #21 | 배경 도면 흑백화(`BackgroundImage` grayscale), 닫힌 벽 영역 자동 인식(`geometry/enclosure.ts`, `autoRoomPolygon(s)`, 방 속성·구조 패널 버튼), `home/plan.json` 방 8개 polygon | 572 / 38 |
 | §33 | #18 | 820px 이하 보기 전용(`uiStore.viewOnly`, `MobileInfoBar`, `e2e/mobile.spec.ts`) | 560 / 37 |
 | §32 | #17 | 인터랙션 다듬기(눌림 피드백, reduced-motion, `scaleX` 막대, theme-color) | 556 / 36 |
 | §31 | #16 | 벽 밖 개구부 2D/PDF 클램프(`openingObb` `OBB \| null`), 자동 체크리스트 고아 정리 | 556 / 36 |
@@ -36,5 +37,5 @@
 
 ## 다음 할 일
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인(§33 보기 전용 포함); 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
-2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품 13개의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). `private/make-our-home.mjs`는 아직 `version: 3`(로드 시 v8로 마이그레이션되므로 급하지 않음; 손볼 때 현재 `CURRENT_VERSION`으로).
+2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품 13개의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). `private/make-our-home.mjs`는 아직 `version: 3`(로드 시 v8로 마이그레이션되므로 급하지 않음; 손볼 때 현재 `CURRENT_VERSION`으로). **다시 돌릴 때 §35로 넣은 방 8개 `polygon`을 보존해야 함**(스크립트에 polygon을 넣거나, 돌린 뒤 앱의 「영역 없는 방 자동 인식」으로 다시 채우고 JSON 저장).
 3. 보류 minor(§20–§33 누적): `Product.brand`가 UI 어디에도 표시되지 않음; 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택); 상판 위 가전 자동 높이·적층 스냅 없음; 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만); 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨; 대각선 벽의 개구부 라벨 간격 미검증; e2e flake 2건은 §30에서 12회 반복으로 재현 안 됨; pdf e2e 쪽수 하한이 §25 이후(17쪽)에도 유효한지 미확인; FixtureProperties/ExportView 컴포넌트 테스트 없음; 캔버스 픽셀 검증 e2e 없음.

@@ -4,6 +4,7 @@ import { checklistItems } from '../checklist/items';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
 import { refitFixtures } from '../electrical/fixtures';
 import { wallLength } from '../geometry/walls';
+import { enclosedPolygon } from '../geometry/enclosure';
 import { isSimplePolygon, isValidPolygon, pointInPolygon, polygonCentroid } from '../geometry/polygon';
 import { planFinish } from '../materials/presets';
 import { newId } from './ids';
@@ -63,6 +64,8 @@ export type PlanState = {
   removeRoom(id: string): void;
   addRoomArea(polygon: Vec2[], name?: string): string | null;
   setRoomPolygon(id: string, polygon: Vec2[]): boolean;
+  autoRoomPolygon(id: string): boolean;
+  autoRoomPolygons(): { done: string[]; failed: string[] };
   setRoomFinish(id: string, patch: { floor?: FloorFinish; wall?: WallFinish }): void;
   setPlanFinish(patch: Partial<PlanFinish>): void;
   dragRoomVertex(id: string, index: number, to: Vec2): void;
@@ -382,6 +385,36 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const label = pointInPolygon(room.label, pts) ? room.label : polygonCentroid(pts);
         commit({ ...plan, rooms: plan.rooms.map((r) => (r.id === id ? { ...r, polygon: pts, label } : r)) });
         return true;
+      },
+
+      // 닫힌 벽 영역 자동 인식(스펙 §35.2): 씨앗 = 라벨, 저장 규칙은 setRoomPolygon과 같다
+      autoRoomPolygon: (id) => {
+        const plan = get().plan;
+        const room = plan.rooms.find((r) => r.id === id);
+        if (!room) return false;
+        const pts = enclosedPolygon(room.label, plan.walls);
+        if (!pts) return false;
+        const label = pointInPolygon(room.label, pts) ? room.label : polygonCentroid(pts);
+        commit({ ...plan, rooms: plan.rooms.map((r) => (r.id === id ? { ...r, polygon: pts, label } : r)) });
+        return true;
+      },
+
+      autoRoomPolygons: () => {
+        const plan = get().plan;
+        const done: string[] = [];
+        const failed: string[] = [];
+        const rooms = plan.rooms.map((r) => {
+          if (r.polygon) return r;
+          const pts = enclosedPolygon(r.label, plan.walls);
+          if (!pts) {
+            failed.push(r.id);
+            return r;
+          }
+          done.push(r.id);
+          return { ...r, polygon: pts, label: pointInPolygon(r.label, pts) ? r.label : polygonCentroid(pts) };
+        });
+        if (done.length > 0) commit({ ...plan, rooms });
+        return { done, failed };
       },
 
       setRoomFinish: (id, patch) => {

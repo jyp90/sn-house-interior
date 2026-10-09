@@ -150,3 +150,28 @@ test('「영역 다시 그리기」를 다시 누르면 그리던 점을 버리�
   const plan = await getPlan(page);
   expect(plan.rooms.find((r) => r.id === room.id)!.polygon).toEqual(pts);
 });
+
+test('「영역 없는 방 자동 인식」이 닫힌 벽에서 방 영역을 만들고 벽지 프리셋이 3D까지 이어진다 (spec §35)', async ({ page }) => {
+  await page.getByRole('button', { name: '구조' }).click();
+  await page.getByRole('button', { name: '영역 없는 방 자동 인식' }).click();
+  await expect(page.getByTestId('banner')).toContainText('2개 방의 영역을 인식했습니다.');
+  await expect(page.getByTestId('room-area-r1')).toBeVisible();
+  await expect(page.getByTestId('room-area-r2')).toBeVisible();
+  let plan = await getPlan(page);
+  const sorted = (pts: P[]) => [...pts].sort((a, b) => a.x - b.x || a.y - b.y);
+  expect(sorted(plan.rooms[0].polygon!)).toEqual(sorted([{ x: 10, y: 10 }, { x: 344, y: 10 }, { x: 344, y: 390 }, { x: 10, y: 390 }]));
+  // 모든 방에 영역이 생기면 버튼은 비활성
+  await expect(page.getByRole('button', { name: '영역 없는 방 자동 인식' })).toBeDisabled();
+
+  // 거실 선택 → 벽지 프리셋 「베이지」
+  await clickPlan(page, { x: 100, y: 300 });
+  expect(await page.evaluate(() => window.__homefit!.store.getState().selectedId)).toBe('r1');
+  const props = page.getByTestId('properties-panel');
+  await props.getByRole('button', { name: '베이지' }).click();
+  plan = await getPlan(page);
+  expect(plan.rooms[0].wall!.material).toBe('wallpaper');
+
+  await page.getByRole('button', { name: '배치' }).click();
+  await page.getByRole('button', { name: '3D 탑뷰' }).click();
+  await expect(page.locator('.viewport canvas')).toBeVisible();
+});

@@ -99,6 +99,7 @@ export function StructurePanel() {
   const store = usePlanStore();
   const bg = usePlan((s) => s.plan.background);
   const finish = usePlan((s) => s.plan.finish);
+  const roomsWithoutArea = usePlan((s) => s.plan.rooms.filter((r) => !r.polygon).length);
   const tool = useUi((s) => s.tool);
   const calibration = useUi((s) => s.calibration);
   const wallDraft = useUi((s) => s.wallDraft);
@@ -142,6 +143,14 @@ export function StructurePanel() {
         ? { kind: 'error', text: '우리 집 기본 평면을 불러왔지만 평면도 이미지는 찾지 못했습니다. home/floorplan.jpg를 확인하세요.' }
         : { kind: 'info', text: '우리 집 기본 평면을 불러왔습니다. Ctrl+Z로 되돌릴 수 있습니다.' },
     );
+  };
+
+  const onAutoAreas = () => {
+    const st = store.getState();
+    const names = new Map(st.plan.rooms.map((r) => [r.id, r.name]));
+    const { done, failed } = st.autoRoomPolygons();
+    const failedText = failed.length > 0 ? ` 인식하지 못한 방: ${failed.map((id) => names.get(id) ?? id).join(', ')}` : '';
+    ui.showBanner({ kind: failed.length > 0 ? 'error' : 'info', text: `${done.length}개 방의 영역을 인식했습니다.${failedText}` });
   };
 
   return (
@@ -237,6 +246,10 @@ export function StructurePanel() {
           <CalibrationForm key={`${calibration?.target ?? 'none'}-${calibration?.points.length === 0}`} />
         </>
       )}
+
+      <h3>방 영역</h3>
+      <button type="button" disabled={roomsWithoutArea === 0} onClick={onAutoAreas}>영역 없는 방 자동 인식</button>
+      <p className="muted">라벨 위치에서 벽으로 닫힌 영역을 찾아 바닥 영역으로 넣습니다.</p>
 
       <h3>기본 마감</h3>
       <FinishPicker label="기본 바닥재" value={planFinish({ finish }).floor} presets={FLOOR_PRESETS} materials={FLOOR_MATERIALS} onChange={(floor) => store.getState().setPlanFinish({ floor })} />
