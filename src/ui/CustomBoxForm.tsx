@@ -32,12 +32,12 @@ export function CustomBoxForm() {
   return (
     <form className="custom-box" onSubmit={onSubmit}>
       <h3>사용자 정의 박스</h3>
-      <label>이름<input value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 김치냉장고 자리" /></label>
+      <label>이름<input autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 김치냉장고 자리…" /></label>
       <div className="row">
         {FIELDS.map(([k, label]) => (
           <label key={k}>
             {label}
-            <input inputMode="numeric" value={dims[k]} onChange={(e) => setDims({ ...dims, [k]: e.target.value })} />
+            <input inputMode="numeric" autoComplete="off" spellCheck={false} value={dims[k]} onChange={(e) => setDims({ ...dims, [k]: e.target.value })} />
           </label>
         ))}
       </div>

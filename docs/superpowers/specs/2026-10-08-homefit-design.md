@@ -640,3 +640,12 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 - 벽 끝을 넘는 개구부: `openingObb`(2D 구멍 사각형·PDF 구멍)와 치수 평면도 라벨 위치는 `clampToWall`로 잘라낸 구간 `[s, e]`를 쓴다(§23 3D·§30 문 열림 영역과 같은 범위). 폭 라벨 글자는 저장된 폭(`o.width`)을 그대로 쓰고 위치만 잘린 구간의 중점에 둔다. 잘린 구간이 비면(벽 밖) 그리지 않는다.
 - 자동 체크리스트 고아 항목: `setChecklistEntry`가 저장할 때 `auto-`로 시작하면서 현재 `checklistItems(plan)`에 없는 항목을 `plan.checklist`에서 함께 지운다(사용자 체크 한 번 = 실행 취소 한 단위에 포함). 수동 항목(`i-`)은 건드리지 않는다.
 - 벽 밖으로 완전히 나간 개구부는 가까운 벽 끝에 빨간 점으로 남겨 선택·되돌리기가 가능하다.
+
+## 32. 20차 반영: 인터랙션 다듬기 (2026-10-09)
+
+- 버튼·카드는 hover에서 들리지(translateY) 않고 색·테두리만 바뀐다. 눌림 피드백은 `:active`에서 `scale(0.97)`, 전환은 `--ease-out`(강한 ease-out) 하나와 `--dur`(0.14s)로 통일한다. hover 그림자는 `(hover: hover) and (pointer: fine)`에서만.
+- `prefers-reduced-motion: reduce`: 이동·크기 전환(눌림, 진행 막대, 체크 표시)은 끄고 색·불투명도 전환만 남긴다.
+- 체크리스트 진행 막대는 `width` 대신 `transform: scaleX()`로 움직인다(레이아웃 아닌 합성 속성만 애니메이션).
+- 입력: 숫자·이름 입력에 `autoComplete="off"`, 숫자 입력에 `spellCheck={false}`; 플레이스홀더는 예시 + `…`. 버튼·카드·링크에 `touch-action: manipulation`, 링크에도 `:focus-visible` 링.
+- 페이지: `<meta name="theme-color">`(`--bg`), `color-scheme: light`, 정밀 포인터에서 `html { overscroll-behavior: none }`(2D 팬 중 러버밴드·스와이프 이동 방지), 카탈로그 카드 긴 이름은 `min-width: 0` + `overflow-wrap: anywhere`로 잘린다.
+

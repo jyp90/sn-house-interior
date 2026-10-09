@@ -19,7 +19,7 @@ const percent = (done: number, total: number) => (total === 0 ? 0 : Math.round((
 function Progress({ done, total }: { done: number; total: number }) {
   return (
     <div className="cl-bar" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
-      <div className="cl-bar-fill" style={{ width: `${percent(done, total)}%` }} />
+      <div className="cl-bar-fill" style={{ transform: `scaleX(${percent(done, total) / 100})` }} />
     </div>
   );
 }
