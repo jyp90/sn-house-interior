@@ -46,7 +46,7 @@ function ItemMesh({ item, product }: { item: Item; product: Product | undefined 
     e.stopPropagation();
     store.getState().select(item.id);
     useUi.getState().clearCandidates();
-    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §32)
+    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §33)
     const p = floorPoint(e);
     if (!p) return;
     grab.current = {

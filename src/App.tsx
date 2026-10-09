@@ -21,7 +21,7 @@ import { useUi } from './ui/uiStore';
 
 const MOBILE_QUERY = '(max-width: 820px)';
 
-// 화면 폭 820px 이하면 보기 전용(스펙 §32.1). matchMedia 구독, 창 크기 변화도 따라간다. jsdom 등 테스트 환경엔 matchMedia가 없을 수 있다
+// 화면 폭 820px 이하면 보기 전용(스펙 §33.1). matchMedia 구독, 창 크기 변화도 따라간다. jsdom 등 테스트 환경엔 matchMedia가 없을 수 있다
 function useMobileViewOnly() {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;

@@ -104,7 +104,7 @@ export function Editor2D() {
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
-    // 보기 전용(스펙 §32)에서는 그리기 도구가 (경합 등으로) 여전히 남아 있어도 클릭을 팬으로만 다룬다
+    // 보기 전용(스펙 §33)에서는 그리기 도구가 (경합 등으로) 여전히 남아 있어도 클릭을 팬으로만 다룬다
     if (tool === 'select' || useUi.getState().viewOnly) {
       // 방을 눌렀으면 그 선택은 유지하고, 빈 곳이면 선택 해제. 어느 쪽이든 끌면 화면 이동
       if (!isRoomPress(e.nativeEvent)) {
@@ -149,7 +149,7 @@ export function Editor2D() {
   };
   const onDrop = (e: DragEvent) => {
     const data = e.dataTransfer.getData(DND_MIME);
-    if (!data || mode !== 'place' || useUi.getState().viewOnly) return; // 보기 전용: 카탈로그 추가·드래그 금지(스펙 §32)
+    if (!data || mode !== 'place' || useUi.getState().viewOnly) return; // 보기 전용: 카탈로그 추가·드래그 금지(스펙 §33)
     e.preventDefault();
     const [productId, variantId] = data.split('|');
     const p = toPlan(e);

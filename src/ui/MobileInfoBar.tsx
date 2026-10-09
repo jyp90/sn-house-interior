@@ -5,7 +5,7 @@ import { useValidation } from '../model/useValidation';
 
 const OPENING_LABEL: Record<string, string> = { door: '문', window: '창', opening: '개구부' };
 
-// 모바일 보기 전용: 선택한 항목의 이름·치수·상태를 캔버스 위 작은 띠로 보여 준다(읽기 전용, 스펙 §32.2)
+// 모바일 보기 전용: 선택한 항목의 이름·치수·상태를 캔버스 위 작은 띠로 보여 준다(읽기 전용, 스펙 §33.2)
 export function MobileInfoBar() {
   const plan = usePlan((s) => s.plan);
   const selectedId = usePlan((s) => s.selectedId);

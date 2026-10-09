@@ -195,7 +195,7 @@ p.badge { display: inline-block; margin: 0 0 8px; }
   .cl-memo { width: calc(100% - 28px); margin-left: 28px; }
 }
 
-/* 모바일 보기 전용(스펙 §32) */
+/* 모바일 보기 전용(스펙 §33) */
 @media (max-width: 820px) {
   .app-mobile { grid-template-columns: 1fr; grid-template-rows: auto auto 60vh auto; }
   .app-mobile .center { grid-column: 1; grid-row: 3; height: 60vh; }

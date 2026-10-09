@@ -22,7 +22,7 @@ export function applyShortcut(s: PlanState, k: KeyInput): boolean {
     else s.undo();
     return true;
   }
-  // 보기 전용(모바일, 스펙 §32)에서는 실행 취소/다시 실행 외 편집 단축키를 모두 무시한다
+  // 보기 전용(모바일, 스펙 §33)에서는 실행 취소/다시 실행 외 편집 단축키를 모두 무시한다
   if (k.viewOnly) return false;
   // 패널 버튼을 누른 직후 포커스가 남아 있어도 Backspace로 지워지지 않게 한다
   if (k.targetTag === 'BUTTON') return false;

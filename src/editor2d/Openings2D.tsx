@@ -38,7 +38,7 @@ export function Openings2D({ px }: { px: number }) {
     e.stopPropagation();
     const s = store.getState();
     s.select(id);
-    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §32)
+    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §33)
     const current = s.plan.openings.find((o) => o.id === id);
     const t0 = current ? projectT(current.wallId, e) : null;
     if (!current || t0 === null) return;
