@@ -59,7 +59,7 @@ describe('buildPdf', () => {
   it('배치도 비고 줄에 메모 있는 아이템을 번호. 제품명 — 메모로 나열한다', () => {
     const noted = { ...sofa('s1'), note: '벽에서 10cm 띄움' };
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [noted, washer]), input);
-    const layoutDrawing = doc.pages[6];
+    const layoutDrawing = doc.pages.find((p) => p.title.startsWith("가구·가전 배치도"))!;
     if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
     expect(layoutDrawing.notes.some((l) => l.startsWith('1. 3인 소파 — 벽에서 10cm 띄움'))).toBe(true);
     expect(layoutDrawing.notes.some((l) => l.includes('그란데'))).toBe(false);
@@ -68,7 +68,7 @@ describe('buildPdf', () => {
   it('배치도 비고 줄은 번호가 1번이 아니어도 맞는 번호를 쓰고, 고정 안내 다음에 붙는다', () => {
     const noted = { ...sofa('s1'), note: '벽에서 10cm 띄움' };
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [washer, noted]), input);
-    const layoutDrawing = doc.pages[6];
+    const layoutDrawing = doc.pages.find((p) => p.title.startsWith("가구·가전 배치도"))!;
     if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
     expect(layoutDrawing.notes.some((l) => l.startsWith('2. 3인 소파 — 벽에서 10cm 띄움'))).toBe(true);
     const fixedCount = 2; // '번호는 제품 목록의 번호와 같습니다' · '회색 부채꼴은 방문 열림 반경입니다'
@@ -79,7 +79,7 @@ describe('buildPdf', () => {
   it('공백만 있는 메모는 배치도 비고에서 빠진다', () => {
     const blank = { ...sofa('s1'), note: '   ' };
     const doc = buildPdf(withActiveItems(SAMPLE_PLAN, [blank]), input);
-    const layoutDrawing = doc.pages[6];
+    const layoutDrawing = doc.pages.find((p) => p.title.startsWith("가구·가전 배치도"))!;
     if (layoutDrawing.kind !== 'drawing') throw new Error('drawing 아님');
     expect(layoutDrawing.notes.some((l) => l.startsWith('1. 3인 소파'))).toBe(false);
   });
