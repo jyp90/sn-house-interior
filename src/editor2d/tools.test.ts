@@ -147,3 +147,33 @@ describe('finishWall', () => {
     expect(store.getState().past.length).toBe(pastLen + 1);
   });
 });
+
+describe('measure tool', () => {
+  const ctx = (store: ReturnType<typeof createPlanStore>) => ({ store, wallPoints: [], setWallPoints: () => {}, areaPoints: [], setAreaPoints: () => {} });
+  it('첫 클릭은 벽 끝점에, 둘째 클릭은 아이템 모서리에 스냅해 고정한다', () => {
+    const store = createPlanStore(plan());
+    store.getState().addItem('sofa-3seat', 'gray', { x: 200, y: 200 });
+    useUi.getState().setTool('measure');
+    applyToolClick('measure', { x: 6, y: -4 }, ctx(store));
+    expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: null });
+    applyToolClick('measure', { x: 100, y: 150 }, ctx(store));
+    expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: { x: 95, y: 155 } });
+  });
+  it('스냅이 꺼지면 정수 cm 그대로 쓰고, 셋째 클릭은 새 측정을 시작한다', () => {
+    const store = createPlanStore(plan());
+    useUi.getState().setTool('measure');
+    useUi.getState().toggleSnap();
+    applyToolClick('measure', { x: 6.4, y: -4.4 }, ctx(store));
+    applyToolClick('measure', { x: 100.6, y: 150.2 }, ctx(store));
+    expect(useUi.getState().measure).toEqual({ a: { x: 6, y: -4 }, b: { x: 101, y: 150 } });
+    applyToolClick('measure', { x: 10, y: 10 }, ctx(store));
+    expect(useUi.getState().measure).toEqual({ a: { x: 10, y: 10 }, b: null });
+  });
+  it('스냅 켜짐에서 끝점은 시작점 기준 45° 단위로 맞춘다', () => {
+    const store = createPlanStore(plan());
+    useUi.getState().setTool('measure');
+    applyToolClick('measure', { x: 50, y: 300 }, ctx(store));
+    applyToolClick('measure', { x: 250, y: 306 }, ctx(store));
+    expect(useUi.getState().measure?.b).toEqual({ x: 250, y: 300 });
+  });
+});

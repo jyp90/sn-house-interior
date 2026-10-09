@@ -211,6 +211,9 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .tool-preview-area { fill: color-mix(in srgb, var(--accent) 8%, transparent); stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tool-preview .calib-point { fill: var(--danger); }
 .calib-line { stroke: var(--danger); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.tool-preview .measure-line { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.tool-preview .measure-label { fill: var(--accent); font-weight: 600; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; stroke-linejoin: round; }
+.editor2d-svg.tool-measure { cursor: crosshair; }
 .item2d { stroke: #6b5e4b; stroke-width: 1.5; vector-effect: non-scaling-stroke; fill-opacity: 0.85; cursor: grab; }
 .item2d-selected { stroke: var(--accent); stroke-width: 2.5; }
 .item2d-warn { stroke: var(--warn); stroke-width: 2.5; }

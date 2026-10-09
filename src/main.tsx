@@ -15,7 +15,7 @@ import './styles.css';
 
 declare global {
   interface Window {
-    __homefit?: { store: StoreApi<PlanState> };
+    __homefit?: { store: StoreApi<PlanState>; ui: typeof useUi };
   }
 }
 
@@ -58,7 +58,7 @@ startAutosave(store, {
     useUi.getState().showBanner({ kind: 'error', text: '브라우저 저장에 실패했습니다. 상단의 "JSON 저장"으로 백업하세요.' });
   },
 });
-if (import.meta.env.DEV) window.__homefit = { store };
+if (import.meta.env.DEV) window.__homefit = { store, ui: useUi };
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

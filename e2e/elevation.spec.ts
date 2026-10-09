@@ -39,15 +39,20 @@ test('상부장을 놓고 설치 높이를 바꾸면 2D 점선·충돌 제외·�
   await xField.press('Enter');
   await yField.fill('100');
   await yField.press('Enter');
+  await expect.poll(async () => (await items(page)).find((i) => i.id === upper.id)?.x).toBe(175);
+  await expect.poll(async () => (await items(page)).find((i) => i.id === upper.id)?.y).toBe(100);
 
   await page.getByLabel('제품 찾기').fill('');
   await page.getByTestId('catalog-card-table-dining-4').getByRole('button', { name: '추가' }).click();
   await expect.poll(async () => (await items(page)).length).toBe(2);
+  const table = (await items(page)).find((i) => i.id !== upper.id)!;
   // 식탁도 추가 직후 자동 선택되므로 같은 속성 패널의 X/Y로 상부장 바로 아래에 둔다
   await xField.fill('175');
   await xField.press('Enter');
   await yField.fill('100');
   await yField.press('Enter');
+  await expect.poll(async () => (await items(page)).find((i) => i.id === table.id)?.x).toBe(175);
+  await expect.poll(async () => (await items(page)).find((i) => i.id === table.id)?.y).toBe(100);
   await expect(page.getByTestId('status-collides')).toHaveCount(0);
 
   // 겹친 상부장을 다시 선택한다: 식탁(140cm)보다 넓은 상부장(240cm)의 드러난 왼쪽 끝을 클릭
@@ -55,6 +60,7 @@ test('상부장을 놓고 설치 높이를 바꾸면 2D 점선·충돌 제외·�
   if (!box) throw new Error('상부장 2D 외곽선을 찾을 수 없습니다');
   await poly.click({ position: { x: box.width * 0.08, y: box.height / 2 } });
   const candidates = page.getByTestId('candidates');
+  await expect(candidates.or(heightField)).toBeVisible();
   if (await candidates.isVisible().catch(() => false)) {
     await page.getByRole('menuitem', { name: '상부장 240' }).click();
   }

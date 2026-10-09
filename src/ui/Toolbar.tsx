@@ -21,6 +21,7 @@ export function Toolbar() {
   const mode = useUi((s) => s.mode);
   const view = useUi((s) => s.view);
   const snap = useUi((s) => s.snap);
+  const tool = useUi((s) => s.tool);
   const saveStatus = useUi((s) => s.saveStatus);
   const historyOpen = useUi((s) => s.historyOpen);
   const ui = useUi.getState();
@@ -58,11 +59,30 @@ export function Toolbar() {
       {mode === 'place' && (
         <div className="segmented" role="group" aria-label="보기">
           {VIEWS.map(([v, label]) => (
-            <button key={v} type="button" aria-pressed={view === v} onClick={() => ui.setView(v)}>{label}</button>
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => {
+                if (v !== '2d' && tool === 'measure') ui.setTool('select');
+                ui.setView(v);
+              }}
+            >{label}</button>
           ))}
         </div>
       )}
       <button type="button" aria-pressed={snap} onClick={() => ui.toggleSnap()}>{snap ? '스냅 켜짐' : '스냅 꺼짐'}</button>
+      {(mode === 'structure' || mode === 'place' || mode === 'electric') && (
+        <button
+          type="button"
+          aria-pressed={tool === 'measure'}
+          onClick={() => {
+            if (tool === 'measure') { ui.setTool('select'); return; }
+            if (mode === 'place' && view !== '2d') ui.setView('2d');
+            ui.setTool('measure');
+          }}
+        >측정</button>
+      )}
       <button type="button" onClick={() => ui.resetView()}>시점 초기화</button>
       <span className="sep" />
       <button type="button" onClick={() => fileRef.current?.click()}>JSON 열기</button>

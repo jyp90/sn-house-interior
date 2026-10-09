@@ -1,10 +1,12 @@
 import type { StoreApi } from 'zustand/vanilla';
+import { findProduct } from '../catalog/products';
 import { FIXTURE_DEFAULT_HEIGHT, snapFixture } from '../electrical/fixtures';
-import { corners } from '../geometry/obb';
+import { corners, itemObb } from '../geometry/obb';
 import { closesPolygon, isValidPolygon } from '../geometry/polygon';
 import { nearestWall, openingAtPoint } from '../geometry/structure';
 import { wallObb } from '../geometry/walls';
-import type { Opening, Vec2, Wall } from '../model/schema';
+import { activeItems } from '../model/layout';
+import type { Opening, Plan, Vec2, Wall } from '../model/schema';
 import type { PlanState } from '../model/store';
 import { useUi, type Tool } from '../ui/uiStore';
 import { planToImagePx } from './calibration';
@@ -41,6 +43,19 @@ export function areaSnapPoints(walls: Wall[]): Vec2[] {
 
 export function areaToolPoint(raw: Vec2, points: Vec2[], walls: Wall[], snap: boolean): Vec2 {
   return wallToolPoint(raw, points.at(-1) ?? null, [...areaSnapPoints(walls), ...points], snap);
+}
+
+// 측정 스냅 후보: 벽 끝점·모서리·면 모서리 + 배치된 아이템 모서리
+export function measureSnapPoints(plan: Plan): Vec2[] {
+  const items = activeItems(plan).flatMap((item) => {
+    const dims = findProduct(plan, item.productId)?.dims;
+    return dims ? corners(itemObb(item.x, item.y, item.rotation, dims.w, dims.d)).map(round) : [];
+  });
+  return [...areaSnapPoints(plan.walls), ...items];
+}
+
+export function measureToolPoint(raw: Vec2, start: Vec2 | null, plan: Plan, snap: boolean): Vec2 {
+  return wallToolPoint(raw, start, measureSnapPoints(plan), snap);
 }
 
 // 더블클릭은 같은 자리에서 pointerdown이 두 번 일어나 마지막 점이 중복되기 쉽고,
@@ -145,6 +160,12 @@ export function applyToolClick(tool: Tool, raw: Vec2, ctx: ToolContext): void {
       if (last && next.x === last.x && next.y === last.y) return;
       if (first && ctx.areaPoints.length < 3 && next.x === first.x && next.y === first.y) return;
       ctx.setAreaPoints([...ctx.areaPoints, next]);
+      return;
+    }
+    case 'measure': {
+      const m = ui.measure;
+      const start = m && m.b === null ? m.a : null;
+      ui.measureClick(measureToolPoint(raw, start, s.plan, ui.snap));
       return;
     }
     case 'select':
