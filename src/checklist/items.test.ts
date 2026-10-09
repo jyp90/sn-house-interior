@@ -69,6 +69,21 @@ describe('autoChecklist', () => {
     );
   });
 
+  it('빌트인 제품에 설치 높이가 있으면 치수 뒤에 바닥에서 높이를 덧붙인다', () => {
+    const upper: Product = {
+      id: 'c-upper', brand: 'custom', model: '', name: '상부장', category: 'kitchen',
+      dims: { w: 240, d: 35, h: 70 }, variants: [{ id: 'v', label: '기본', colors: {} }],
+      builder: 'cabinet-run', clearances: [], builtIn: true, mount: 'wall', elevation: 145,
+    };
+    const plan: Plan = {
+      ...withActiveItems(SAMPLE_PLAN, [{ id: 'u', productId: 'c-upper', variantId: 'v', x: 150, y: 40, rotation: 0 }]),
+      customProducts: [upper],
+    };
+    const items = autoChecklist(plan, resolve(plan), clean);
+    const item = items.find((i) => i.id === 'auto-builtin-u');
+    expect(item?.text.endsWith(', 바닥에서 145cm')).toBe(true);
+  });
+
   it('문 열림 간섭이 남은 가구(충돌 줄은 빼고)', () => {
     const plan = withActiveItems(SAMPLE_PLAN, [sofa]);
     const status: Record<string, ItemStatus> = {

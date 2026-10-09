@@ -1,3 +1,4 @@
+import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { DEDICATED_RADIUS_CM, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
 import { wallReferenceText } from '../geometry/wallReference';
 import { activeItems } from '../model/layout';
@@ -14,6 +15,7 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     return product ? [{ item, product }] : [];
   });
   const out: ChecklistItem[] = [];
+  const ceiling = ceilingHeightCm(plan);
 
   const dedicated = placed.filter((p) => p.product.power?.dedicatedCircuit);
   if (dedicated.length > 0) {
@@ -30,11 +32,12 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
   for (const { item, product } of placed) {
     if (!product.builtIn) continue;
     const { w, d, h } = product.dims;
+    const e = itemElevationCm(item, product, ceiling);
     out.push({
       id: `auto-builtin-${item.id}`,
       phase: product.category === 'kitchen' ? 'kitchen' : 'carpentry',
       auto: true,
-      text: `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}`,
+      text: `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}${e > 0 ? `, 바닥에서 ${e}cm` : ''}`,
     });
   }
 
