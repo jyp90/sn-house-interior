@@ -217,3 +217,31 @@ test('중문 도구는 벽에 비대칭 양개 중문을 놓고, 속성창에서
   await page.keyboard.press('Control+z');
   await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.leaves).toBe('asym');
 });
+
+test('중문을 슬라이딩으로 바꾸면 스윙 호 대신 밀림 화살표가 그려지고 실행 취소로 돌아온다 (spec §47)', async ({ page }) => {
+  await page.getByRole('button', { name: '구조' }).click();
+  const before = (await getPlan(page)).openings.length;
+  await page.getByRole('button', { name: '중문', exact: true }).click();
+  await clickPlan(page, { x: 450, y: 0 });
+  await expect.poll(async () => (await getPlan(page)).openings.length).toBe(before + 1);
+  const door = (await getPlan(page)).openings.at(-1)!;
+  const props = page.getByTestId('properties-panel');
+  const g = page.getByTestId(`opening-${door.id}`);
+  await expect(g.locator('.opening-swing')).toHaveCount(2);
+  await expect(page.locator('[data-testid^="opening-slide-"]')).toHaveCount(0);
+
+  await props.getByLabel('문짝').selectOption('sliding');
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.leaves).toBe('sliding');
+  await expect(g.locator('.opening-swing')).toHaveCount(0);
+  await expect(page.locator('[data-testid^="opening-slide-"]')).toHaveCount(1);
+  await expect(g.locator('.opening-leaf.opening-glass')).toHaveCount(1);
+  await expect(props.getByRole('button', { name: '밀림 방향 반대로' })).toBeVisible();
+  await expect(props.getByRole('button', { name: '레일 면 반대로' })).toBeVisible();
+  await expect(page.getByTestId(`opening-middle-${door.id}`)).toHaveText('중문');
+
+  await page.getByRole('button', { name: '선택', exact: true }).click();
+  await page.keyboard.press('Control+z');
+  await expect.poll(async () => (await getPlan(page)).openings.at(-1)!.leaves).toBe('asym');
+  await expect(g.locator('.opening-swing')).toHaveCount(2);
+  await expect(page.locator('[data-testid^="opening-slide-"]')).toHaveCount(0);
+});

@@ -270,6 +270,19 @@ describe('planSvg 옵션', () => {
     expect(Math.abs(pos - width)).toBeGreaterThanOrEqual(35);
   });
 
+  it('슬라이딩 문은 부채꼴 없이 문짝 선과 밀림 방향 화살표를 그린다 (spec §47)', () => {
+    const door = SAMPLE_PLAN.openings[0];
+    const svg = planSvg({ ...SAMPLE_PLAN, openings: [{ ...door, leaves: 'sliding' }] }).svg;
+    expect(svg).not.toMatch(/<path[^>]*stroke="#8b8b8b"/);
+    expect(svg.match(/<line[^>]*data-part="sliding-leaf"/g)).toHaveLength(1);
+    expect(svg.match(/<path[^>]*data-part="sliding-arrow"/g)).toHaveLength(1);
+    expect(svg).not.toContain('stroke="#4f9dde"');
+
+    const middle = planSvg({ ...SAMPLE_PLAN, openings: [{ ...door, leaves: 'sliding', middle: true }] }, { fontFamily: 'Pretendard' }).svg;
+    expect(middle.match(/<line[^>]*stroke="#4f9dde" stroke-width="3"/g)).toHaveLength(1);
+    expect(middle).toMatch(/>중문<\/text>/);
+  });
+
   it('세로 벽의 바깥쪽으로 열리는 중문: 「중문」 글자가 폭 글자와 35cm 이상 떨어진다', () => {
     // o1: wallId w5 (350,0)→(350,400), 세로 벽. swingIn:false → 바깥쪽으로 열림
     const door = { ...SAMPLE_PLAN.openings[0], middle: true, swingIn: false, leaves: 'asym' as const };

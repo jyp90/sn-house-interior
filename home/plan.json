@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "info": {
     "title": "우리 집",
     "supplyArea": 93.64,
@@ -402,13 +402,15 @@
     {
       "id": "middle-door",
       "wallId": "entry-middle",
-      "kind": "opening",
+      "kind": "door",
+      "middle": true,
+      "leaves": "sliding",
       "offset": 5,
       "width": 83,
       "height": 210,
       "sill": 0,
-      "hinge": "start",
-      "swingIn": false
+      "hinge": "end",
+      "swingIn": true
     }
   ],
   "rooms": [

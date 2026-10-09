@@ -1,5 +1,5 @@
 import { useContext, useRef, type PointerEvent } from 'react';
-import { doorLeaves } from '../geometry/clearance';
+import { doorLeaves, slideArrow, slidingLeaf } from '../geometry/clearance';
 import { corners } from '../geometry/obb';
 import { fitOpening } from '../geometry/structure';
 import { clampToWall, openingObb, strayOpeningAnchor, wallDir, wallLength } from '../geometry/walls';
@@ -85,6 +85,8 @@ export function Openings2D({ px }: { px: number }) {
         const gap = openingObb(w, o);
         const strayAnchor = gap ? null : strayOpeningAnchor(w, o);
         const leaves = o.kind === 'door' ? doorLeaves(w, o) : [];
+        const sliding = slidingLeaf(w, o);
+        const arrow = sliding ? slideArrow(sliding) : null;
         const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
         return (
@@ -108,6 +110,17 @@ export function Openings2D({ px }: { px: number }) {
             {leaves.map((l, i) => (
               <path key={i} d={sectorPath(l.swing.center, l.swing.radius, l.swing.start, l.swing.end)} className="opening-swing" />
             ))}
+            {sliding && arrow && (
+              // 외짝 슬라이딩(spec §47): 레일 면의 문짝 선(중문이면 유리) + 밀림 방향 화살표. 스윙 호 없음
+              <>
+                <line x1={sliding.a.x} y1={sliding.a.y} x2={sliding.b.x} y2={sliding.b.y} className={o.middle ? 'opening-leaf opening-glass' : 'opening-leaf'} />
+                <path
+                  d={`M ${arrow.from.x} ${arrow.from.y} L ${arrow.tip.x} ${arrow.tip.y} M ${arrow.h1.x} ${arrow.h1.y} L ${arrow.tip.x} ${arrow.tip.y} L ${arrow.h2.x} ${arrow.h2.y}`}
+                  className="opening-slide"
+                  data-testid={`opening-slide-${o.id}`}
+                />
+              </>
+            )}
             {o.middle &&
               leaves.map((l, i) => (
                 <line

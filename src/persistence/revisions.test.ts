@@ -39,7 +39,7 @@ describe('revisions', () => {
     const list = addRevision([], SAMPLE_PLAN, 10);
     expect(saveRevisions(list, st)).toBe(true);
     const raw = JSON.parse(st.getItem(REVISIONS_KEY)!);
-    st.setItem(REVISIONS_KEY, JSON.stringify([...raw, { id: 'x', at: 1, plan: { version: 9 } }, 'junk']));
+    st.setItem(REVISIONS_KEY, JSON.stringify([...raw, { id: 'x', at: 1, plan: { version: 10 } }, 'junk']));
     expect(loadRevisions(st)).toEqual(list);
   });
 

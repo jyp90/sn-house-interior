@@ -900,3 +900,25 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 46.3 테스트
 - 단위 `gate.test.ts`: 만료 시각 저장, 7일 경계, 깨진 값·옛 `'1'` 값은 잠김. `smallScreen.test.ts`: `resetViewport`.
 - e2e `gate.spec.ts`: 입장 후 `until`이 하루 이상 뒤 → 새로고침 유지 → 만료 과거로 → 다시 묻기 / 390px: 잠금 화면 `device-width` → `fill` + `blur`로 입장 → `width=1200` / 틀린 PIN blur는 한 번만 센다.
+
+## 47. 35차 반영: 외짝 슬라이딩 중문 (2026-10-10)
+
+사용자 요청: 현관–주방 사이 중문은 슬라이딩 도어다. §16·§23.2·§39.2가 미뤄 둔 미닫이 중 **외짝 슬라이딩(유리 한 장)** 만 추가한다. 3연동·포켓도어는 여전히 범위 밖.
+
+### 47.1 모델 (스키마 v9)
+- `Opening.leaves`에 `'sliding'` 추가. 다른 필드는 그대로 재사용한다: `hinge` = 열 때 문짝이 밀려가는 쪽(`start`/`end`), `swingIn` = 레일(문짝)이 벽의 어느 면에 붙는지(§5의 `swingIn` 법선과 같은 쪽). `middle`은 그대로(유리·「중문」 라벨).
+- v8→v9는 확장이라 버전만 올린다. 프리셋 `home/plan.json`의 `middle-door`: `kind: 'door', middle: true, leaves: 'sliding', hinge: 'end', swingIn: true`(주방 쪽 레일, 문짝 두께 안쪽 기준). §39.2의 「틀만」 결정을 대체한다. `middle-door` 도구 기본값(여닫이 비대칭 양개)은 바꾸지 않는다.
+
+### 47.2 기하·검증 (`geometry/clearance.ts`, `validation/`)
+- `leafWidths`: sliding은 `[width, 0]`. `doorLeaves`: sliding이면 `[]` → 스윙 영역이 없으므로 충돌 검사(문 열림 간섭)·2D 호·3D 바닥 오버레이·PDF 부채꼴이 모두 자동으로 빠진다. `doorSwings`도 포함하지 않는다.
+- 새 순수 함수 `slidingLeaf(wall, opening) → { a, b, dir } | null`: 벽 두께의 절반 + 3cm만큼 레일 면으로 띄운 문짝 선분(a=경첩 반대쪽 끝, b=`hinge` 쪽 끝)과 밀림 방향 단위 벡터 `dir`(벽 방향 u를 `hinge`가 `end`면 +, `start`면 −). 2D·PNG/PDF 평면·3D가 같은 함수를 쓴다.
+
+### 47.3 표현
+- 2D `Openings2D`·PNG/PDF `planSvg`: 문짝 선(`opening-leaf`, 클래스는 `opening-glass`와 같은 스타일로 중문이면 유리 표시) + 선 중앙에서 `dir`로 25cm 화살표(`opening-slide`). 스윙 호 없음. 「중문」 라벨 위치는 기존 규칙.
+- 3D `openingParts`: 유리(중문) 또는 목재 문짝 한 장을 벽면에서 레일 쪽으로 (두께/2 + 3cm) 오프셋해 닫힌 상태로 그림. 회전 없음. 손잡이는 `hinge` 반대쪽 끝.
+- 인스펙터 「문짝」 select에 「슬라이딩」 추가. sliding일 때 버튼 라벨은 「밀림 방향 반대로」(hinge)·「레일 면 반대로」(swingIn).
+- PDF 창호 일람(§25.1): 문짝 「슬라이딩」, 열림 열 「—」.
+
+### 47.4 테스트
+- 단위: `parse.test.ts`(v8→v9, `leaves: 'sliding'` 허용), `clearance.test.ts`(sliding → `doorLeaves` 빈 배열, `slidingLeaf` 좌표·방향), `validate.test.ts`(슬라이딩 문 앞 아이템은 간섭 아님), `openingParts.test.ts`(한 장·오프셋), `planSvg.test.ts`·`pages.test.ts`(화살표·일람 문구).
+- e2e `editor2d.spec.ts`: 중문 도구로 문 추가 → 문짝 「슬라이딩」 → 스윙 호 0개·화살표 1개 → 실행 취소.

@@ -362,6 +362,12 @@ describe('buildPdf', () => {
     ]);
   });
 
+  it('창호 일람: 슬라이딩 문은 문짝 「슬라이딩」, 열림 「—」 (spec §47)', () => {
+    const plan: Plan = { ...SAMPLE_PLAN, openings: [{ ...SAMPLE_PLAN.openings[0], middle: true, leaves: 'sliding' }] };
+    const table = buildPdf(plan, input).pages.find((p) => p.title === '창호 일람') as TablePage;
+    expect(table.rows.map((r) => r.map((c) => c.join(' ')))).toEqual([['D1', '중문', '슬라이딩', '≈90×210', '0', '—', '실측 미확인']]);
+  });
+
   it('창호가 없으면 안내 문구', () => {
     const table = buildPdf({ ...SAMPLE_PLAN, openings: [] }, input).pages.find((p) => p.title === '창호 일람') as TablePage;
     expect(table.rows).toEqual([]);

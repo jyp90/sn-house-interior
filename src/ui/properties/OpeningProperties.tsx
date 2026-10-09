@@ -8,6 +8,7 @@ const LEAVES: [DoorLeaves, string][] = [
   ['single', '외여닫이'],
   ['double', '양여닫이'],
   ['asym', '비대칭 양개'],
+  ['sliding', '슬라이딩'],
 ];
 
 const KINDS: [Opening['kind'], string][] = [
@@ -48,8 +49,12 @@ export function OpeningProperties({ opening }: { opening: Opening }) {
       {opening.kind === 'door' && (
         <>
           <div className="row">
-            <button type="button" onClick={() => update({ hinge: opening.hinge === 'start' ? 'end' : 'start' })}>경첩 반대로</button>
-            <button type="button" onClick={() => update({ swingIn: !opening.swingIn })}>열림 방향 반대로</button>
+            <button type="button" onClick={() => update({ hinge: opening.hinge === 'start' ? 'end' : 'start' })}>
+              {opening.leaves === 'sliding' ? '밀림 방향 반대로' : '경첩 반대로'}
+            </button>
+            <button type="button" onClick={() => update({ swingIn: !opening.swingIn })}>
+              {opening.leaves === 'sliding' ? '레일 면 반대로' : '열림 방향 반대로'}
+            </button>
           </div>
           <CheckboxField label="중문" checked={!!opening.middle} onChange={(v) => update({ middle: v })} />
           <label className="field">
