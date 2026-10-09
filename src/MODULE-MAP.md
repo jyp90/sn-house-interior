@@ -50,7 +50,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `floorPattern.tsx` — React layer over `materials/pattern.ts`: `floorPatternId(roomId)`, `FloorPatternDefs({ rooms, plan })` (one `<pattern>` per room with a polygon), `floorFill(room, plan)` → pattern url or flat color for `plain`.
 - `tools.ts` — tool click handling (wall, opening, room, fixture, area) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices.
 - `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.2 inner-corner snap for the area tool).
-- `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%).
+- `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%); `backgroundForNewImage` keeps scale/offset/calibration when a same-pixel-size image replaces the background (used by `StructurePanel` 이미지 불러오기).
 - `viewBox.ts` — fit, zoom, pan; `svgPoint.ts` client → plan coords; `svg.ts` path helpers; `itemColor.ts` item fill.
 - `useBackgroundUrl.ts` — object URL for the stored background image.
 

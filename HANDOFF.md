@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- `fix/background-keep-calibration`: 「이미지 불러오기」가 기존 배경과 픽셀 크기가 같으면 축척·위치·보정을 유지(`editor2d/calibration.ts` `backgroundForNewImage`). 목적: 공개 Pages에서 우리 집 평면은 프리셋을 푸시하지 않고 「JSON 열기」(`private/our-home.local.json`) → 구조 탭 「이미지 불러오기」(`private/home-floorplan.jpg`)로 본다(사용자 결정 2026-10-09, 프리셋 비공개 유지). 테스트: typecheck 통과, `npm test` 387 통과·3 skip, e2e 29 통과. 탐색 QA(샘플, 5181): 같은 크기 재업로드 축척 유지·배너, 실행 취소/다시 실행 1단계, 다른 크기 초기화, 새로고침 유지, 2D↔3D, 1100px 폭, 콘솔 오류 없음.
 - 2026-10-09 기준. **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ (GitHub Pages, `main` push마다 `pages.yml`로 자동 배포). repo `jyp90/sn-house-interior`는 공개, 히스토리 재작성 완료(130 커밋, `main` `760b22f`). 옛 repo는 `jyp90/sn-house-interior-old`(비공개)로 보존.
 - `main`: 계획 1–4, 스펙 §15·§16(PR #1), §17 Pages 배포(PR #4·#5·#7), §18 자동 업데이트(PR #2), §19 방 영역·마감(PR #8) 병합. 위 PR 번호는 옛 repo 기준.
 - `docs/preset-outlets`: 우리 집 프리셋(private)에 일반 콘센트 15개 가안 추가(총 21개), 스펙 §15 프리셋 반영 사항 한 줄 보강. 코드 변경 없음.
@@ -19,6 +20,7 @@
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 
 ## 다음 할 일
+0b. 다른 세션 PR #2(`feat/tracked-home-preset`, 스펙 §20 프리셋 추적)는 repo가 공개라 보류 중 — 사용자는 2026-10-09 「브라우저에서 열기」(프리셋 미푸시)를 선택. 병합하려면 공개 전제로 사용자 재확인 필요.
 0. `feat/room-finish` PR 검토 후 `main` 병합(사용자 확인). 병합 후 `private/make-our-home.mjs`가 `version: 4`를 내보내도록 고쳐 다시 실행(영역·마감은 앱에서 그린다). 보류: 3D에서 샘플 「거실」 방 이름 라벨이 안 보임(main도 동일), T자 벽 접합부에서 영역 점이 벽 중심 끝점에 스냅됨.
 0a. `feat/room-finish` 보류(최종 리뷰): T자 접합부 안쪽 모서리 스냅, e2e의 3D 반영 검증 강화(현재 캔버스 존재만 확인), 영역 자기 교차 검사(지금은 면적 0만 거부).
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인; 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.

@@ -25,7 +25,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Revision history (20 snapshots) | `src/persistence/revisions.ts`, `src/ui/HistoryPanel.tsx` | §14.1 F10 |
 | Local-only home preset | `vite.config.ts` `virtual:home-preset`, `src/persistence/homePreset.ts`, `src/main.tsx` | §3, §15.1 |
 | 2D structure editor (walls, openings, rooms, tools, snapping) | `src/editor2d/`, `src/geometry/structure.ts`, `src/ui/StructurePanel.tsx` | §6 구조 모드, §14.1 |
-| Background image + scale calibration | `src/editor2d/calibration.ts`, `src/editor2d/BackgroundImage.tsx`, `src/persistence/images.ts` | §6, §14.1 F01 |
+| Background image + scale calibration (same-size re-upload keeps scale/offset) | `src/editor2d/calibration.ts`, `src/editor2d/BackgroundImage.tsx`, `src/persistence/images.ts` | §6, §14.1 F01 |
 | 3D view, drag placement, camera | `src/scene3d/` | §6 배치 모드 |
 | Catalog and procedural product builders | `src/catalog/products.ts`, `src/catalog/builders/` | §7 |
 | Validation (OBB collision, wall distance, door swing, conflict reasons) | `src/geometry/`, `src/validation/` | §6 충돌 규칙, §14.1 F08 |
