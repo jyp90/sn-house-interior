@@ -89,6 +89,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). 치수 평면도 only (`dimensionLines: true`): opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90` — not shown on 배치도/전기 계획도/PNG. Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width, also used for the 「중문」 label on vertical walls to clear the width label); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
 
+## docs/ (per-tab reference doc links, spec §15.4 · §34)
+- `links.ts` — pure `parseDocLinks` (array of `{ mode, label, url, note? }`, `https://` only, known modes only) + `docLinksFor(links, mode)`. `DocLinks.tsx` renders them as `target="_blank"` links under the 체크리스트/내보내기 headers; source is `virtual:doc-links` (`vite.config.ts`: `private/doc-links.local.json`, serve only, `null` in build/test). Which doc shows on which tab is data in that private file (§34: checklist tab lists all three).
+
 ## devserver/ (Node, dev server only)
 - `selfUpdate.ts` — 「업데이트」 server logic: upstream check, dirty refusal, `fetch` + `merge --ff-only`, `npm install` on package changes, same-origin + header guard; wired as the `homefit-self-update` plugin in `vite.config.ts` (`/__homefit/update`, then `server.restart()`).
 

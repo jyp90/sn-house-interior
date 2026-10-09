@@ -5,7 +5,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Specs and plans
 | Doc | Status |
 |---|---|
-| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §25 PDF finish/opening schedules + room areas, §26 custom box editing / item notes, §27 switch groups / 3D electrical fixtures, §28 placed item list panel, §29 corner cabinets / range hood, §30 deferred minors 2, §31 opening 2D clamp / checklist orphan pruning, §32 interaction polish, §33 mobile view-only (latest) |
+| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §25 PDF finish/opening schedules + room areas, §26 custom box editing / item notes, §27 switch groups / 3D electrical fixtures, §28 placed item list panel, §29 corner cabinets / range hood, §30 deferred minors 2, §31 opening 2D clamp / checklist orphan pruning, §32 interaction polish, §33 mobile view-only, §34 checklist-tab doc links (latest) |
 | `docs/references/2026-10-08-planner5d-research-design.md` | User-provided research; source of requirement IDs F01–F12 |
 | `docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` | Plan 1 done |
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
@@ -21,6 +21,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Feature | Code | Spec |
 |---|---|---|
 | Interaction polish (press feedback, reduced motion, transform-only bars, input autocomplete) | `src/styles.css`, `src/docs/DocLinks.css`, `src/ui/fields.tsx`, `index.html` | §32 |
+| Per-tab reference doc links (checklist: 상담 체크리스트 + 1차·2차, export: 1차·2차; dev-only, `private/doc-links.local.json`) | `src/docs/DocLinks.tsx`, `src/docs/links.ts`, `vite.config.ts` `virtual:doc-links` | §15.4, §34 |
 | Plan model, schema versions (v8), migration | `src/model/schema.ts`, `src/persistence/parse.ts` | §5, §14.4, §26, §27, §29 |
 | Store, undo/redo, selection | `src/model/store.ts`, `src/model/StoreContext.tsx` | §4, §6 |
 | Autosave, save status, JSON open/save | `src/persistence/storage.ts`, `src/persistence/file.ts`, `src/ui/saveLabel.ts` | §6 저장, §10, §14.1 F11 |
@@ -51,7 +52,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Task | Read |
 |---|---|
 | Any change | `CLAUDE.md`, `HANDOFF.md` 「지금 상태」/「다음 할 일」 |
-| New feature / product decision | spec §1–2, §14–§33; brainstorm with the user, append a dated spec round |
+| New feature / product decision | spec §1–2, §14–§34; brainstorm with the user, append a dated spec round |
 | Schema field | skill `migrating-plan-schema`; spec §5, §14.4; `src/model/schema.ts`, `src/persistence/parse.ts` |
 | Add a catalog product | skill `adding-catalog-product`; spec §7, §13, §20.3, §29; `src/catalog/products.ts`, `src/catalog/builders/index.ts` |
 | Item height / mount rules | spec §20.1–§20.2; `src/catalog/elevation.ts`, `src/validation/validate.ts` |

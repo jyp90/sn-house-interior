@@ -3,7 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-09 기준 `main` `79ef7a5`(PR #18 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §33.
+- 2026-10-09 기준 `main` `bbc5d85`(PR #19 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §34(코드 변경 없는 문서 라운드).
 - 테스트(`main`): typecheck 통과, `npm test` 560 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 563 통과·0 skip), e2e 37 통과(16 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 Pages 주소(§33 보기 전용 포함).
@@ -11,6 +11,7 @@
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
+| §34 | — | 체크리스트 탭에 1차·2차 문서 링크 추가(`private/doc-links.local.json` 데이터만, 코드 변경 없음) | 560 / 37 (변경 없음) |
 | §33 | #18 | 820px 이하 보기 전용(`uiStore.viewOnly`, `MobileInfoBar`, `e2e/mobile.spec.ts`) | 560 / 37 |
 | §32 | #17 | 인터랙션 다듬기(눌림 피드백, reduced-motion, `scaleX` 막대, theme-color) | 556 / 36 |
 | §31 | #16 | 벽 밖 개구부 2D/PDF 클램프(`openingObb` `OBB \| null`), 자동 체크리스트 고아 정리 | 556 / 36 |
