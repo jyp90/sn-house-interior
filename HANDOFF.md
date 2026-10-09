@@ -3,42 +3,37 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- `feat/ui-polish`: 스펙 §32 — 인터랙션 다듬기(hover 들림 제거·`:active` 눌림, `--ease-out`/`--dur`, reduced-motion, 체크리스트 막대 `scaleX`, 입력 autoComplete/spellCheck, theme-color·overscroll). 테스트: typecheck 통과, `npm test` 556 통과·3 skip, e2e 36 통과. 탐색 QA(샘플, 5181): 카드/버튼 hover transform 없음, 눌림 scale 확인, 체크 1개 → 막대 scaleX(0.02), 2D↔3D, 1100px 가로 스크롤 없음, 새로고침 복원, 새 콘솔 오류 없음(THREE.Clock·WebGL 경고는 기존).
-- `feat/mobile-view-only`: 스펙 §33 — 820px 이하 보기 전용(`uiStore.viewOnly`, matchMedia): 한 열 레이아웃, 상단 막대 축소, 선택 정보 띠(`MobileInfoBar`), 캔버스 아래 배치안 전환·가구 목록(접힘 기본), 모든 드래그·도구·편집 입력 차단(탭 선택·팬/줌·체크리스트 체크·PDF는 가능). 테스트: typecheck 통과, `npm test` 560 통과·3 skip, e2e 37 통과(`e2e/mobile.spec.ts` 신규). 탐색 QA(iPhone 13 에뮬레이션): 2D/3D/체크리스트/구조 모드 레이아웃, 탭 선택 정보 띠, 편집 버튼 없음, 오류 없음. 실제 폰 Safari는 미확인.
-- `fix/opening-clamp-checklist-prune`: 스펙 §31 — 벽 끝을 넘는 개구부의 2D 구멍·PDF 구멍·라벨 위치를 `clampToWall`로 자름(`openingObb`는 `OBB | null`, 완전히 나간 개구부는 가까운 벽 끝에 빨간 점으로 남겨 선택·되돌리기), 자동 체크리스트 고아 항목은 `setChecklistEntry` 때 정리. 테스트: typecheck 통과, `npm test` 556 통과·3 skip, e2e 36 통과.
-- `fix/deferred-minors-2`: 스펙 §30 — 평면당 1회 검증 캐시(`useValidation` WeakMap, `missingDedicatedCircuitCached`), 문 열림 영역 벽 끝 클램프, PDF 이모지 제거(`pdfSafe`), 3D 첫 프레임 300×150 깜빡임 제거(CSS), 병렬 e2e 24/24(flake 재현 안 됨). 테스트: typecheck 통과, `npm test` 549 통과·3 skip, e2e 36 통과. 탐색 QA(샘플): 3D PNG 내보내기 정상(캔버스 버퍼 = CSS 크기), 오류 없음.
-- `feat/corner-cabinet`: 스펙 §29 — `corner-cabinet` builder(ㄱ자 몸통·문짝 2·L자 상판, 팔 깊이 클램프), 제품 코너 하부장 90·코너 상부장 60·레인지후드 60, 스키마 v8(builder id). 테스트: typecheck 통과, `npm test` 543 통과·3 skip, e2e 35 통과. 탐색 QA(샘플): 코너에 하부장·상부장·후드 3D 표시, 오류 없음.
-- `feat/item-list-panel`: 스펙 §28 — 배치 모드 왼쪽 「배치된 가구 (N)」 접이식 목록(방별 묶음, PDF와 같은 번호, 충돌/경고/잠금 표시, 클릭 선택; `model/itemList.ts` `groupItemsByRoom`, `itemNumbers`는 `model/layout.ts`로 이동). 테스트: typecheck 통과, `npm test` 535 통과·3 skip, e2e 35 통과(`e2e/itemList.spec.ts` 신규). 탐색 QA(샘플): 4개 추가 → 「방 미지정 (4)」·번호·충돌 배지, 오류 없음.
-- `feat/switch-groups-3d-fixtures`: 스펙 §27 — 스위치 그룹(`Fixture.group`, 스키마 v7; 속성 패널 「스위치 그룹」+datalist, 전기 모드 2D 점선, 전기 패널 그룹 목록, 자동 체크리스트 「스위치 회로 전달」, PDF 전기 계획도 점선·설비 목록 「그룹」 열) + 3D 전기 설비(`scene3d/fixtureParts.ts`·`Fixtures3D.tsx`: 벽면 판·천장 조명 원반·비부착 상자, raycast 없음). 테스트: typecheck 통과, `npm test` 526 통과·3 skip, e2e 34 통과(`e2e/switchGroups.spec.ts` 신규). 탐색 QA(샘플, 5186): 설비 6개 배치·그룹 「거실」 → 점선 2개·패널 「거실 — 스위치 1 · 조명 2」·체크리스트 항목·3D 천장 원반, 오류 없음.
-- `feat/pdf-schedules`: 스펙 §25 — PDF에 「방 마감표」(면적·바닥재·벽 마감, 기본 행)·「창호 일람」(D/W/O 번호, 문짝, 폭×높이, 바닥 높이, 열림) 추가, 치수 평면도에 창호 번호 접두어·방 면적 라벨(`openingNumbers`는 `geometry/structure.ts`, `finishLabel`은 `materials/presets.ts`). 테스트: typecheck 통과, `npm test` 508 통과·3 skip, e2e 33 통과. 탐색 QA(샘플, 5185): 영역 그린 방이 마감표에 면적과 함께, PDF 17쪽, 2D PNG에는 번호 접두어 없음, 오류 없음.
-- `feat/custom-box-edit-note`(`525d88e`): 스펙 §26 — 사용자 정의 박스 이름·치수 편집(`updateCustomProduct`, 같은 제품을 쓰는 배치 중 하나라도 잠기면 치수 비활성), 아이템 메모(`Item.note`, 스키마 v6, PDF 배치도 비고 줄). 테스트: typecheck 통과, `npm test` 497 통과·3 skip, e2e 33 통과(`e2e/customBox.spec.ts` 신규). 탐색 QA(샘플, 5184): 1200 거부·95 적용, 빈 이름 거부, 메모 저장, 복제본 잠금 시 다른 복제본의 치수 비활성·이름/메모 편집 가능, 오류 없음. `home/plan.json`(v3)은 로드 시 v6로 마이그레이션.
-- 2026-10-09 `feat/tracked-home-preset`: 스펙 §24 — 우리 집 프리셋·평면도를 `home/plan.json`·`home/floorplan.jpg`로 추적, dev·build 양쪽 로드, `check:dist` 평면도 산출물 허용. typecheck 통과, `npm test` 387 통과·3 skip, e2e 29 통과, e2e:preview 2 통과, check:dist·privacy scan(--dist) 통과. 탐색 QA(preview 5181): 첫 방문에 우리 집 평면+배경 로드, 3D, 구조 탭 버튼. `feat/room-finish`는 PR #8로 main 병합됨.
-- `feat/openings-3d`(`c549319`): 스펙 §23 3D 문짝·창 유리 — `scene3d/openingParts.ts`(순수, 틀·문짝·손잡이·유리·멀리온 부품, 벽 길이/높이 클램프) + `Openings3D.tsx`(raycast 없음, 재질 공유). 중문은 유리 문짝·회색 틀. 테스트: typecheck 통과, `npm test` 483 통과·3 skip, e2e 32 통과. 탐색 QA(샘플, 5181): 3D에서 창틀·멀리온·유리, 칸막이 문짝 표시, 아이템 추가 선택·빈 곳 클릭 해제 그대로, 콘솔 오류 없음.
-- `fix/deferred-minors`(`dc64ec0`): 스펙 §22 보류 minor 정리 — 3D 방 이름·벽 간격 라벨을 drei `Html` 대신 자체 투영 오버레이(`scene3d/labelBridge.ts`·`LabelProjector.tsx`·`LabelOverlay.tsx`)로 그려 「거실」 라벨 누락·콘솔 unmount 오류 해결, 영역/측정 스냅에 T자 접합부 안쪽 모서리 추가·묻힌 중심선 점 제외, 영역 자기 교차 거부, 세로 벽 개구부 라벨 겹침·전기 범례 줄바꿈, 자동 체크리스트 id 해시, `duplicateItem` 정규화, 카탈로그 분류명 검색. 테스트: typecheck 통과, `npm test` 471 통과·3 skip, e2e 32 통과(`e2e/scene3d.spec.ts` 신규). 탐색 QA(샘플, 5181): 3D 라벨 거실·방 모두 표시, 콘솔 오류 없음, 영역 점이 T자 모서리(356,10)에 스냅, 분류명 「욕실」 검색 4개.
-- `feat/measure-tool`(`b756890`): 스펙 §21 거리 측정 도구 — 도구 막대 「측정」(구조·배치·전기, 배치 3D에서 누르면 2D), 두 점 클릭·실시간 라벨 `Ncm (가로×세로)`·벽/아이템 모서리 스냅·45° 각도 스냅·Esc 지우기, 화면 전용(`uiStore.measure`). `window.__homefit.ui`(dev 전용) 추가, `e2e/elevation.spec.ts` 대기 보강. 테스트: typecheck 통과, `npm test` 448 통과·3 skip, e2e 31 통과(`e2e/measure.spec.ts` 포함). 탐색 QA(샘플, 5181): 시작점 벽 모서리 스냅 점 표시, 실시간 라벨, 고정 후 3D 전환 시 도구 해제, 구조/전기 모드 동작, 체크리스트 모드에는 버튼 없음, Esc, 페이지 오류 없음.
-- `feat/catalog-elevation`(`ab6ab94`): 스펙 §20 카탈로그 확충(builder 9종·일반 치수 제품 23개, 욕실 분류, 카탈로그 이름 필터)·설치 높이(`Item.elevation`, 스키마 v5, 세로 구간 충돌 검사, 2D 점선·3D 높이·속성 패널·PDF 제품 목록 열). 계획 `docs/superpowers/plans/2026-10-09-catalog-elevation.md`. 테스트: typecheck 통과, `npm test` 442 통과·3 skip, e2e 30 통과(`e2e/elevation.spec.ts` 포함). 탐색 QA(샘플, 5181): 새 제품 15종 2D/3D/탑뷰 표시, 세탁기 위 건조기(110) 충돌 없음, 천장형 에어컨 탑뷰 드래그·실행 취소, 벽걸이 에어컨 원근 3D 드래그, PDF 16쪽, 페이지 오류 없음.
-- `fix/background-keep-calibration`: 「이미지 불러오기」가 기존 배경과 픽셀 크기가 같으면 축척·위치·보정을 유지(`editor2d/calibration.ts` `backgroundForNewImage`). 목적: 공개 Pages에서 우리 집 평면은 프리셋을 푸시하지 않고 「JSON 열기」(`private/our-home.local.json`) → 구조 탭 「이미지 불러오기」(`private/home-floorplan.jpg`)로 본다(사용자 결정 2026-10-09, 프리셋 비공개 유지). 테스트: typecheck 통과, `npm test` 387 통과·3 skip, e2e 29 통과. 탐색 QA(샘플, 5181): 같은 크기 재업로드 축척 유지·배너, 실행 취소/다시 실행 1단계, 다른 크기 초기화, 새로고침 유지, 2D↔3D, 1100px 폭, 콘솔 오류 없음.
-- 2026-10-09 기준. **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ (GitHub Pages, `main` push마다 `pages.yml`로 자동 배포). repo `jyp90/sn-house-interior`는 공개, 히스토리 재작성 완료(130 커밋, `main` `760b22f`). 옛 repo는 `jyp90/sn-house-interior-old`(비공개)로 보존.
-- `main`: 계획 1–4, 스펙 §15·§16(PR #1), §17 Pages 배포(PR #4·#5·#7), §18 자동 업데이트(PR #2), §19 방 영역·마감(PR #8) 병합. 위 PR 번호는 옛 repo 기준.
-- `docs/preset-outlets`: 우리 집 프리셋(private)에 일반 콘센트 15개 가안 추가(총 21개), 스펙 §15 프리셋 반영 사항 한 줄 보강. 코드 변경 없음.
-- `feat/self-update`(main 미병합): 스펙 §18 「업데이트」 버튼 — dev 서버가 원격 fast-forward → 필요 시 `npm install` → 재시작 → 화면 새로고침.
-- 테스트(`feat/self-update`): typecheck 통과, `npm test` 329 통과·0 skip, e2e 23 통과. 탐색 QA: 가짜 원격(bare repo)으로 실제 pull·서버 재시작·새로고침·평면 유지, 재클릭 시 「이미 최신」, 미커밋 변경 거부, 다른 출처 거부.
-- `feat/quote-docs-home-preset`(PR #1로 main 병합): 스펙 §15 3차 반영 — 현장 검수 체크리스트 교체 `e12f103`, PDF 견적 요청 4쪽 `9b5f3de`, 로컬 전용 우리 집 프리셋 `54cb00b`, 체크리스트 재설계 `a4614c6`, 탭별 참고 문서 링크 `1c74385`, 스펙 §16 중문 도구 `f8c4d82`.
-- 테스트(`ff40b36`): typecheck 통과, `npm test` 313 통과·0 skip, e2e 19 통과. 탐색 QA(샘플 평면, 5181) 통과: 중문 배치·실행 취소/다시 실행, 2D↔3D, 체크리스트 필터·공정 이동·메모·새로고침 유지, 기본 정보 경계값, PDF 15쪽(Pretendard·견적 4쪽·중문 표시), 1200px 폭.
-- 원격 `origin` = `jyp90/sn-house-interior`(공개). 요청마다 워크트리·새 브랜치 → 로컬 검증 → PR → `main` 병합이 기본(`CLAUDE.md` Workflow). 공개 전환·Pages 배포 전.
-- 프로젝트 스킬 6개 `.claude/skills/`, 사용 가이드는 `CLAUDE.md` 「Project skills」. 개인정보 검색어는 `private/privacy-terms.txt`.
-- Pages 배포(스펙 §17): 설계 `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`, 계획 5a 전부 완료. 배포 후 QA(실제 주소, Chromium): 로드·2D/3D·PNG·PDF 15쪽(Pretendard)·새로고침 복원·라이선스 링크 OK. 휴대폰 Safari 확인은 미실시.
-- `feat/room-finish`(main 미병합, `origin/main` `f8bf241` 위로 rebase): 스펙 §19 방 영역(영역 도구·꼭짓점 드래그)·바닥재/벽 마감(2D 패턴, 3D 텍스처, 벽 면별 마감)·우드톤 UI, 스키마 v4. 계획 `docs/superpowers/plans/2026-10-08-room-finish.md`.
-- 테스트(`feat/room-finish` `4478b91`): typecheck 통과, `npm test` 374 통과·3 skip, e2e 25 통과(`e2e/roomFinish.spec.ts` 포함). 탐색 QA(샘플, 5181) 통과: L자 영역·꼭짓점 드래그·실행 취소/다시 실행·새로고침 유지·v3 JSON 열기·w5 양쪽 다른 벽 마감(3D 원근/탑뷰)·PDF 15쪽·전 탭 테마·2D 선택 파란색.
-- 최종 리뷰 수정(`feat/room-finish`): 방 안 드래그로 화면 이동, 색 선택기 되돌리기 1단계, 여러 방에 걸친 벽은 방별 구간 마감(스펙 §19.3 수정), 벽 위 꼭짓점 손잡이, 「영역 다시 그리기」 초안 초기화, 이름표 재배치, 색 토큰. typecheck 통과, `npm test` 384 통과·3 skip, e2e 29 통과.
-- 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
+- 2026-10-09 기준 `main` `79ef7a5`(PR #18 병합). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §33.
+- 테스트(`main`): typecheck 통과, `npm test` 560 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 563 통과·0 skip), e2e 37 통과(16 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
+- 미확인: 실제 휴대폰 Safari에서 Pages 주소(§33 보기 전용 포함).
+
+### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
+| § | PR | 내용 | 테스트(unit/e2e) |
+|---|---|---|---|
+| §33 | #18 | 820px 이하 보기 전용(`uiStore.viewOnly`, `MobileInfoBar`, `e2e/mobile.spec.ts`) | 560 / 37 |
+| §32 | #17 | 인터랙션 다듬기(눌림 피드백, reduced-motion, `scaleX` 막대, theme-color) | 556 / 36 |
+| §31 | #16 | 벽 밖 개구부 2D/PDF 클램프(`openingObb` `OBB \| null`), 자동 체크리스트 고아 정리 | 556 / 36 |
+| §30 | #15 | 평면당 1회 검증 캐시(`useValidation`), 문 열림 벽 끝 클램프, PDF 이모지 제거(`pdfSafe`), 3D 첫 프레임 깜빡임 | 549 / 36 |
+| §29 | #12 | `corner-cabinet` builder, 코너 하부장·상부장·레인지후드, 스키마 v8(builder id) | 543 / 35 |
+| §28 | #11 | 배치 모드 「배치된 가구 (N)」 패널(`model/itemList.ts`, `ItemListPanel`) | 535 / 35 |
+| §27 | #10 | 스위치 그룹(`Fixture.group`, 스키마 v7), 3D 전기 설비(`fixtureParts.ts`, `Fixtures3D`) | 526 / 34 |
+| §25 | #9 | PDF 방 마감표·창호 일람, 치수도 창호 번호·면적 라벨 | 508 / 33 |
+| §26 | #8 | 사용자 정의 박스 이름·치수 편집(`updateCustomProduct`), 아이템 메모(`Item.note`, 스키마 v6) | 497 / 33 |
+| §23 | #7 | 3D 문짝·창 유리(`openingParts.ts`, `Openings3D`) | 483 / 32 |
+| §22 | #6 | 보류 minor 1: 3D 라벨 자체 투영(`labelBridge`, `LabelOverlay`), T자 스냅, 자기 교차 거부, 체크리스트 id 해시 | 471 / 32 |
+| §21 | #5 | 거리 측정 도구(`uiStore.measure`, `e2e/measure.spec.ts`) | 448 / 31 |
+| §20 | #4 | 카탈로그 확충(builder 9종·일반 제품 23개), 설치 높이(`Item.elevation`, 스키마 v5) | 442 / 30 |
+| §24 | #2 | 우리 집 프리셋 `home/` 추적·배포, `check:dist` 평면도 허용 | 387 / 29 |
+| — | #13·#14 | CI privacy scan, 한국어 README, 병합·정리 필수화 | — |
+| — | — | 같은 크기 배경 재업로드 시 축척 유지(`calibration.ts` `backgroundForNewImage`) | 387 / 29 |
+| §19 | 옛 #8 | 방 영역·바닥/벽 마감·우드톤 UI, 스키마 v4 | 384 / 29 |
+| §17·§18 | 옛 #4·#5·#7·#2 | Pages 배포(`pages.yml`, `check:dist`, OFL 고지), dev 서버 「업데이트」 버튼 | — |
+| §15·§16 | 옛 #1 | 견적 요청 PDF, 현장 체크리스트 재설계, 중문 도구, 탭별 참고 링크 | 313 / 19 |
+
+라운드별 상세(QA 절차·보류 사유)는 `archive/*/HANDOFF.md`(로컬 전용). 스펙 §별 코드 위치는 `docs/README.md` Feature map.
 
 ## 다음 할 일
-0b. (완료) PR #2 `feat/tracked-home-preset` — 사용자가 공개 repo 포함을 승인(2026-10-09), 스펙 §24로 재번호 후 병합.
-0. (완료) `feat/room-finish` 병합됨. `private/make-our-home.mjs`는 `version: 5`로 고쳐 다시 실행(영역·마감은 앱에서 그린다). 3D 「거실」 라벨·T자 스냅은 §22에서 해결.
-0a. (완료, §22) T자 접합부 스냅·영역 자기 교차 검사. 남은 것: e2e의 3D 반영 검증은 `e2e/scene3d.spec.ts`가 라벨까지 확인(캔버스 픽셀 검증은 여전히 없음).
-1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인; 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
-2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). builder·탐색 QA는 §20 라운드에서 완료. 병합 후 `private/make-our-home.mjs`는 `version: 5`로.
-2a. §20·§22·§23 보류 minor: 벽 끝을 넘는 개구부의 2D 문 열림 영역은 클램프되지 않음(3D만 클램프), 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만), 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택), 상판 위 가전 자동 높이·적층 스냅 없음, 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨(중복 손잡이를 옮기면 풀림), 대각선 벽의 개구부 라벨 간격 미검증, e2e flake 2건은 §30에서 12회 반복으로 재현 안 됨.
-3. (완료) 히스토리 정리·공개 전환 — 기록은 `archive/20261008-pages-publish/HANDOFF.md`.
-4. 보류된 minor(§22에서 일부 처리): pdf e2e 쪽수 하한, FixtureProperties/ExportView 컴포넌트 테스트 없음, 처리됨(§30): 중복 계산, 첫 로드 깜빡임, PDF 이모지. 처리됨: 자동 체크리스트 id 재사용, 전기 범례 잘림, dev 콘솔 unmount 오류, 개구부 라벨 겹침(실제 원인은 세로 벽의 「≈90」·「250–340」 겹침).
+1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인(§33 보기 전용 포함); 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
+2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품 13개의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). `private/make-our-home.mjs`는 아직 `version: 3`(로드 시 v8로 마이그레이션되므로 급하지 않음; 손볼 때 현재 `CURRENT_VERSION`으로).
+3. 보류 minor(§20–§33 누적): `Product.brand`가 UI 어디에도 표시되지 않음; 2D에서 천장형 아이템이 바닥 아이템 위에 그려져 클릭을 먼저 받음(후보 목록으로 선택); 상판 위 가전 자동 높이·적층 스냅 없음; 3D 원근 띄운 아이템 드래그 자동 테스트 없음(QA만); 예전 평면의 연속 중복 꼭짓점 다각형은 꼭짓점 끌기가 조용히 거부됨; 대각선 벽의 개구부 라벨 간격 미검증; e2e flake 2건은 §30에서 12회 반복으로 재현 안 됨; pdf e2e 쪽수 하한이 §25 이후(17쪽)에도 유효한지 미확인; FixtureProperties/ExportView 컴포넌트 테스트 없음; 캔버스 픽셀 검증 e2e 없음.
