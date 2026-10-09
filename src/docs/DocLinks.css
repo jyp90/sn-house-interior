@@ -1,7 +1,7 @@
 .doc-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .doc-links-title { font-size: 12px; color: var(--text-2); margin-right: 2px; }
-.doc-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); color: var(--text); font-size: 12px; text-decoration: none; transition: border-color 0.15s, background 0.15s, transform 0.12s; }
-.doc-link:hover { border-color: var(--walnut); background: var(--panel-2); transform: translateY(-1px); }
+.doc-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); color: var(--text); font-size: 12px; text-decoration: none; touch-action: manipulation; transition: border-color var(--dur) var(--ease-out), background var(--dur) var(--ease-out); }
+.doc-link:hover { border-color: var(--walnut); background: var(--panel-2); }
 .doc-link:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .doc-link-label { font-weight: 600; }
 .doc-link-note { color: var(--text-3); }

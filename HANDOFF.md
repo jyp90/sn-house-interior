@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- `feat/ui-polish`: 스펙 §32 — 인터랙션 다듬기(hover 들림 제거·`:active` 눌림, `--ease-out`/`--dur`, reduced-motion, 체크리스트 막대 `scaleX`, 입력 autoComplete/spellCheck, theme-color·overscroll). 테스트: typecheck 통과, `npm test` 556 통과·3 skip, e2e 36 통과. 탐색 QA(샘플, 5181): 카드/버튼 hover transform 없음, 눌림 scale 확인, 체크 1개 → 막대 scaleX(0.02), 2D↔3D, 1100px 가로 스크롤 없음, 새로고침 복원, 새 콘솔 오류 없음(THREE.Clock·WebGL 경고는 기존).
 - `fix/opening-clamp-checklist-prune`: 스펙 §31 — 벽 끝을 넘는 개구부의 2D 구멍·PDF 구멍·라벨 위치를 `clampToWall`로 자름(`openingObb`는 `OBB | null`, 완전히 나간 개구부는 가까운 벽 끝에 빨간 점으로 남겨 선택·되돌리기), 자동 체크리스트 고아 항목은 `setChecklistEntry` 때 정리. 테스트: typecheck 통과, `npm test` 556 통과·3 skip, e2e 36 통과.
 - `fix/deferred-minors-2`: 스펙 §30 — 평면당 1회 검증 캐시(`useValidation` WeakMap, `missingDedicatedCircuitCached`), 문 열림 영역 벽 끝 클램프, PDF 이모지 제거(`pdfSafe`), 3D 첫 프레임 300×150 깜빡임 제거(CSS), 병렬 e2e 24/24(flake 재현 안 됨). 테스트: typecheck 통과, `npm test` 549 통과·3 skip, e2e 36 통과. 탐색 QA(샘플): 3D PNG 내보내기 정상(캔버스 버퍼 = CSS 크기), 오류 없음.
 - `feat/corner-cabinet`: 스펙 §29 — `corner-cabinet` builder(ㄱ자 몸통·문짝 2·L자 상판, 팔 깊이 클램프), 제품 코너 하부장 90·코너 상부장 60·레인지후드 60, 스키마 v8(builder id). 테스트: typecheck 통과, `npm test` 543 통과·3 skip, e2e 35 통과. 탐색 QA(샘플): 코너에 하부장·상부장·후드 3D 표시, 오류 없음.

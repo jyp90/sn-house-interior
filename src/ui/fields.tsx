@@ -17,6 +17,8 @@ export function NumberField({ label, unit, value, onCommit, disabled = false }: 
       <span className="field-input">
         <input
           inputMode="numeric"
+          autoComplete="off"
+          spellCheck={false}
           value={text}
           disabled={disabled}
           onChange={(e) => setText(e.target.value)}
@@ -57,6 +59,7 @@ export function TextField({
     <label className="field">
       {label}
       <input
+        autoComplete="off"
         value={text}
         disabled={disabled}
         list={list}
@@ -112,6 +115,8 @@ export function OptionalNumberField({
       <span className="field-input">
         <input
           inputMode="decimal"
+          autoComplete="off"
+          spellCheck={false}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onBlur={commit}

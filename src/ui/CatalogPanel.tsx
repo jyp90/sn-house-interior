@@ -29,7 +29,7 @@ export function CatalogPanel() {
       <ItemListPanel />
       <label className="field">
         제품 찾기
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름·모델명" aria-label="제품 찾기" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} autoComplete="off" placeholder="예: 냉장고, RF85…" aria-label="제품 찾기" />
       </label>
       {groups.length === 0 && <p className="muted">일치하는 제품이 없습니다.</p>}
       {groups.map(([cat, list]) => (
