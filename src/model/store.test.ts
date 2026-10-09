@@ -634,6 +634,27 @@ describe('체크리스트 상태', () => {
     s.getState().undo();
     expect(s.getState().plan.checklist).toEqual([]);
   });
+
+  it('더 이상 자동 생성되지 않는 auto- 항목은 저장할 때 함께 지운다', () => {
+    const plan = {
+      ...SAMPLE_PLAN,
+      checklist: [
+        { itemId: 'auto-circuit-old', checked: true },
+        { itemId: 'i-1', checked: true },
+      ],
+    };
+    const s = createPlanStore(plan);
+    s.getState().setChecklistEntry('i-2', { checked: true });
+    expect(s.getState().plan.checklist).toEqual(
+      expect.arrayContaining([{ itemId: 'i-1', checked: true }, { itemId: 'i-2', checked: true }]),
+    );
+    expect(s.getState().plan.checklist.some((c) => c.itemId === 'auto-circuit-old')).toBe(false);
+    s.getState().undo();
+    expect(s.getState().plan.checklist).toEqual([
+      { itemId: 'auto-circuit-old', checked: true },
+      { itemId: 'i-1', checked: true },
+    ]);
+  });
 });
 
 describe('기본 정보', () => {

@@ -16,7 +16,7 @@ import { doorLeaves } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
 import { areaM2 } from '../geometry/polygon';
 import { openingNumbers } from '../geometry/structure';
-import { openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
+import { clampToWall, openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
 import { activeItems, activeLayout, itemNumbers } from '../model/layout';
 import type { Plan } from '../model/schema';
 
@@ -131,7 +131,9 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
   for (const o of plan.openings) {
     const wall = wallById.get(o.wallId);
     if (!wall) continue;
-    parts.push(`<polygon points="${pointsAttr(corners(openingObb(wall, o)))}" fill="#ffffff" stroke="#3f3a33" stroke-width="1"/>`);
+    const gap = openingObb(wall, o);
+    if (!gap) continue;
+    parts.push(`<polygon points="${pointsAttr(corners(gap))}" fill="#ffffff" stroke="#3f3a33" stroke-width="1"/>`);
     if (o.kind === 'door') {
       const leaves = doorLeaves(wall, o);
       for (const { swing: s } of leaves) {
@@ -215,14 +217,16 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
     for (const o of plan.openings) {
       const wall = wallById.get(o.wallId);
       if (!wall) continue;
+      const [s, e] = clampToWall(o, wallLength(wall));
+      if (e <= s) continue;
       const u = wallDir(wall);
-      const mid = o.offset + o.width / 2;
+      const mid = (s + e) / 2;
       const off = -(wall.thickness / 2 + 14);
       // 위치 글자를 먼저 그려서, 두 글자가 닿아도 더 중요한 폭 글자가 항상 위에 오도록 한다
       if (dimensionLines) {
         const gap = Math.abs(u.x) >= Math.abs(u.y) ? OPENING_LABEL_GAP_CM_BY_HEIGHT : OPENING_LABEL_GAP_CM_BY_WIDTH;
         const off2 = off - gap;
-        parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
+        parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${s}–${e}`, '#4f6b8a', center));
       }
       const widthText = openNumbers ? `${openNumbers.get(o.id)} ${mark(o.width, o.verified)}` : mark(o.width, o.verified);
       parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, widthText, '#4f6b8a', center));

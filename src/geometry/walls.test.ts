@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Opening, Wall } from '../model/schema';
 import { SAMPLE_PLAN } from '../model/samplePlan';
-import { openingObb, planWallObbsWithIds, wallObb, wallPieces, wallSolidObbs } from './walls';
+import { openingObb, planWallObbsWithIds, strayOpeningAnchor, wallObb, wallPieces, wallSolidObbs } from './walls';
 
 const wall: Wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 };
 const opening = (o: Partial<Opening>): Opening => ({
@@ -60,6 +60,26 @@ describe('wallPieces', () => {
 describe('openingObb', () => {
   it('개구부 구간을 벽 두께의 사각형으로', () => {
     expect(openingObb(wall, opening({}))).toMatchObject({ cx: 140, cy: 0, hw: 40, hd: 5 });
+  });
+
+  it('벽 끝에 걸쳐 잘리는 개구부는 잘린 구간만 사각형으로', () => {
+    // offset 350, width 90 → 350~440인데 벽은 400까지: 350~400만
+    const obb = openingObb(wall, opening({ offset: 350, width: 90 }));
+    expect(obb).toMatchObject({ cx: 375, cy: 0, hw: 25, hd: 5 });
+  });
+
+  it('벽 밖으로 완전히 벗어난 개구부는 null', () => {
+    expect(openingObb(wall, opening({ offset: 500, width: 90 }))).toBeNull();
+  });
+});
+
+describe('strayOpeningAnchor', () => {
+  it('음수 offset(벽 시작 쪽으로 벗어남)은 a점', () => {
+    expect(strayOpeningAnchor(wall, opening({ offset: -90, width: 80 }))).toEqual(wall.a);
+  });
+
+  it('벽 끝을 넘긴 offset(벽 끝 쪽으로 벗어남)은 b점', () => {
+    expect(strayOpeningAnchor(wall, opening({ offset: 500, width: 80 }))).toEqual(wall.b);
   });
 });
 

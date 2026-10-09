@@ -4,7 +4,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## model/
 - `schema.ts` — zod schemas for `Plan` (version 6) and every entity (walls, openings incl. door `middle`/`leaves`, rooms incl. optional `polygon`/`floor`/`wall` finish, items incl. optional `note`, layouts, fixtures, checklist state, plan-level `finish`); types derive from here.
-- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step. Room area/finish actions: `addRoomArea`, `setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, `dragRoomVertex` (uses `beginDrag`/`endDrag` like `dragEndpoint`). `updateCustomProduct(id, { name?, w?, d?, h? })` edits `plan.customProducts` only (ignores `CATALOG` ids, invalid name/out-of-range dims). `updateItem`/`normalizeItem` trim `note` and drop the key when blank (spec §26); note stays editable while locked.
+- `store.ts` — `createPlanStore`: zustand vanilla store, plan + selection + undo/redo (`HISTORY_LIMIT`); every edit action is one undo step. Room area/finish actions: `addRoomArea`, `setRoomPolygon`, `setRoomFinish`, `setPlanFinish`, `dragRoomVertex` (uses `beginDrag`/`endDrag` like `dragEndpoint`). `updateCustomProduct(id, { name?, w?, d?, h? })` edits `plan.customProducts` only (ignores `CATALOG` ids, invalid name/out-of-range dims). `updateItem`/`normalizeItem` trim `note` and drop the key when blank (spec §26); note stays editable while locked. `setChecklistEntry` also prunes any stored `auto-` entry whose id is no longer produced by `checklist/items.ts`'s `checklistItems` (e.g. a stale 전용회로 warning), so dead auto rows don't linger after the plan changes (spec §31).
 - `StoreContext.tsx` — `usePlanStore` / `usePlan` React bindings.
 - `layout.ts` — `activeItems` / `withActiveItems` (only item access path), layout naming, `compareItems` for the A/B overlay, `itemNumbers` (item id → PDF/목록 배치도 번호; re-exported from `export/planSvg.ts`).
 - `itemList.ts` — `groupItemsByRoom(plan, resolve)`: groups placed items by the room whose `polygon` contains the item center (`pointInPolygon`), `{ room: null }` last; used by `ui/ItemListPanel.tsx` (spec §28).
@@ -17,7 +17,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## geometry/ (pure)
 - `vertical.ts` — vertical span overlap (touching ≠ overlap).
 - `obb.ts` — 2D OBB + SAT overlap, `itemObb`.
-- `walls.ts` — wall pieces split by openings, wall OBBs for collision.
+- `walls.ts` — wall pieces split by openings, wall OBBs for collision. `openingObb(w, o)` clamps to `clampToWall` first and returns `null` (not a degenerate OBB) when the opening is fully outside the wall; callers (`Openings2D.tsx`, `export/planSvg.ts`) skip drawing the gap when `null`. `strayOpeningAnchor(w, o)` gives the nearer wall endpoint (`a`/`b`) so `Openings2D.tsx` can still render a selectable/draggable marker for a stray opening (spec §31).
 - `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan. `doorLeaves` clamps `o.offset`/`o.width` to the wall via `walls.ts`'s `clampToWall` before computing leaves, so an opening past the wall end stays inside it (spec §30.2).
 - `distance.ts` — 4-direction nearest-wall rays for the selected item.
 - `snap.ts` — item-to-wall snap (`WALL_SNAP_CM`).
