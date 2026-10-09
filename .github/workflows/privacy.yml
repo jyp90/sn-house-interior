@@ -1,0 +1,40 @@
+name: Privacy scan
+
+# 개인정보 검색어는 secret PRIVACY_TERMS(한 줄에 하나)로 받는다. 출력은 term#N만 찍힌다(scan.sh).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Write privacy terms
+        env:
+          PRIVACY_TERMS: ${{ secrets.PRIVACY_TERMS }}
+        run: |
+          test -n "$PRIVACY_TERMS" || { echo "secret PRIVACY_TERMS 없음"; exit 1; }
+          mkdir -p private && printf '%s\n' "$PRIVACY_TERMS" > private/privacy-terms.txt
+      - run: bash .claude/skills/checking-privacy/scan.sh --tracked
+      - name: Scan commits (PR range or last push)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="origin/${{ github.base_ref }}..HEAD"
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          bash .claude/skills/checking-privacy/scan.sh --log "$range"
+      - run: npm ci
+      - run: npm run build
+      - run: bash .claude/skills/checking-privacy/scan.sh --dist
