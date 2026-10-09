@@ -106,6 +106,7 @@ export const useUi = create<UiState>()((set, get) => ({
       set({ measure: { a: p, b: null } });
       return;
     }
+    if (p.x === m.a.x && p.y === m.a.y) return;
     set({ measure: { a: m.a, b: p } });
   },
   clearMeasure: () => set({ measure: null }),

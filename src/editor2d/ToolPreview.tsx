@@ -86,6 +86,14 @@ export function ToolPreview({
       </g>
     );
   }
+  if (tool === 'measure' && !measure && cursor) {
+    const start = measureToolPoint(cursor, null, plan, snap);
+    return (
+      <g className="tool-preview">
+        <circle cx={start.x} cy={start.y} r={4 * px} />
+      </g>
+    );
+  }
   if (tool === 'measure' && measure) {
     const end = measure.b ?? (cursor ? measureToolPoint(cursor, measure.a, plan, snap) : null);
     if (!end) return <g className="tool-preview"><circle cx={measure.a.x} cy={measure.a.y} r={4 * px} /></g>;

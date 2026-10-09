@@ -59,7 +59,15 @@ export function Toolbar() {
       {mode === 'place' && (
         <div className="segmented" role="group" aria-label="보기">
           {VIEWS.map(([v, label]) => (
-            <button key={v} type="button" aria-pressed={view === v} onClick={() => ui.setView(v)}>{label}</button>
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => {
+                if (v !== '2d' && tool === 'measure') ui.setTool('select');
+                ui.setView(v);
+              }}
+            >{label}</button>
           ))}
         </div>
       )}

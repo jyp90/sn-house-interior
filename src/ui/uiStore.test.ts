@@ -81,4 +81,12 @@ describe('useUi', () => {
     useUi.getState().setMode('structure');
     expect(useUi.getState()).toMatchObject({ measure: null, tool: 'select' });
   });
+
+  it('시작점과 같은 자리를 다시 클릭해도 끝점은 고정되지 않는다', () => {
+    const ui = useUi.getState();
+    ui.setTool('measure');
+    ui.measureClick({ x: 0, y: 0 });
+    ui.measureClick({ x: 0, y: 0 });
+    expect(useUi.getState().measure).toEqual({ a: { x: 0, y: 0 }, b: null });
+  });
 });
