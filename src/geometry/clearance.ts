@@ -1,6 +1,6 @@
 import type { Item, Opening, Plan, Product, Vec2, Wall } from '../model/schema';
 import { axes, itemObb, localToWorld, type OBB } from './obb';
-import { wallDir } from './walls';
+import { clampToWall, wallDir, wallLength } from './walls';
 
 export type SectorShape = { kind: 'sector'; center: Vec2; radius: number; start: number; end: number; obb: OBB };
 export type ClearanceShape = { kind: 'rect'; obb: OBB } | SectorShape;
@@ -56,19 +56,21 @@ export function leafWidths(o: Opening): [number, number] {
 
 // 문짝마다 열림 영역을 따로 계산한다. 모든 문짝은 같은 쪽(swingIn)으로 연다
 export function doorLeaves(w: Wall, o: Opening): DoorLeaf[] {
+  const [start, end] = clampToWall(o, wallLength(w));
+  const clamped: Opening = { ...o, offset: start, width: Math.max(0, end - start) };
   const u = wallDir(w);
-  const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
+  const n = clamped.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
   const at = (along: number): Vec2 => ({
     x: w.a.x + u.x * along + n.x * (w.thickness / 2),
     y: w.a.y + u.y * along + n.y * (w.thickness / 2),
   });
-  const startLeaf = (width: number): DoorLeaf => ({ hinge: at(o.offset), closed: u, open: n, width, swing: sector(at(o.offset), u, n, width) });
+  const startLeaf = (width: number): DoorLeaf => ({ hinge: at(clamped.offset), closed: u, open: n, width, swing: sector(at(clamped.offset), u, n, width) });
   const endLeaf = (width: number): DoorLeaf => {
     const closed = { x: -u.x, y: -u.y };
-    return { hinge: at(o.offset + o.width), closed, open: n, width, swing: sector(at(o.offset + o.width), closed, n, width) };
+    return { hinge: at(clamped.offset + clamped.width), closed, open: n, width, swing: sector(at(clamped.offset + clamped.width), closed, n, width) };
   };
-  const [hingeSide, otherSide] = leafWidths(o);
-  const leaves = o.hinge === 'start' ? [startLeaf(hingeSide), endLeaf(otherSide)] : [endLeaf(hingeSide), startLeaf(otherSide)];
+  const [hingeSide, otherSide] = leafWidths(clamped);
+  const leaves = clamped.hinge === 'start' ? [startLeaf(hingeSide), endLeaf(otherSide)] : [endLeaf(hingeSide), startLeaf(otherSide)];
   return leaves.filter((l) => l.width > 0);
 }
 
