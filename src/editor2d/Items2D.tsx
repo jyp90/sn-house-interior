@@ -42,7 +42,6 @@ export function Items2D({ px }: { px: number }) {
     const s = store.getState();
     s.select(item.id);
     useUi.getState().clearCandidates();
-    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §33)
     const p = toPlan(e);
     drag.current = { id: item.id, dx: item.x - p.x, dy: item.y - p.y, startX: e.clientX, startY: e.clientY, moved: false, locked: !!item.locked };
     e.currentTarget.setPointerCapture(e.pointerId);

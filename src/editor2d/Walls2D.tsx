@@ -61,7 +61,6 @@ export function Walls2D({ px }: { px: number }) {
   const selectedId = usePlan((s) => s.selectedId);
   const mode = useUi((s) => s.mode);
   const tool = useUi((s) => s.tool);
-  const viewOnly = useUi((s) => s.viewOnly);
   const interactive = mode === 'structure' && tool === 'select';
   const selected = walls.find((w) => w.id === selectedId);
 
@@ -95,7 +94,7 @@ export function Walls2D({ px }: { px: number }) {
           </g>
         );
       })}
-      {interactive && !viewOnly && selected && (
+      {interactive && selected && (
         <>
           <EndpointHandle key="a" point={selected.a} otherEnd={selected.b} px={px} />
           <EndpointHandle key="b" point={selected.b} otherEnd={selected.a} px={px} />

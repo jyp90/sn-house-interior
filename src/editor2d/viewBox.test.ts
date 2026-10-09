@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fitViewBox, panBy, zoomAt } from './viewBox';
+import { fitViewBox, panBy, pinchViewBox, zoomAt } from './viewBox';
 
 describe('viewBox', () => {
   it('여백을 두고 화면 비율에 맞춰 평면 전체를 담는다', () => {
@@ -16,5 +16,17 @@ describe('viewBox', () => {
 
   it('panBy는 원점을 옮긴다', () => {
     expect(panBy({ x: 0, y: 0, w: 10, h: 10 }, 5, -3)).toEqual({ x: 5, y: -3, w: 10, h: 10 });
+  });
+
+  it('핀치: 두 배 벌리면 반으로 줄고, 시작 중점 아래 점이 현재 중점 아래로 온다', () => {
+    const size = { w: 100, h: 100 };
+    // 중점이 (50,50)에 고정된 채 2배 → zoomAt과 같다
+    expect(pinchViewBox({ x: 0, y: 0, w: 100, h: 100 }, size, { x: 50, y: 50 }, { x: 50, y: 50 }, 2)).toEqual({ x: 25, y: 25, w: 50, h: 50 });
+    // 배율 1에 중점만 (10,10)→(30,20) 이동 → 팬
+    expect(pinchViewBox({ x: 0, y: 0, w: 100, h: 100 }, size, { x: 10, y: 10 }, { x: 30, y: 20 }, 1)).toEqual({ x: -20, y: -10, w: 100, h: 100 });
+  });
+
+  it('핀치도 50cm 최소 폭에서 멈춘다', () => {
+    expect(pinchViewBox({ x: 0, y: 0, w: 100, h: 100 }, { w: 100, h: 100 }, { x: 0, y: 0 }, { x: 0, y: 0 }, 100).w).toBe(50);
   });
 });
