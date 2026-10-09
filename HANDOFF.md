@@ -3,14 +3,15 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-09 기준 `main` = PR #31 `feat/doclinks-store`(§43 참고 문서 링크 브라우저 저장) 병합(그 전 #29 `feat/pin-gate` §42, #30 §41, #28 §40). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §43.
-- 테스트(`main`): typecheck 통과, `npm test` 600 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 44 통과(19 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- 2026-10-10 기준 `main` = PR #32 `feat/mobile-desktop-layout`(§44 모바일 = PC 레이아웃 + 2D 핀치 줌, §33 철회) 병합(그 전 #31 §43, #29 §42, #30 §41). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 8`, 스펙 최신 라운드 §44.
+- 테스트(`main`): typecheck 통과, `npm test` 601 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 45 통과(19 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 Pages 주소(§44 PC 레이아웃 축소·핀치 줌 포함).
 
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
+| §44 | #32 | 모바일도 PC 레이아웃 그대로(`ui/smallScreen.ts` viewport `width=1200`, 안내 문구), 2D 핀치 줌(`viewBox.ts` `pinchViewBox`), §33 보기 전용 제거, 브랜드 「우리 집 인테리어」 | 601 / 45 |
 | §43 | #31 | 참고 문서 링크 브라우저 저장(`docs/links.ts` 저장 helpers + `docLinksStore`, 체크리스트 탭 「링크 설정」 JSON 폼, `e2e/docLinks.spec.ts`) — Pages에서도 붙여 넣어 쓸 수 있음 | 600 / 44 |
 | §42 | #29 | 진입 PIN 잠금(`persistence/gate.ts`, `ui/Gate.tsx`, 5회 실패 → 1시간 잠금, 탭 단위 해제, dev `?gate=1`로 e2e) | 595 / 43 |
 | §41 | #30 | 탭 순서(`feat/tabs-doclinks`) | — / — |
