@@ -6,6 +6,7 @@ import { usePlan, usePlanStore } from '../model/StoreContext';
 import { filterCatalog } from './catalogFilter';
 import { CustomBoxForm } from './CustomBoxForm';
 import { DND_MIME } from './dnd';
+import { ItemListPanel } from './ItemListPanel';
 import { LayoutBar } from './LayoutBar';
 
 export function CatalogPanel() {
@@ -25,6 +26,7 @@ export function CatalogPanel() {
   return (
     <div className="catalog">
       <LayoutBar />
+      <ItemListPanel />
       <label className="field">
         제품 찾기
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름·모델명" aria-label="제품 찾기" />

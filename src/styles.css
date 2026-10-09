@@ -50,6 +50,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'M
 .badge.danger { background: var(--danger-bg); color: var(--danger-text); }
 .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
 .badge.auto { background: var(--brass-bg); color: var(--brass-text); flex: none; }
+.item-list { margin-bottom: 16px; }
+.item-list > button { width: 100%; text-align: left; font-size: 12px; font-weight: 600; padding: 6px 0; background: none; border: none; cursor: pointer; color: var(--text); }
+.item-list > button:hover:not(:disabled) { transform: none; box-shadow: none; }
+.item-list-body { max-height: 40vh; overflow: auto; }
+.item-list-body h4 { font-size: 11px; font-weight: 600; margin: 10px 0 4px; color: var(--text-2); }
+.item-list-body ul { list-style: none; margin: 0; padding: 0; }
+.item-row { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; white-space: normal; font-size: 12px; padding: 6px 8px; margin-bottom: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-2); cursor: pointer; }
+.item-row-name { flex: 1; min-width: 0; }
+.item-row.selected { border-color: var(--border-strong); background: var(--panel-3); }
 .error { color: var(--danger-text); font-size: 12px; }
 
 /* 버튼 */

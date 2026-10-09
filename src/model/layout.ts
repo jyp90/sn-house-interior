@@ -1,3 +1,4 @@
+import { findProduct } from '../catalog/products';
 import type { Item, Layout, Plan } from './schema';
 
 export const DEFAULT_LAYOUT_ID = 'layout-a';
@@ -29,4 +30,10 @@ export function nextLayoutName(names: string[]): string {
 export function compareItems(plan: Plan, layoutId: string | null): Item[] {
   if (!layoutId || layoutId === activeLayout(plan).id) return [];
   return plan.layouts.find((l) => l.id === layoutId)?.items ?? [];
+}
+
+// 배치도 번호 = 제품 목록 번호. 제품을 찾을 수 없는 가구는 목록에 없으므로 번호도 없다
+export function itemNumbers(plan: Plan): Map<string, number> {
+  const known = activeItems(plan).filter((item) => findProduct(plan, item.productId));
+  return new Map(known.map((item, i) => [item.id, i + 1]));
 }
