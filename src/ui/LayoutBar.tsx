@@ -7,7 +7,6 @@ export function LayoutBar() {
   const store = usePlanStore();
   const plan = usePlan((s) => s.plan);
   const compareId = useUi((s) => s.compareLayoutId);
-  const viewOnly = useUi((s) => s.viewOnly);
   const ui = useUi.getState();
   const s = store.getState();
   const active = activeLayout(plan);
@@ -31,16 +30,12 @@ export function LayoutBar() {
           </button>
         ))}
       </div>
-      {!viewOnly && (
-        <>
-          <div className="row">
-            <button type="button" onClick={() => s.addLayout()}>복제</button>
-            <button type="button" className="danger" disabled={plan.layouts.length <= 1} onClick={() => s.removeLayout(active.id)}>삭제</button>
-          </div>
-          <TextField key={`${active.id}-name`} label="이름" value={active.name} onCommit={(v) => s.renameLayout(active.id, v)} />
-          <TextField key={`${active.id}-memo`} label="메모" value={active.memo ?? ''} allowEmpty onCommit={(v) => s.setLayoutMemo(active.id, v)} />
-        </>
-      )}
+      <div className="row">
+        <button type="button" onClick={() => s.addLayout()}>복제</button>
+        <button type="button" className="danger" disabled={plan.layouts.length <= 1} onClick={() => s.removeLayout(active.id)}>삭제</button>
+      </div>
+      <TextField key={`${active.id}-name`} label="이름" value={active.name} onCommit={(v) => s.renameLayout(active.id, v)} />
+      <TextField key={`${active.id}-memo`} label="메모" value={active.memo ?? ''} allowEmpty onCommit={(v) => s.setLayoutMemo(active.id, v)} />
       <label className="field">
         겹쳐 볼 배치안
         <select value={compare?.id ?? ''} onChange={(e) => ui.setCompareLayout(e.target.value || null)}>
@@ -50,9 +45,7 @@ export function LayoutBar() {
           ))}
         </select>
       </label>
-      {!viewOnly && (
-        <button type="button" disabled={!compare} onClick={swap}>비교 대상과 전환</button>
-      )}
+      <button type="button" disabled={!compare} onClick={swap}>비교 대상과 전환</button>
     </section>
   );
 }

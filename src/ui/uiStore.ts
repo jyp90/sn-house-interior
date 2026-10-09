@@ -34,10 +34,7 @@ type UiState = {
   areaSession: number;
   measure: Measure | null;
   itemListOpen: boolean;
-  // 모바일(viewOnly)에서 「배치된 가구」 목록의 펼침 상태. 데스크톱 itemListOpen과 별개로, 기본은 접힘(스펙 §33 리뷰 반영)
-  mobileItemListOpen: boolean;
   // 화면 폭 820px 이하(모바일): 보기 전용. matchMedia 구독으로 App이 설정한다(스펙 §33)
-  viewOnly: boolean;
   setMode(mode: Mode): void;
   setView(view: View): void;
   setTool(tool: Tool): void;
@@ -61,8 +58,6 @@ type UiState = {
   measureClick(p: Vec2): void;
   clearMeasure(): void;
   setItemListOpen(open: boolean): void;
-  setMobileItemListOpen(open: boolean): void;
-  setViewOnly(viewOnly: boolean): void;
 };
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -85,8 +80,6 @@ export const useUi = create<UiState>()((set, get) => ({
   areaSession: 0,
   measure: null,
   itemListOpen: true,
-  mobileItemListOpen: false,
-  viewOnly: false,
   setMode: (mode) => set({ mode, tool: 'select', candidates: null, calibration: null, areaTarget: null, measure: null }),
   setView: (view) => set({ view, candidates: null }),
   setTool: (tool) => set({ tool, candidates: null, calibration: null, areaTarget: null, measure: null }),
@@ -122,9 +115,6 @@ export const useUi = create<UiState>()((set, get) => ({
   },
   clearMeasure: () => set({ measure: null }),
   setItemListOpen: (open) => set({ itemListOpen: open }),
-  setMobileItemListOpen: (open) => set({ mobileItemListOpen: open }),
   // 보기 전용으로 들어갈 때 도구·초안 상태를 모두 접어 둔다: 폭을 줄이기 전에 잡고 있던 그리기 도구가
   // 화면에서 사라진 패널 없이도 계속 활성 상태로 남는 일이 없게 한다(스펙 §33 리뷰 반영)
-  setViewOnly: (viewOnly) =>
-    set(viewOnly ? { viewOnly, tool: 'select', calibration: null, areaTarget: null, measure: null, candidates: null } : { viewOnly }),
 }));

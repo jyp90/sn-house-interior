@@ -13,6 +13,7 @@ import { getDefaultImageStore } from './persistence/images';
 import { recordAutoRevision } from './persistence/revisions';
 import { backupInvalidPlan, readStoredPlan, startAutosave } from './persistence/storage';
 import { syncModeWithHash } from './ui/modeHash';
+import { applyViewport } from './ui/smallScreen';
 import { useUi } from './ui/uiStore';
 import './styles.css';
 
@@ -21,6 +22,9 @@ declare global {
     __homefit?: { store: StoreApi<PlanState>; ui: typeof useUi };
   }
 }
+
+// 모바일에서도 PC 레이아웃 그대로(스펙 §44)
+applyViewport(document, window.screen.width);
 
 const stored = readStoredPlan();
 let initialPlan = SAMPLE_PLAN;

@@ -15,7 +15,7 @@ import { clientToPlan } from './svgPoint';
 import { SvgContext } from './svgContext';
 import { ToolPreview } from './ToolPreview';
 import { applyToolClick, finishArea, finishWall } from './tools';
-import { fitViewBox, panBy, zoomAt, type ViewBox } from './viewBox';
+import { fitViewBox, panBy, pinchViewBox, zoomAt, type ViewBox } from './viewBox';
 import { Walls2D } from './Walls2D';
 
 const ZOOM_STEP = 1.15;
@@ -39,6 +39,9 @@ export function Editor2D() {
   const setAreaPoints = (points: Vec2[]) => setAreaDraft({ session: useUi.getState().areaSession, points });
   const [cursor, setCursor] = useState<Vec2 | null>(null);
   const pan = useRef<{ x: number; y: number; vb: ViewBox } | null>(null);
+  // 핀치 줌(스펙 §44): 캔버스에 닿은 손가락(포인터)을 추적해 두 개가 되면 팬을 멈추고 핀치로 전환한다
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ vb: ViewBox; mid: Vec2; dist: number } | null>(null);
 
   useEffect(() => {
     const el = svgRef.current;
@@ -102,10 +105,31 @@ export function Editor2D() {
   const px = vb.w / size.w;
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
 
+  const svgLocal = (c: { clientX: number; clientY: number }): Vec2 => {
+    const r = svgRef.current!.getBoundingClientRect();
+    return { x: c.clientX - r.left, y: c.clientY - r.top };
+  };
+  const startPinch = () => {
+    const [a, b] = [...pointers.current.values()];
+    pan.current = null;
+    pinch.current = { vb, mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, dist: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+  };
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
-    // 보기 전용(스펙 §33)에서는 그리기 도구가 (경합 등으로) 여전히 남아 있어도 클릭을 팬으로만 다룬다
-    if (tool === 'select' || useUi.getState().viewOnly) {
+    if (e.pointerType === 'touch') {
+      pointers.current.set(e.pointerId, svgLocal(e));
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // 합성 이벤트(테스트)처럼 활성 포인터가 아니면 캡처가 실패해도 핀치는 계속된다
+      }
+      if (pointers.current.size === 2) {
+        startPinch();
+        return;
+      }
+      if (pointers.current.size > 2) return;
+    }
+    if (tool === 'select') {
       // 방을 눌렀으면 그 선택은 유지하고, 빈 곳이면 선택 해제. 어느 쪽이든 끌면 화면 이동
       if (!isRoomPress(e.nativeEvent)) {
         store.getState().select(null);
@@ -118,6 +142,15 @@ export function Editor2D() {
     applyToolClick(tool, toPlan(e), { store, wallPoints, setWallPoints, areaPoints, setAreaPoints });
   };
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, svgLocal(e));
+    const pz = pinch.current;
+    if (pz) {
+      if (pointers.current.size < 2) return;
+      const [a, b] = [...pointers.current.values()];
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      setVb(pinchViewBox(pz.vb, size, pz.mid, mid, Math.hypot(a.x - b.x, a.y - b.y) / pz.dist));
+      return;
+    }
     const p = pan.current;
     if (p) {
       const k = p.vb.w / size.w;
@@ -126,11 +159,13 @@ export function Editor2D() {
     }
     if (tool !== 'select') setCursor(toPlan(e));
   };
-  const endPan = () => {
+  const endPan = (e: PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(e.pointerId);
     pan.current = null;
+    // 한 손가락을 떼면 남은 손가락이 화면을 튀게 하지 않도록 핀치도 끝낸다. 다시 팬하려면 손가락을 뗐다 대면 된다
+    pinch.current = null;
   };
   const onDoubleClick = () => {
-    if (useUi.getState().viewOnly) return;
     if (tool === 'wall' && wallPoints.length > 0) {
       finishWall(store, wallPoints);
       setWallPoints([]);
@@ -145,11 +180,11 @@ export function Editor2D() {
     setVb((v) => zoomAt(v, p, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
   };
   const onDragOver = (e: DragEvent) => {
-    if (mode === 'place' && !useUi.getState().viewOnly && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
+    if (mode === 'place' && e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
   };
   const onDrop = (e: DragEvent) => {
     const data = e.dataTransfer.getData(DND_MIME);
-    if (!data || mode !== 'place' || useUi.getState().viewOnly) return; // 보기 전용: 카탈로그 추가·드래그 금지(스펙 §33)
+    if (!data || mode !== 'place') return;
     e.preventDefault();
     const [productId, variantId] = data.split('|');
     const p = toPlan(e);

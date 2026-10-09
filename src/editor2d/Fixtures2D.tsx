@@ -29,7 +29,6 @@ export function Fixtures2D() {
     e.stopPropagation();
     const s = store.getState();
     s.select(f.id);
-    if (useUi.getState().viewOnly) return; // 보기 전용: 탭은 선택만, 드래그는 시작하지 않는다(스펙 §33)
     const p = toPlan(e);
     drag.current = { id: f.id, dx: f.pos.x - p.x, dy: f.pos.y - p.y, startX: e.clientX, startY: e.clientY, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);

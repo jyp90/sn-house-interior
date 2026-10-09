@@ -844,3 +844,23 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 43.3 테스트
 - 단위 `docs/links.test.ts`: 저장/읽기/지우기, 깨진 JSON·빈 배열, 저장 > virtual 우선.
 - e2e `e2e/docLinks.spec.ts`: 체크리스트 탭 「링크 설정」 → JSON 입력(https://example.com) → 저장 → 칩 표시 → 새로고침 후 유지 → 내보내기 탭에도 export 항목 → 잘못된 JSON 오류 문구 → 지우기.
+
+## 44. 32차 반영: 모바일도 PC 화면 그대로 (2026-10-10)
+
+사용자 보고: 휴대폰(Pages)에서 핀치로 도면이 확대되지 않고, 구조·전기 도구와 옵션이 보이지 않아 PC와 너무 다르다. 도구가 안 보인 것은 §33 「모바일 보기 전용」이 일부러 숨긴 결과였다. **§33을 철회**한다: 모바일 전용 레이아웃·보기 전용 상태를 두지 않고, 어느 기기에서나 PC와 같은 화면과 편집을 제공한다. 평면 데이터는 기기마다 localStorage에 따로 저장되는 점은 그대로(§12 백엔드 없음)이며, 기기 간 공유는 「JSON 저장/열기」와 프리셋(§24·§39.4)으로 한다.
+
+### 44.1 레이아웃 (`src/ui/smallScreen.ts`)
+- 기기 화면 폭(`screen.width`)이 1000px 미만이면 `main.tsx`가 `<meta name="viewport">`를 `width=1200`으로 바꾼다. 3열 그리드(260/1fr/280)가 그대로 축소돼 보이고, 캔버스 밖은 브라우저 핀치로 페이지를 확대한다. 창 폭이 아니라 기기 폭으로 판정하므로 PC에서 창을 줄여도 바뀌지 않는다.
+- 작은 화면에서는 툴바 끝에 안내 한 줄(`.toolbar-note`, `MOBILE_NOTE`): 「모바일 전용 화면은 일부러 두지 않았습니다. PC 화면을 그대로 축소해 보여 주니 두 손가락으로 확대해 쓰세요.」
+- 툴바 브랜드 글자는 「우리 집 인테리어」(저장 파일 이름 `sn-house-interior-…`는 그대로).
+- 제거: `uiStore.viewOnly`/`setViewOnly`/`mobileItemListOpen`, `MobileInfoBar`, `.app-mobile`/`.mobile-info`/`.mobile-bottom` CSS, `KeyInput.viewOnly`, 2D/3D 드래그·꼭짓점 핸들·툴바·배치안 막대의 `viewOnly` 분기.
+
+### 44.2 2D 핀치 줌 (`Editor2D.tsx`, `viewBox.ts` `pinchViewBox`)
+- 캔버스는 `touch-action: none` 그대로. SVG가 터치 포인터를 id별로 추적해 두 개가 되면 진행 중인 팬을 버리고 핀치를 시작한다(시작 시점의 viewBox·중점·거리 저장).
+- 이동마다 `pinchViewBox(v0, size, mid0, mid1, dist/dist0)`: 폭을 `v0.w / factor`(50–50000cm 클램프)로 하고 시작 중점 아래 평면 점이 현재 중점 아래 오도록 옮긴다(팬 + 줌 동시). 누적이 아니라 시작값 기준이라 흔들림이 쌓이지 않는다.
+- 손가락 하나를 떼면 핀치·팬 모두 끝난다(남은 손가락이 화면을 튀게 하지 않도록). 아이템·설비 위에서 시작한 손가락은 그 요소가 드래그로 가져가므로(`stopPropagation`) 핀치는 빈 캔버스·방 위에서만 시작된다.
+- 3D는 `OrbitControls`의 터치 핀치 그대로.
+
+### 44.3 테스트
+- 단위: `viewBox.test.ts` `pinchViewBox`(줌=zoomAt과 동일, 배율 1은 팬, 50cm 하한), `smallScreen.test.ts`(판정·viewport content·meta 적용). §33의 `viewOnly` 단위 테스트 삭제.
+- e2e `e2e/mobile.spec.ts`(390×844, `hasTouch`): meta viewport `width=1200` → 구조 탭에서 `.left`·「벽 그리기」·`.right`·안내 문구·「JSON 저장」 표시 / 합성 터치 포인터 2개로 핀치 → viewBox 폭이 절반 미만.

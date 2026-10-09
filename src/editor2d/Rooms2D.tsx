@@ -133,9 +133,8 @@ export function RoomVertexHandles({ px }: { px: number }) {
   const selectedId = usePlan((s) => s.selectedId);
   const mode = useUi((s) => s.mode);
   const tool = useUi((s) => s.tool);
-  const viewOnly = useUi((s) => s.viewOnly);
   const room = rooms.find((r) => r.id === selectedId);
-  if (mode !== 'structure' || tool !== 'select' || viewOnly || !room?.polygon) return null;
+  if (mode !== 'structure' || tool !== 'select' || !room?.polygon) return null;
   return (
     <g className="room-vertex-handles">
       {room.polygon.map((p, i) => (
