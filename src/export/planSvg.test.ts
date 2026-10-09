@@ -77,6 +77,19 @@ describe('planSvg', () => {
     expect(svg.indexOf(`>${roomName}<`)).toBeGreaterThan(lastPolygon);
   });
 
+  it('polygon이 있는 방은 이름 아래 14cm에 면적을 쓰고, 없으면 쓰지 않는다', () => {
+    expect(planSvg(SAMPLE_PLAN).svg).not.toContain('㎡');
+    const plan = {
+      ...SAMPLE_PLAN,
+      rooms: [{ ...SAMPLE_PLAN.rooms[0], polygon: [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 300 }, { x: 0, y: 300 }] }, SAMPLE_PLAN.rooms[1]],
+    };
+    const { svg } = planSvg(plan);
+    const room = plan.rooms[0];
+    expect(svg).toContain(`<text x="${room.label.x}" y="${room.label.y + 14}" font-size="11"`);
+    expect(svg).toContain('>12.0㎡<');
+    expect(svg.match(/㎡/g)).toHaveLength(2); // 흰 테두리 + 본 글자
+  });
+
   it('가구는 벽보다 나중에 그려 벽 두께에 걸쳐도 가려지지 않는다', () => {
     const { svg } = planSvg(withActiveItems(SAMPLE_PLAN, [sofa]));
     const wallFill = '"#3f3a33"/>';
@@ -219,12 +232,34 @@ describe('planSvg 옵션', () => {
     expect(on.indexOf('>250–340<')).toBeLessThan(on.indexOf('<text x="370" y="295" font-size="11"'));
   });
 
-  it('세로 벽 문의 폭 글자(≈90)와 위치 글자(250–340)는 x가 35cm 이상 떨어진다', () => {
+  it('치수 평면도(dimensionLines:true)에서만 개구부 폭 글자 앞에 창호 번호를 붙인다(D1 ≈90)', () => {
+    const on = planSvg(SAMPLE_PLAN, { dimensions: true, dimensionLines: true }).svg;
+    expect(on).toContain('>D1 ≈90<');
+    expect(on).toContain('>W1 ≈180<');
+
+    // 배치도·전기 계획도·PNG(dimensionLines 기본값 false)는 번호 없이 ≈90만
+    const plain = planSvg(SAMPLE_PLAN).svg;
+    expect(plain).toContain('>≈90<');
+    expect(plain).not.toContain('D1 ≈90');
+    expect(plain).not.toContain('W1 ≈180');
+  });
+
+  it('세로 벽 문의 폭 글자(D1 ≈90)와 위치 글자(250–340)는 x가 35cm 이상 떨어진다', () => {
     const on = planSvg(SAMPLE_PLAN, { header: false, items: 'none', dimensionLines: true }).svg;
     const xOf = (re: RegExp) => Number(on.match(re)![1]);
-    const width = xOf(/<text x="([-\d.]+)" y="295" font-size="11"[^>]*fill="#4f6b8a"[^>]*>≈90</);
+    const width = xOf(/<text x="([-\d.]+)" y="295" font-size="11"[^>]*fill="#4f6b8a"[^>]*>D1 ≈90</);
     const pos = xOf(/<text x="([-\d.]+)" y="295" font-size="9"[^>]*fill="#4f6b8a"[^>]*>250–340</);
     expect(Math.abs(pos - width)).toBeGreaterThanOrEqual(35);
+  });
+
+  it('세로 벽의 바깥쪽으로 열리는 중문: 「중문」 글자가 폭 글자와 35cm 이상 떨어진다', () => {
+    // o1: wallId w5 (350,0)→(350,400), 세로 벽. swingIn:false → 바깥쪽으로 열림
+    const door = { ...SAMPLE_PLAN.openings[0], middle: true, swingIn: false, leaves: 'asym' as const };
+    const on = planSvg({ ...SAMPLE_PLAN, openings: [door] }, { header: false, items: 'none' }).svg;
+    const xOf = (re: RegExp) => Number(on.match(re)![1]);
+    const width = xOf(/<text x="([-\d.]+)" y="295" font-size="11"[^>]*fill="#4f6b8a"[^>]*>≈90</);
+    const middle = xOf(/<text x="([-\d.]+)" y="295" font-size="9"[^>]*fill="#2b6cb0"[^>]*>중문</);
+    expect(Math.abs(middle - width)).toBeGreaterThanOrEqual(35);
   });
 
   it('좁은 도면에서는 전기 범례를 여러 줄로 감싸 도면 폭을 넘지 않는다', () => {

@@ -20,7 +20,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan.
 - `distance.ts` — 4-direction nearest-wall rays for the selected item.
 - `snap.ts` — item-to-wall snap (`WALL_SNAP_CM`).
-- `structure.ts` — room-rect → walls, fit/refit openings, endpoint move, wall length; called by store actions.
+- `structure.ts` — room-rect → walls, fit/refit openings, endpoint move, wall length; called by store actions. `openingNumbers` (id → `D1`/`W1`/`O1` per kind, `plan.openings` order) shared by `export/planSvg.ts` and `export/pages.ts` (spec §25).
 - `pick.ts` — items under a point (candidate picker).
 - `bounds.ts` — plan bounds/center for view fitting.
 - `wallReference.ts` — "벽 기준 위치" text for PDF/built-in detail.
@@ -31,7 +31,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `describe.ts` — `conflictLines`: Korean text for the warning detail.
 
 ## materials/
-- `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §19.1).
+- `presets.ts` — floor/wall finish presets, DEFAULT_FINISH, roomFloor/roomWall fallbacks (spec §19.1); `finishLabel(finish)` → `재질 · 라벨` for a preset or `재질 · #rrggbb` otherwise, used by the PDF 방 마감표 (spec §25).
 - `pattern.ts` — React-free `patternSpec(finish)` (wood: 120×15 planks, 4 staggered rows; tile: 60×60 with 0.3cm grout; plain: null) and `shade(hex, amount)` color helper, used by `editor2d/floorPattern.tsx`.
   `wallPatternSpec(finish)` — wallpaper: 2cm faint linen cross-hatch; paint: null.
 - `textures.ts` — three CanvasTextures from pattern specs (4 px/cm, RepeatWrapping, sRGB), cached by `material:color`: `floorTexture`/`wallTexture` → `{ texture, sizeCm }` or null; meshes clone and set `repeat = 1/cmToM(size)`.
@@ -82,9 +82,9 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `request.ts` — quote request data for the PDF (groups, questions, spec decisions, photo requests). No budget amounts.
 
 ## export/
-- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26).
+- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
-- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」). Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
+- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). 치수 평면도 only (`dimensionLines: true`): opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90` — not shown on 배치도/전기 계획도/PNG. Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width, also used for the 「중문」 label on vertical walls to clear the width label); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
 
 ## devserver/ (Node, dev server only)

@@ -41,7 +41,7 @@ test('기본 정보를 넣고 PDF를 내려받으면 쪽수가 맞는 PDF가 저
   expect(download.suggestedFilename()).toBe('sn-house-interior-샘플-평면-A안.pdf');
   await expect(view.getByTestId('pdf-status')).toContainText('PDF를 저장했습니다');
   const pages = Number((await view.getByTestId('pdf-status').textContent())!.match(/\((\d+)쪽\)/)![1]);
-  expect(pages).toBeGreaterThanOrEqual(8);
+  expect(pages).toBeGreaterThanOrEqual(10); // 방 마감표 + 창호 일람 2쪽 추가(spec §25)
 
   const body = readFileSync((await download.path())!);
   expect(body.subarray(0, 5).toString('latin1')).toBe('%PDF-');

@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- `feat/pdf-schedules`: 스펙 §25 — PDF에 「방 마감표」(면적·바닥재·벽 마감, 기본 행)·「창호 일람」(D/W/O 번호, 문짝, 폭×높이, 바닥 높이, 열림) 추가, 치수 평면도에 창호 번호 접두어·방 면적 라벨(`openingNumbers`는 `geometry/structure.ts`, `finishLabel`은 `materials/presets.ts`). 테스트: typecheck 통과, `npm test` 508 통과·3 skip, e2e 33 통과. 탐색 QA(샘플, 5185): 영역 그린 방이 마감표에 면적과 함께, PDF 17쪽, 2D PNG에는 번호 접두어 없음, 오류 없음.
 - `feat/custom-box-edit-note`(`525d88e`): 스펙 §26 — 사용자 정의 박스 이름·치수 편집(`updateCustomProduct`, 같은 제품을 쓰는 배치 중 하나라도 잠기면 치수 비활성), 아이템 메모(`Item.note`, 스키마 v6, PDF 배치도 비고 줄). 테스트: typecheck 통과, `npm test` 497 통과·3 skip, e2e 33 통과(`e2e/customBox.spec.ts` 신규). 탐색 QA(샘플, 5184): 1200 거부·95 적용, 빈 이름 거부, 메모 저장, 복제본 잠금 시 다른 복제본의 치수 비활성·이름/메모 편집 가능, 오류 없음. `home/plan.json`(v3)은 로드 시 v6로 마이그레이션.
 - 2026-10-09 `feat/tracked-home-preset`: 스펙 §24 — 우리 집 프리셋·평면도를 `home/plan.json`·`home/floorplan.jpg`로 추적, dev·build 양쪽 로드, `check:dist` 평면도 산출물 허용. typecheck 통과, `npm test` 387 통과·3 skip, e2e 29 통과, e2e:preview 2 통과, check:dist·privacy scan(--dist) 통과. 탐색 QA(preview 5181): 첫 방문에 우리 집 평면+배경 로드, 3D, 구조 탭 버튼. `feat/room-finish`는 PR #8로 main 병합됨.
 - `feat/openings-3d`(`c549319`): 스펙 §23 3D 문짝·창 유리 — `scene3d/openingParts.ts`(순수, 틀·문짝·손잡이·유리·멀리온 부품, 벽 길이/높이 클램프) + `Openings3D.tsx`(raycast 없음, 재질 공유). 중문은 유리 문짝·회색 틀. 테스트: typecheck 통과, `npm test` 483 통과·3 skip, e2e 32 통과. 탐색 QA(샘플, 5181): 3D에서 창틀·멀리온·유리, 칸막이 문짝 표시, 아이템 추가 선택·빈 곳 클릭 해제 그대로, 콘솔 오류 없음.

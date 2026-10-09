@@ -5,7 +5,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Specs and plans
 | Doc | Status |
 |---|---|
-| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §26 custom box editing / item notes (latest) |
+| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset, §25 PDF finish/opening schedules + room areas, §26 custom box editing / item notes (latest) |
 | `docs/references/2026-10-08-planner5d-research-design.md` | User-provided research; source of requirement IDs F01–F12 |
 | `docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` | Plan 1 done |
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
@@ -36,7 +36,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Electrical fixtures, dedicated-circuit warning | `src/electrical/fixtures.ts`, `src/editor2d/Fixtures2D.tsx`, `src/ui/ElectricPanel.tsx` | §6 전기 모드 |
 | Checklist (on-site inspection items, auto items with content-hash ids) | `src/checklist/`, `src/checklist/hash.ts`, `src/ui/ChecklistView.tsx` | §8, §15.2, §22 |
 | PNG export | `src/export/planSvg.ts`, `src/export/png.ts`, `src/ui/ExportButtons.tsx` | §14.1 F12 |
-| Contractor PDF (+ quote request pages) | `src/export/pages.ts`, `src/export/pdf.ts`, `src/export/pdfFont.ts`, `src/export/exportPdf.ts`, `src/quote/request.ts`, `src/ui/ExportView.tsx` | §9, §15.3 |
+| Contractor PDF (+ quote request pages, 방 마감표, 창호 일람) | `src/export/pages.ts`, `src/export/pdf.ts`, `src/export/pdfFont.ts`, `src/export/exportPdf.ts`, `src/quote/request.ts`, `src/ui/ExportView.tsx` | §9, §15.3, §25 |
 | Code auto-update button (dev server) | `src/devserver/selfUpdate.ts`, `vite.config.ts` `homefit-self-update`, `src/ui/UpdateButton.tsx`, `src/ui/selfUpdateClient.ts` | §18 |
 | Room areas, floor/wall finishes (2D patterns, 3D textures, wall faces) | `src/geometry/polygon.ts`, `src/materials/`, `src/editor2d/Rooms2D.tsx`, `src/scene3d/Floor.tsx`, `src/scene3d/Walls3D.tsx`, `src/ui/FinishPicker.tsx` | §19 |
 | Wood-tone UI theme (design tokens) | `src/styles.css` | §19.4 |

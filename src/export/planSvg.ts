@@ -5,6 +5,8 @@ import { FIXTURE_GLYPH, FIXTURE_KINDS, FIXTURE_LABEL, FIXTURE_R_CM, fixtureNumbe
 import { planBounds } from '../geometry/bounds';
 import { doorLeaves } from '../geometry/clearance';
 import { corners, itemObb } from '../geometry/obb';
+import { areaM2 } from '../geometry/polygon';
+import { openingNumbers } from '../geometry/structure';
 import { openingObb, wallDir, wallLength, wallObb } from '../geometry/walls';
 import { activeItems, activeLayout } from '../model/layout';
 import type { Plan } from '../model/schema';
@@ -20,10 +22,12 @@ const HIGHLIGHT = '#c2410c';
 // 개구부 폭 글자(font 11)와 위치 글자(font 9) 사이 간격, 벽 법선 방향.
 // 가로 벽(법선이 세로): 글자 높이 기준 half-heights 5.5+4.5 + halo 1.5+1.5 + 여유
 const OPENING_LABEL_GAP_CM_BY_HEIGHT = 16;
-// 세로 벽(법선이 가로): 글자 폭 기준. 「≈90」 반폭 ~9 + 「250–340」 반폭 ~18 + halo + 여유
+// 세로 벽(법선이 가로): 글자 폭 기준. 「D1 ≈90」 폭 ~35cm(font 11) + 「250–340」 폭 ~37cm(font 9) + halo + 여유 → 46cm이면 겹치지 않는다
 const OPENING_LABEL_GAP_CM_BY_WIDTH = 46;
 // 「중문」 글자: 벽 면에서 열리는 쪽으로, 벽 길이 글자(14)와 겹치지 않는 거리
 const MIDDLE_LABEL_OFF_CM = 30;
+// 방 이름 아래 면적 글자까지의 거리
+const ROOM_AREA_LABEL_OFF_CM = 14;
 
 const r2 = (n: number) => Math.round(n * 100) / 100 + 0;
 
@@ -135,11 +139,16 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
           const seg = `x1="${r2(l.hinge.x)}" y1="${r2(l.hinge.y)}" x2="${r2(tip.x)}" y2="${r2(tip.y)}"`;
           parts.push(`<line ${seg} stroke="#4f9dde" stroke-width="3"/>`, `<line ${seg} stroke="#ffffff" stroke-width="1"/>`);
         }
-        // 글자는 열리는 쪽(부채꼴 안)에, 폭 글자와 겹치지 않게. 다른 글자처럼 도형 뒤에 그린다
+        // 글자는 열리는 쪽(부채꼴 안)에, 폭 글자와 겹치지 않게. 다른 글자처럼 도형 뒤에 그린다.
+        // 세로 벽(법선이 가로)은 폭 글자(off = thickness/2+14)와 같은 축 위에 있어, 위치 글자처럼 글자 폭 기준
+        // 간격(46cm)을 더해야 겹치지 않는다. 가로 벽은 글자 높이 기준 30cm로 충분하다
         const u = wallDir(wall);
         const n = o.swingIn ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
         const mid = { x: wall.a.x + u.x * (o.offset + o.width / 2), y: wall.a.y + u.y * (o.offset + o.width / 2) };
-        const d = wall.thickness / 2 + MIDDLE_LABEL_OFF_CM;
+        const d =
+          Math.abs(u.x) >= Math.abs(u.y)
+            ? wall.thickness / 2 + MIDDLE_LABEL_OFF_CM
+            : wall.thickness / 2 + 14 + OPENING_LABEL_GAP_CM_BY_WIDTH;
         middleLabels.push(label(r2(mid.x + n.x * d), r2(mid.y + n.y * d), 9, '중문', '#2b6cb0', center));
       }
     }
@@ -188,6 +197,8 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
       const off = wall.thickness / 2 + 14;
       parts.push(label((wall.a.x + wall.b.x) / 2 - u.y * off, (wall.a.y + wall.b.y) / 2 + u.x * off, 12, mark(len, wall.verified), '#3f3a33', center));
     }
+    // 치수 평면도(dimensionLines)에서만 개구부 폭 글자 앞에 창호 번호를 붙인다(§25.2). 배치도·전기 계획도·PNG는 번호 없이 ≈90만
+    const openNumbers = dimensionLines ? openingNumbers(plan) : null;
     for (const o of plan.openings) {
       const wall = wallById.get(o.wallId);
       if (!wall) continue;
@@ -200,12 +211,16 @@ export function planSvg(plan: Plan, options: PlanSvgOptions = {}): { svg: string
         const off2 = off - gap;
         parts.push(label(wall.a.x + u.x * mid - u.y * off2, wall.a.y + u.y * mid + u.x * off2, 9, `${o.offset}–${o.offset + o.width}`, '#4f6b8a', center));
       }
-      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, mark(o.width, o.verified), '#4f6b8a', center));
+      const widthText = openNumbers ? `${openNumbers.get(o.id)} ${mark(o.width, o.verified)}` : mark(o.width, o.verified);
+      parts.push(label(wall.a.x + u.x * mid - u.y * off, wall.a.y + u.y * mid + u.x * off, 11, widthText, '#4f6b8a', center));
     }
   }
 
   parts.push(...middleLabels);
-  for (const r of plan.rooms) parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
+  for (const r of plan.rooms) {
+    parts.push(label(r.label.x, r.label.y, 18, r.name, '#6b5e4b', center));
+    if (r.polygon) parts.push(label(r.label.x, r.label.y + ROOM_AREA_LABEL_OFF_CM, 11, `${areaM2(r.polygon).toFixed(1)}㎡`, '#6b5e4b', center));
+  }
 
   for (const { item, product } of placed) {
     if (itemMode === 'name') {
