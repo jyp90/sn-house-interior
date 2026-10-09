@@ -52,6 +52,31 @@ describe('applyToolClick', () => {
     expect(useUi.getState().tool).toBe('select');
   });
 
+  it('방 이름·설비 도구는 집 영역 밖 클릭을 거부하고 배너를 띄운다 (스펙 §38)', () => {
+    const store = createPlanStore(SAMPLE_PLAN); // 벽 바깥 면 -10..610 × -10..410
+    const ctx = { store, wallPoints: [], setWallPoints: () => {}, areaPoints: [], setAreaPoints: () => {} };
+    const before = store.getState().plan;
+    useUi.getState().setTool('label');
+    applyToolClick('label', { x: 300, y: -50 }, ctx);
+    useUi.getState().setFixtureTool('outlet');
+    applyToolClick('fixture', { x: 620, y: 200 }, ctx);
+    expect(store.getState().plan).toBe(before);
+    expect(useUi.getState().banner?.text).toBe('집 영역 밖에는 놓을 수 없습니다.');
+    applyToolClick('fixture', { x: 610, y: 200 }, ctx); // 바깥 면 위는 허용
+    expect(store.getState().plan.fixtures).toHaveLength(1);
+  });
+
+  it('벽·방 만들기 도구는 집 영역 밖에서도 동작한다(벽이 영역을 정의한다)', () => {
+    const store = createPlanStore(SAMPLE_PLAN);
+    let points: Vec2[] = [];
+    applyToolClick('wall', { x: 900, y: 900 }, { store, wallPoints: points, setWallPoints: (p) => (points = p), areaPoints: [], setAreaPoints: () => {} });
+    expect(points).toHaveLength(1);
+    const walls = store.getState().plan.walls.length;
+    applyToolClick('room', { x: 900, y: 900 }, { store, wallPoints: [], setWallPoints: () => {}, areaPoints: [], setAreaPoints: () => {} });
+    expect(store.getState().plan.walls.length).toBe(walls + 4);
+    expect(useUi.getState().banner).toBeNull();
+  });
+
   it('축척 보정 도구는 이미지 px 좌표로 점을 모은다', () => {
     const store = createPlanStore({
       ...plan(),
@@ -103,6 +128,13 @@ describe('area tool', () => {
     expect(useUi.getState().banner?.text).toBe('영역 선이 서로 교차합니다.');
     expect(c.store.getState().plan.rooms).toHaveLength(2);
     expect(useUi.getState().tool).toBe('area');
+  });
+
+  it('집 영역 밖 점은 받지 않고 배너를 띄운다 (스펙 §38)', () => {
+    const c = ctx();
+    applyToolClick('area', { x: 2000, y: 2000 }, c.ctx);
+    expect(c.get()).toHaveLength(0);
+    expect(useUi.getState().banner?.text).toBe('집 영역 밖에는 놓을 수 없습니다.');
   });
 
   it('첫 점을 다시 클릭하면 방을 만든다', () => {

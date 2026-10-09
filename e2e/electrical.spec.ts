@@ -75,3 +75,28 @@ test('설비를 끌면 벽을 따라 붙고, 삭제 후 실행 취소로 되살�
   await page.keyboard.press('Control+z');
   await expect.poll(async () => (await getPlan(page)).fixtures.length).toBe(1);
 });
+
+test('전기 설비는 집 영역 밖에 놓이지 않고, 드래그해도 경계 안에 머문다 (스펙 §38)', async ({ page }) => {
+  await page.getByRole('button', { name: '전기', exact: true }).click();
+  await page.getByRole('button', { name: '조명', exact: true }).click();
+  const outside = await planToClient(page, { x: 650, y: 200 }); // 샘플 집 바깥 면은 -10..610 × -10..410
+  await page.mouse.click(outside.x, outside.y);
+  await expect(page.getByTestId('banner')).toContainText('집 영역 밖에는 놓을 수 없습니다.');
+  expect((await getPlan(page)).fixtures).toHaveLength(0);
+
+  const inside = await planToClient(page, { x: 450, y: 200 });
+  await page.mouse.click(inside.x, inside.y);
+  await expect.poll(async () => (await getPlan(page)).fixtures.length).toBe(1);
+  const f = (await getPlan(page)).fixtures[0];
+  expect(f.pos).toEqual({ x: 450, y: 200 });
+
+  await page.getByRole('button', { name: '선택', exact: true }).click();
+  const from = await centerOf(page, `fixture-${f.id}`);
+  const to = await planToClient(page, { x: 660, y: 450 });
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await page.mouse.up();
+  const moved = (await getPlan(page)).fixtures[0];
+  expect(moved.pos).toEqual({ x: 610, y: 410 });
+});

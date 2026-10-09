@@ -1,5 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { FIXTURE_GLYPH, FIXTURE_R_CM, snapFixture, switchLinks } from '../electrical/fixtures';
+import { clampToHouse } from '../geometry/houseArea';
 import type { Fixture } from '../model/schema';
 import { usePlan, usePlanStore } from '../model/StoreContext';
 import { useUi } from '../ui/uiStore';
@@ -45,7 +46,7 @@ export function Fixtures2D() {
     const f = s.plan.fixtures.find((x) => x.id === d.id);
     if (!f) return;
     const p = toPlan(e);
-    const snapped = snapFixture(s.plan.walls, { x: p.x + d.dx, y: p.y + d.dy }, f.kind, useUi.getState().snap);
+    const snapped = snapFixture(s.plan.walls, clampToHouse(s.plan.walls, { x: p.x + d.dx, y: p.y + d.dy }), f.kind, useUi.getState().snap); // 집 영역 안으로(스펙 §38)
     s.dragFixture(d.id, snapped.pos, snapped.wallId);
   };
 

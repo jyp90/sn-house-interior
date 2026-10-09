@@ -26,6 +26,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `bounds.ts` — plan bounds/center for view fitting.
 - `wallReference.ts` — "벽 기준 위치" text for PDF/built-in detail.
 - `enclosure.ts` — `enclosedPolygon(seed, walls, cellCm = 5)` → `Vec2[] | null` (spec §35.2): 5cm grid flood fill with every `wallObb` as an obstacle (openings ignored), null when the seed is blocked or the fill reaches the padded border (walls not closed), outer boundary loop → collinear removal → snap to `wallFaceCorners`/`tJunctionCorners` within 1.5×cell, else x/y to axis-aligned wall face lines; validated with `isValidPolygon`/`isSimplePolygon`. Used by the store's `autoRoomPolygon`/`autoRoomPolygons` and the `home/plan.json` polygons.
+- `houseArea.ts` — `houseBounds(walls)` (wall-OBB bounding rect, null without walls), `insideHouse`, `clampToHouse`, `OUTSIDE_HOUSE_TEXT` (spec §38); used by `editor2d/tools.ts` (`HOUSE_BOUND_TOOLS` = label/fixture/area clicks rejected with a banner) and `Fixtures2D` drag clamp.
 - `polygon.ts` — area/centroid/point-in-polygon/validity for room floor polygons; `isSimplePolygon` rejects crossing or touching non-adjacent edges (spec §22, used by `finishArea`, `addRoomArea`, `setRoomPolygon`, `dragRoomVertex`).
 
 ## validation/
