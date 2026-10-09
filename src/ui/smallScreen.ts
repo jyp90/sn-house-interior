@@ -15,3 +15,8 @@ export function viewportContent(screenWidth: number): string {
 export function applyViewport(doc: Document, screenWidth: number): void {
   doc.querySelector('meta[name="viewport"]')?.setAttribute('content', viewportContent(screenWidth));
 }
+
+// 잠금 화면(스펙 §46.1)처럼 기기 폭 그대로 보여야 할 때
+export function resetViewport(doc: Document): void {
+  doc.querySelector('meta[name="viewport"]')?.setAttribute('content', viewportContent(Infinity));
+}

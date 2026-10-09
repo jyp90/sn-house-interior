@@ -16,7 +16,7 @@ test('잠금이 꺼진 기본 서버에서는 앱이 바로 뜬다', async ({ pa
   await expect(page.locator('.toolbar')).toBeVisible();
 });
 
-test('0809로 들어가고, 같은 탭에서는 새로고침해도 다시 묻지 않는다', async ({ page }) => {
+test('0809로 들어가고, 7일 동안은 새로고침해도 다시 묻지 않으며, 만료되면 다시 묻는다', async ({ page }) => {
   await page.goto('/?gate=1');
   await expect(page.getByTestId('gate')).toBeVisible();
   await expect(page.locator('.toolbar')).toHaveCount(0);
@@ -28,10 +28,39 @@ test('0809로 들어가고, 같은 탭에서는 새로고침해도 다시 묻지
   await input.press('Enter');
   await expect(page.getByTestId('gate')).toHaveCount(0);
   await expect(page.locator('.toolbar')).toBeVisible();
-  expect(await page.evaluate((k) => sessionStorage.getItem(k), GATE_UNLOCK_KEY)).toBe('1');
+  const until = Number(await page.evaluate((k) => localStorage.getItem(k), GATE_UNLOCK_KEY));
+  expect(until).toBeGreaterThan(Date.now() + 24 * 60 * 60 * 1000);
   await page.reload();
   await expect(page.getByTestId('gate')).toHaveCount(0);
   await expect(page.locator('.toolbar')).toBeVisible();
+
+  // 만료 시각을 과거로 돌리면 다시 묻는다
+  await page.evaluate((k) => localStorage.setItem(k, String(Date.now() - 1)), GATE_UNLOCK_KEY);
+  await page.reload();
+  await expect(page.getByTestId('gate')).toBeVisible();
+});
+
+test('폰 폭에서는 잠금 화면이 기기 폭 그대로이고, 입력 뒤 키보드를 닫으면(blur) 바로 들어가며 그때 PC viewport로 바뀐다', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?gate=1');
+  await expect(page.getByTestId('gate')).toBeVisible();
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', 'width=device-width, initial-scale=1.0');
+  const input = page.getByLabel('비밀번호');
+  await input.fill('0809');
+  await input.blur();
+  await expect(page.getByTestId('gate')).toHaveCount(0);
+  await expect(page.locator('.toolbar')).toBeVisible();
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', 'width=1200');
+});
+
+test('틀린 PIN은 blur만으로 한 번 세고 입력을 비운다', async ({ page }) => {
+  await page.goto('/?gate=1');
+  const input = page.getByLabel('비밀번호');
+  await input.fill('1111');
+  await input.blur();
+  await expect(page.getByRole('status')).toContainText(`${GATE_MAX_ATTEMPTS - 1}회 남았습니다.`);
+  await expect(input).toHaveValue('');
+  await expect(page.getByRole('button', { name: '들어가기' })).toBeDisabled();
 });
 
 test('5번 틀리면 1시간 잠기고 새로고침해도 유지되며, 잠금이 지나면 다시 입력할 수 있다', async ({ page }) => {
