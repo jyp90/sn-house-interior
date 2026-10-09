@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import type { BuilderId, Product } from '../../model/schema';
-import { CATALOG } from '../products';
+import { CATALOG, CATEGORY_LABEL, CATEGORY_ORDER } from '../products';
 import { buildProduct, mountHeightCm } from './index';
 
 function bounds(p: Product) {
@@ -92,5 +92,33 @@ describe('buildProduct', () => {
     const ceil = CATALOG.find((x) => x.id === 'samsung-ceiling-ac-sample')!;
     expect(countNamed(buildProduct(ceil, ceil.variants[0].id), 'vent')).toBe(4);
     expect(mountHeightCm(ceil)).toBe(230 - 25);
+  });
+
+  it('옷장은 문짝 수만큼 문과 손잡이가 있다', () => {
+    const p = CATALOG.find((x) => x.id === 'wardrobe-builtin-240')!;
+    const g = buildProduct(p, p.variants[0].id);
+    expect(countNamed(g, 'door')).toBe(4);
+    expect(countNamed(g, 'handle')).toBe(4);
+  });
+
+  it('의자는 다리 4개와 등받이가 있다', () => {
+    const p = CATALOG.find((x) => x.id === 'chair-dining')!;
+    const g = buildProduct(p, p.variants[0].id);
+    expect(countNamed(g, 'leg')).toBe(4);
+    expect(countNamed(g, 'back')).toBe(1);
+  });
+
+  it('욕실: 양변기 물탱크, 세면대 수전, 샤워부스 유리 2면', () => {
+    const t = CATALOG.find((x) => x.id === 'toilet-std')!;
+    expect(countNamed(buildProduct(t, t.variants[0].id), 'tank')).toBe(1);
+    const b = CATALOG.find((x) => x.id === 'basin-std')!;
+    expect(countNamed(buildProduct(b, b.variants[0].id), 'tap')).toBe(1);
+    const s = CATALOG.find((x) => x.id === 'shower-90')!;
+    expect(countNamed(buildProduct(s, s.variants[0].id), 'glass')).toBe(2);
+  });
+
+  it('욕실 분류가 카탈로그 순서에 있다', () => {
+    expect(CATEGORY_ORDER.indexOf('bath')).toBeGreaterThan(CATEGORY_ORDER.indexOf('furniture'));
+    expect(CATEGORY_LABEL.bath).toBe('욕실');
   });
 });

@@ -1,21 +1,26 @@
 import * as THREE from 'three';
 import type { BuilderId, Product, Variant } from '../../model/schema';
 import { DEFAULT_CEILING_CM, productElevationCm } from '../elevation';
+import { buildBasin } from './basin';
 import { buildBed } from './bed';
 import { buildBox } from './box';
 import { buildBuiltInAppliance } from './builtInAppliance';
 import { buildCabinetRun } from './cabinetRun';
 import { buildCeilingAc } from './ceilingAc';
+import { buildChair } from './chair';
 import { buildFridge } from './fridge';
 import { buildFrontLoader } from './frontLoader';
+import { buildShower } from './shower';
 import { buildSofa } from './sofa';
 import { buildStandAc } from './standAc';
 import { buildTable } from './table';
+import { buildToilet } from './toilet';
 import { buildTv } from './tv';
+import { buildWardrobe } from './wardrobe';
 
 export type Builder = (p: Product, v: Variant) => THREE.Group;
 
-const BUILDERS: Partial<Record<BuilderId, Builder>> = {
+const BUILDERS: Record<BuilderId, Builder> = {
   box: buildBox,
   fridge: buildFridge,
   'front-loader': buildFrontLoader,
@@ -27,6 +32,11 @@ const BUILDERS: Partial<Record<BuilderId, Builder>> = {
   'built-in-appliance': buildBuiltInAppliance,
   'cabinet-run': buildCabinetRun,
   'ceiling-ac': buildCeilingAc,
+  chair: buildChair,
+  wardrobe: buildWardrobe,
+  toilet: buildToilet,
+  basin: buildBasin,
+  shower: buildShower,
 };
 
 export function buildProduct(p: Product, variantId: string): THREE.Group {
