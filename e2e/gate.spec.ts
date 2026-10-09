@@ -40,17 +40,16 @@ test('0809로 들어가고, 7일 동안은 새로고침해도 다시 묻지 않�
   await expect(page.getByTestId('gate')).toBeVisible();
 });
 
-test('폰 폭에서는 잠금 화면이 기기 폭 그대로이고, 입력 뒤 키보드를 닫으면(blur) 바로 들어가며 그때 PC viewport로 바뀐다', async ({ page }) => {
+test('폰 폭에서 입력 뒤 키보드를 닫으면(blur) 바로 들어가고 1열 레이아웃이 나온다', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?gate=1');
   await expect(page.getByTestId('gate')).toBeVisible();
-  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', 'width=device-width, initial-scale=1.0');
   const input = page.getByLabel('비밀번호');
   await input.fill('0809');
   await input.blur();
   await expect(page.getByTestId('gate')).toHaveCount(0);
   await expect(page.locator('.toolbar')).toBeVisible();
-  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', 'width=1200');
+  await expect(page.locator('.left')).toBeVisible();
 });
 
 test('틀린 PIN은 blur만으로 한 번 세고 입력을 비운다', async ({ page }) => {

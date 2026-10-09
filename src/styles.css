@@ -84,7 +84,6 @@ button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); 
 .segmented button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); color: var(--cream); }
 .save-status { margin-left: auto; white-space: nowrap; font-size: 12px; color: var(--text-2); }
 .toolbar .toolbar-link { margin-left: 8px; font-size: 12px; color: var(--text-2); }
-.toolbar .toolbar-note { flex-basis: 100%; font-size: 12px; color: var(--text-2); } /* 모바일 안내(스펙 §44) */
 .save-error { color: var(--danger-text); }
 
 /* 입력 */
@@ -193,6 +192,17 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .cl-memo:hover { border-color: var(--border); }
 .cl-memo:focus { outline: none; border-color: var(--brass); background: var(--panel); color: var(--text); box-shadow: 0 0 0 3px var(--brass-bg); }
 .cl-empty { padding: 32px; text-align: center; color: var(--text-2); font-size: 13px; background: var(--panel); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+/* 모바일 1열 배치(스펙 §48): 같은 도구·패널을 폰 폭에 맞춰 캔버스 → 속성 → 도구/카탈로그 순으로 쌓고 페이지가 스크롤된다 */
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto auto 60vh auto auto; height: auto; min-height: 100vh; }
+  .center { grid-column: 1; grid-row: 3; height: 60vh; }
+  .right { grid-column: 1; grid-row: 4; border-left: none; border-top: 1px solid var(--border); overflow: visible; }
+  .left { grid-column: 1; grid-row: 5; border-right: none; border-top: 1px solid var(--border); overflow: visible; }
+  .app-wide { grid-template-rows: auto auto 1fr; height: 100vh; }
+  .app-wide .center { height: auto; }
+  .history, .sync { width: auto; left: 12px; right: 12px; }
+  .page-panel { padding: 16px; }
+}
 @media (max-width: 820px) {
   .cl-body { grid-template-columns: 1fr; }
   .cl-nav { display: none; }

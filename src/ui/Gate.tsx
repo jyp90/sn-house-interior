@@ -9,7 +9,6 @@ import {
   recordAttempt,
   writeGateState,
 } from '../persistence/gate';
-import { applyViewport, resetViewport } from './smallScreen';
 
 function local(): Storage | undefined {
   try {
@@ -34,11 +33,6 @@ export function Gate({ children }: { children: ReactNode }) {
   const status = gateStatus(state, now);
   const busy = useRef(false);
 
-  // 잠금 화면은 기기 폭 그대로(폰에서 읽히게), 들어간 뒤에만 PC 레이아웃 viewport(스펙 §46.1)
-  useEffect(() => {
-    if (unlocked) applyViewport(document, window.screen.width);
-    else resetViewport(document);
-  }, [unlocked]);
 
   // 잠긴 동안 남은 시간을 1분마다 갱신
   useEffect(() => {

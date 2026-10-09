@@ -3,14 +3,15 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-10 기준 `main` = PR #35 `feat/sliding-door`(§47 외짝 슬라이딩 중문, 스키마 v9) 병합(그 전 #34 §46, #33 §45, #32 §44). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §47.
-- 테스트(`main`): typecheck 통과, `npm test` 631 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 51 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- 2026-10-10 기준 `main` = PR #36 `feat/mobile-stack`(§48 모바일 1열 배치, §44.1/§46.1 viewport 축소 철회) 병합(그 전 #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §48.
+- 테스트(`main`): typecheck 통과, `npm test` 628 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 51 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
-- 미확인: 실제 휴대폰 Safari에서 Pages 주소(§44 PC 레이아웃 축소·핀치 줌 포함).
+- 미확인: 실제 휴대폰 Safari에서 §48 1열 배치·핀치 줌(에뮬레이션만 확인).
 
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
+| §48 | #36 | 모바일 1열 배치(`styles.css` 820px: 캔버스 60vh → 속성 → 도구, viewport 항상 device-width, `smallScreen.ts`·안내 문구 삭제) | 628 / 51 |
 | §47 | #35 | 외짝 슬라이딩 중문(`leaves: 'sliding'`, `clearance.ts` `slidingLeaf`/`slideArrow`, 2D·PDF 문짝 선+화살표, 3D 오프셋 유리 문짝, 창호 일람 「슬라이딩」, 스키마 v9, 프리셋 `middle-door` 슬라이딩 중문) | 631 / 51 |
 | §46 | #34 | 잠금 화면은 `device-width`, 입장 후 `width=1200`(`Gate` + `smallScreen.resetViewport`), 입력 blur 제출, 7일 만료 `homefit:gate:unlocked:v2` | 619 / 50 |
 | §45 | #33 | GitHub 동기화(`persistence/github.ts` Contents API, `persistence/sync.ts` 설정 `homefit:sync:v1`, 툴바 「동기화」 + `SyncPanel` 불러오기/저장, 시작 시 원격 sha 확인 배너) — 실제 저장(push)은 사용자 PAT로 미검증 | 619 / 48 |

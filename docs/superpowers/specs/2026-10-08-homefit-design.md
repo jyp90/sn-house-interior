@@ -922,3 +922,17 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 ### 47.4 테스트
 - 단위: `parse.test.ts`(v8→v9, `leaves: 'sliding'` 허용), `clearance.test.ts`(sliding → `doorLeaves` 빈 배열, `slidingLeaf` 좌표·방향), `validate.test.ts`(슬라이딩 문 앞 아이템은 간섭 아님), `openingParts.test.ts`(한 장·오프셋), `planSvg.test.ts`·`pages.test.ts`(화살표·일람 문구).
 - e2e `editor2d.spec.ts`: 중문 도구로 문 추가 → 문짝 「슬라이딩」 → 스윙 호 0개·화살표 1개 → 실행 취소.
+
+## 48. 36차 반영: 모바일 1열 배치 (2026-10-10)
+
+사용자 확인(폰): 들어간 뒤에도 PC 화면 축소가 아니라 **폰 크기에 맞게** 보이길 원함. §44.1의 「viewport `width=1200` 고정 + 안내 문구」와 §46.1의 잠금 화면 viewport 전환을 **철회**하고, viewport는 항상 `width=device-width, initial-scale=1.0`. 모바일 전용 기능 제한은 없다(§33 철회 유지): 같은 도구·패널을 1열로 쌓는다.
+
+### 48.1 레이아웃 (`styles.css` `@media (max-width: 820px)`)
+- `.app`: 1열, 행 = 툴바 / 배너 / 캔버스(`.center`, 60vh) / 속성(`.right`) / 도구·카탈로그(`.left`). `height: auto; min-height: 100vh`라 페이지가 스크롤되고 패널은 `overflow: visible`(자체 스크롤 없음). 좌우 테두리 대신 위 테두리.
+- 체크리스트·내보내기(`.app-wide`)는 `auto auto 1fr`에 `height: 100vh`로 두어 `.page-panel`이 그대로 안에서 스크롤한다. `.page-panel` 여백 16px.
+- 이력·동기화 패널은 캔버스 폭에 맞춰 좌우 12px.
+- 툴바는 그대로 줄바꿈(가로 스크롤 없음).
+- 삭제: `src/ui/smallScreen.ts`(+test), 툴바 안내 문구, `Gate`/`main.tsx`의 viewport 전환. 2D 핀치 줌(§44.2)·잠금 blur 입장·7일 기억(§46.2)은 그대로.
+
+### 48.2 테스트
+- e2e `mobile.spec.ts`(390×844): meta `device-width`, 구조 탭에서 `.left`·「벽 그리기」·`.right` 표시, `.center` 위 < `.right` 위 < `.left` 위, `scrollWidth ≤ 390`; 핀치는 벽을 피해 캔버스 왼쪽 위 빈 곳에서. `gate.spec.ts`: 390px blur 입장 뒤 `.left` 표시.
