@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { withActiveItems } from '../model/layout';
 import { SAMPLE_PLAN } from '../model/samplePlan';
 import type { Plan, Product } from '../model/schema';
-import { buildPdf, clampLines, MAX_CELL_LINES, rowHeightMm, TABLE_BODY_MM, textUnits, wrapText, type TablePage } from './pages';
+import { buildPdf, clampLines, MAX_CELL_LINES, pdfSafe, rowHeightMm, TABLE_BODY_MM, textUnits, wrapText, type TablePage } from './pages';
 
 const NOW = new Date(2026, 9, 8);
 const input = { views: [], now: NOW };
@@ -11,6 +11,14 @@ const washer = { id: 'wa', productId: 'samsung-grande-washer-sample', variantId:
 // 전용회로 가전 11대를 콘센트 없이 두면 주석은 설비 없음 1줄 + 가전 목록 2줄 + 경고 11줄 = 14줄
 const CAP_WASHERS = 11;
 const usedMm = (p: TablePage) => p.rows.reduce((sum, r) => sum + rowHeightMm(Math.max(...r.map((c) => c.length))), 0);
+
+describe('pdfSafe', () => {
+  it('이모지와 변형 선택자를 지우고 생긴 빈칸을 정리한다', () => {
+    expect(pdfSafe('콘센트 확인 ✅')).toBe('콘센트 확인');
+    expect(pdfSafe('일반 메모는 그대로')).toBe('일반 메모는 그대로');
+    expect(pdfSafe('🔥')).toBe('');
+  });
+});
 
 describe('wrapText / clampLines', () => {
   it('한글은 1, 그 밖은 0.6 너비로 세어 단어 단위로 줄을 바꾼다', () => {
