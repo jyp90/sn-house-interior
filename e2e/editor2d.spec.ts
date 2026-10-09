@@ -115,6 +115,7 @@ test('배경 도면을 불러와 축척을 보정하고 새로고침 후에도 �
   });
   await page.getByTestId('open-background').setInputFiles({ name: 'plan.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
   await expect(page.getByTestId('background-image')).toBeVisible();
+  await expect(page.getByTestId('background-image')).toHaveCSS('filter', 'grayscale(1)'); // 스펙 §35.1 흑백화
   await expect(page.getByTestId('scale-info')).toContainText('축척 미보정');
 
   await page.getByRole('button', { name: '축척 보정' }).click();

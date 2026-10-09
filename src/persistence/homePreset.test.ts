@@ -1,11 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { checkMismatch } from '../editor2d/calibration';
+import { isSimplePolygon, isValidPolygon, pointInPolygon } from '../geometry/polygon';
 import { distanceToWall } from '../geometry/structure';
 import { wallLength } from '../geometry/walls';
 import { SAMPLE_PLAN } from '../model/samplePlan';
 import { HOME_IMAGE_REF, prepareHomePreset } from './homePreset';
 import { memoryImageStore } from './images';
+import { parsePlan } from './parse';
 
 const withBg = {
   ...SAMPLE_PLAN,
@@ -87,5 +89,28 @@ describe.skipIf(!existsSync(PRESET))('우리 집 프리셋 (private)', () => {
     }
     expect(plan.fixtures.filter((f) => f.kind === 'outlet-waterproof')).toHaveLength(2);
     expect(plan.fixtures.filter((f) => f.kind === 'outlet-dedicated')).toHaveLength(4);
+  });
+});
+
+// home/plan.json(git 추적, 배포)은 테스트 환경에서 virtual:home-preset이 null이라 파일을 직접 읽는다(스펙 §35.4)
+const HOME_PLAN = new URL('../../home/plan.json', import.meta.url);
+
+describe('home/plan.json', () => {
+  it('파싱되고 방 8개 모두 polygon이 있으며 라벨은 그 안에 있다', () => {
+    const r = parsePlan(JSON.parse(readFileSync(HOME_PLAN, 'utf8')));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.plan.rooms).toHaveLength(8);
+    for (const room of r.plan.rooms) {
+      expect(room.polygon, room.id).toBeDefined();
+      expect(isValidPolygon(room.polygon!) && isSimplePolygon(room.polygon!), room.id).toBe(true);
+      expect(pointInPolygon(room.label, room.polygon!), room.id).toBe(true);
+    }
+    const living = r.plan.rooms.find((room) => room.id === 'living')!.polygon!;
+    expect([...living].sort((a, b) => a.x - b.x || a.y - b.y)).toEqual([
+      { x: 10, y: 396 },
+      { x: 10, y: 680 },
+      { x: 504, y: 396 },
+      { x: 504, y: 680 },
+    ]);
   });
 });

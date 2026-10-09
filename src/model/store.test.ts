@@ -774,3 +774,50 @@ describe('room areas and finishes', () => {
     expect(s.getState().plan.rooms[0].label).toEqual(label);
   });
 });
+
+describe('자동 영역 인식(스펙 §35.2)', () => {
+  const R1 = [{ x: 10, y: 10 }, { x: 344, y: 10 }, { x: 344, y: 390 }, { x: 10, y: 390 }];
+  const sortPts = (pts: { x: number; y: number }[]) => [...pts].sort((a, b) => a.x - b.x || a.y - b.y);
+
+  it('autoRoomPolygon은 닫힌 벽 영역을 넣고 라벨을 유지한다(실행 취소 1단계)', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    expect(s.getState().autoRoomPolygon('r1')).toBe(true);
+    const room = s.getState().plan.rooms[0];
+    expect(sortPts(room.polygon!)).toEqual(sortPts(R1));
+    expect(room.label).toEqual({ x: 175, y: 200 });
+    expect(s.getState().past).toHaveLength(1);
+    s.getState().undo();
+    expect(s.getState().plan).toEqual(SAMPLE_PLAN);
+  });
+
+  it('autoRoomPolygon이 실패하면 false, 평면·이력 변화 없음', () => {
+    const open = { ...SAMPLE_PLAN, walls: SAMPLE_PLAN.walls.filter((w) => w.id !== 'w3') };
+    const s = createPlanStore(open);
+    expect(s.getState().autoRoomPolygon('r1')).toBe(false);
+    expect(s.getState().plan).toBe(open);
+    expect(s.getState().past).toHaveLength(0);
+    expect(s.getState().autoRoomPolygon('없는-방')).toBe(false);
+  });
+
+  it('autoRoomPolygons는 영역 없는 방만 한 번의 커밋으로 처리하고 기존 영역은 두지 않는다', () => {
+    const sq = [{ x: 50, y: 50 }, { x: 100, y: 50 }, { x: 100, y: 100 }, { x: 50, y: 100 }];
+    const s = createPlanStore({ ...SAMPLE_PLAN, rooms: [...SAMPLE_PLAN.rooms, { id: 'r3', name: '복도', label: { x: 350, y: 100 } }] });
+    s.getState().setRoomPolygon('r1', sq);
+    const before = s.getState().past.length;
+    expect(s.getState().autoRoomPolygons()).toEqual({ done: ['r2'], failed: ['r3'] });
+    const rooms = s.getState().plan.rooms;
+    expect(rooms[0].polygon).toEqual(sq);
+    expect(sortPts(rooms[1].polygon!)).toEqual(sortPts([{ x: 356, y: 10 }, { x: 590, y: 10 }, { x: 590, y: 390 }, { x: 356, y: 390 }]));
+    expect(rooms[2].polygon).toBeUndefined();
+    expect(s.getState().past).toHaveLength(before + 1);
+    s.getState().undo();
+    expect(s.getState().plan.rooms[1].polygon).toBeUndefined();
+    expect(s.getState().plan.rooms[0].polygon).toEqual(sq);
+  });
+
+  it('autoRoomPolygons는 처리할 방이 없으면 커밋하지 않는다', () => {
+    const s = createPlanStore({ ...SAMPLE_PLAN, rooms: [] });
+    expect(s.getState().autoRoomPolygons()).toEqual({ done: [], failed: [] });
+    expect(s.getState().past).toHaveLength(0);
+  });
+});

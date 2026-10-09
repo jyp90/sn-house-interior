@@ -23,6 +23,7 @@ export function BackgroundImage({ px }: { px: number }) {
       opacity={bg.opacity}
       preserveAspectRatio="none"
       pointerEvents="none"
+      style={{ filter: 'grayscale(1)' }}
       data-testid="background-image"
     />
   );
