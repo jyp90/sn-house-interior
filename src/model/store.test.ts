@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { findProduct } from '../catalog/products';
 import { pointInPolygon, polygonCentroid } from '../geometry/polygon';
 import { DEFAULT_FINISH } from '../materials/presets';
-import { activeItems } from './layout';
+import { activeItems, withActiveItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 import { createPlanStore, HISTORY_LIMIT } from './store';
 import { validatePlan } from '../validation/validate';
@@ -88,6 +88,13 @@ describe('createPlanStore', () => {
     const copy = s.getState().duplicateItem(id)!;
     expect(activeItems(s.getState().plan).find((i) => i.id === copy)).toMatchObject({ x: 120, y: 120 });
     expect(s.getState().selectedId).toBe(copy);
+  });
+
+  it('duplicateItem도 정규화를 거쳐 정수 cm·0–359° 회전으로 복제한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().loadPlan(withActiveItems(SAMPLE_PLAN, [{ id: 'bad', productId: P, variantId: V, x: 10.6, y: 20.4, rotation: 370, elevation: 12.4 }]));
+    const copy = s.getState().duplicateItem('bad')!;
+    expect(activeItems(s.getState().plan).find((i) => i.id === copy)).toMatchObject({ x: 31, y: 40, rotation: 10, elevation: 12 });
   });
 
   it('removeItem은 선택을 해제한다', () => {

@@ -5,6 +5,7 @@ import { SAMPLE_PLAN } from '../model/samplePlan';
 import type { Plan, Product } from '../model/schema';
 import type { ItemStatus } from '../validation/validate';
 import { DEFAULT_CHECKLIST, PHASES } from './defaults';
+import { shortHash } from './hash';
 import { autoChecklist, checklistEntry, checklistItems } from './items';
 
 const resolve = (plan: Plan) => (id: string) => findProduct(plan, id);
@@ -27,9 +28,20 @@ describe('기본 항목', () => {
 describe('autoChecklist', () => {
   it('전용회로 가전 목록과 콘센트 없음 경고', () => {
     const plan = withActiveItems(SAMPLE_PLAN, [washer, sofa]);
+    const text = '전용회로 확인: 그랑데 드럼세탁기 (150cm 이내 전용회로 콘센트 없음: 그랑데 드럼세탁기)';
     expect(autoChecklist(plan, resolve(plan), clean)).toEqual([
-      { id: 'auto-circuit', phase: 'carpentry', auto: true, text: '전용회로 확인: 그랑데 드럼세탁기 (150cm 이내 전용회로 콘센트 없음: 그랑데 드럼세탁기)' },
+      { id: `auto-circuit-${shortHash(text)}`, phase: 'carpentry', auto: true, text },
     ]);
+  });
+
+  it('자동 항목 id는 문구 해시를 붙여, 문구가 바뀌면 id도 바뀌고 같으면 유지된다', () => {
+    const dryer = { id: 'dr', productId: 'samsung-grande-washer-sample', variantId: 'white', x: 450, y: 200, rotation: 0 };
+    const one = withActiveItems(SAMPLE_PLAN, [washer]);
+    const two = withActiveItems(SAMPLE_PLAN, [washer, dryer]);
+    const moved = withActiveItems(SAMPLE_PLAN, [{ ...washer, x: 310 }]);
+    const circuitId = (p: Plan) => autoChecklist(p, resolve(p), clean).find((i) => i.id.startsWith('auto-circuit'))!.id;
+    expect(circuitId(two)).not.toBe(circuitId(one));
+    expect(circuitId(moved)).toBe(circuitId(one));
   });
 
   it('설비가 있으면 콘센트 위치 공유 항목을 만들고, 가까운 전용회로 콘센트가 있으면 경고를 뺀다', () => {
@@ -42,7 +54,7 @@ describe('autoChecklist', () => {
       '전용회로 확인: 그랑데 드럼세탁기',
       '콘센트 위치 공유: 전용회로 콘센트 1개 — 전기 계획도·전기 설비 목록 참고',
     ]);
-    expect(items.map((i) => i.id)).toEqual(['auto-circuit', 'auto-outlets']);
+    expect(items.map((i) => i.id)).toEqual([`auto-circuit-${shortHash(items[0].text)}`, 'auto-outlets']);
   });
 
   it('빌트인 제품마다 치수(미확인 ≈)와 벽 기준 위치', () => {
@@ -55,13 +67,9 @@ describe('autoChecklist', () => {
       ...withActiveItems(SAMPLE_PLAN, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0 }]),
       customProducts: [builtIn],
     };
+    const text = '빌트인 치수 전달: 식기세척기 ≈60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm';
     expect(autoChecklist(plan, resolve(plan), clean)).toEqual([
-      {
-        id: 'auto-builtin-dw',
-        phase: 'kitchen',
-        auto: true,
-        text: '빌트인 치수 전달: 식기세척기 ≈60×60×85cm, 왼쪽 벽까지 60cm, 오른쪽 벽까지 214cm, 뒤 벽까지 20cm',
-      },
+      { id: `auto-builtin-dw-${shortHash(text)}`, phase: 'kitchen', auto: true, text },
     ]);
     const verified = withActiveItems(plan, [{ id: 'dw', productId: 'custom-dw', variantId: 'v', x: 100, y: 60, rotation: 0, verified: true }]);
     expect(autoChecklist(verified, resolve(verified), clean)[0].text).toBe(
@@ -80,7 +88,7 @@ describe('autoChecklist', () => {
       customProducts: [upper],
     };
     const items = autoChecklist(plan, resolve(plan), clean);
-    const item = items.find((i) => i.id === 'auto-builtin-u');
+    const item = items.find((i) => i.id.startsWith('auto-builtin-u-'));
     expect(item?.text.endsWith(', 바닥에서 145cm')).toBe(true);
   });
 
@@ -97,8 +105,9 @@ describe('autoChecklist', () => {
         ],
       },
     };
+    const text = '문 열림 간섭 해결: 3인 소파 — 방문 열림 간섭: 문';
     expect(autoChecklist(plan, resolve(plan), status)).toEqual([
-      { id: 'auto-door-so', phase: 'carpentry', auto: true, text: '문 열림 간섭 해결: 3인 소파 — 방문 열림 간섭: 문' },
+      { id: `auto-door-so-${shortHash(text)}`, phase: 'carpentry', auto: true, text },
     ]);
   });
 });
@@ -111,7 +120,7 @@ describe('checklistItems / checklistEntry', () => {
     const phases = items.map((i) => PHASES.findIndex((p) => p.id === i.phase));
     expect(phases).toEqual([...phases].sort((a, b) => a - b));
     const carpentry = items.filter((i) => i.phase === 'carpentry');
-    expect(carpentry.at(-1)?.id).toBe('auto-circuit');
+    expect(carpentry.at(-1)?.id).toMatch(/^auto-circuit-[0-9a-z]+$/);
     expect(items).toHaveLength(DEFAULT_CHECKLIST.length + 1);
   });
 

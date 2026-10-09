@@ -157,7 +157,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       duplicateItem: (id) => {
         const src = findItem(id);
         if (!src) return null;
-        const copy = { ...src, id: newId('item'), x: src.x + 20, y: src.y + 20 };
+        const copy = normalizeItem({ ...src, id: newId('item'), x: src.x + 20, y: src.y + 20 });
         commit(withItems((items) => [...items, copy]), { selectedId: copy.id });
         return copy.id;
       },

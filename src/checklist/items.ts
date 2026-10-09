@@ -6,6 +6,7 @@ import type { ChecklistState, Plan, Product } from '../model/schema';
 import { conflictLines } from '../validation/describe';
 import { validatePlan, type ItemStatus } from '../validation/validate';
 import { DEFAULT_CHECKLIST, PHASES, type ChecklistItem } from './defaults';
+import { shortHash } from './hash';
 
 type Resolve = (productId: string) => Product | undefined;
 
@@ -22,7 +23,9 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     const missing = new Set(missingDedicatedCircuit(plan, resolve));
     const missingNames = dedicated.filter((p) => missing.has(p.item.id)).map((p) => p.product.name);
     const warn = missingNames.length > 0 ? ` (${DEDICATED_RADIUS_CM}cm 이내 전용회로 콘센트 없음: ${missingNames.join(', ')})` : '';
-    out.push({ id: 'auto-circuit', phase: 'carpentry', auto: true, text: `전용회로 확인: ${dedicated.map((p) => p.product.name).join(', ')}${warn}` });
+    const text = `전용회로 확인: ${dedicated.map((p) => p.product.name).join(', ')}${warn}`;
+    // 문구 해시를 붙여, 내용이 바뀌면 이전 체크가 새 항목에 따라오지 않는다(spec §22)
+    out.push({ id: `auto-circuit-${shortHash(text)}`, phase: 'carpentry', auto: true, text });
   }
 
   if (plan.fixtures.length > 0) {
@@ -33,11 +36,12 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     if (!product.builtIn) continue;
     const { w, d, h } = product.dims;
     const e = itemElevationCm(item, product, ceiling);
+    const text = `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}${e > 0 ? `, 바닥에서 ${e}cm` : ''}`;
     out.push({
-      id: `auto-builtin-${item.id}`,
+      id: `auto-builtin-${item.id}-${shortHash(text)}`,
       phase: product.category === 'kitchen' ? 'kitchen' : 'carpentry',
       auto: true,
-      text: `빌트인 치수 전달: ${product.name} ${item.verified ? '' : '≈'}${w}×${d}×${h}cm, ${wallReferenceText(plan, item, product)}${e > 0 ? `, 바닥에서 ${e}cm` : ''}`,
+      text,
     });
   }
 
@@ -45,7 +49,8 @@ export function autoChecklist(plan: Plan, resolve: Resolve, status: Record<strin
     const st = status[item.id];
     if (!st || !(st.clearanceBlocked || st.blocksDoor)) continue;
     const lines = conflictLines(st, plan).filter((line) => !line.startsWith('충돌'));
-    out.push({ id: `auto-door-${item.id}`, phase: 'carpentry', auto: true, text: `문 열림 간섭 해결: ${product.name} — ${lines.join(' / ')}` });
+    const text = `문 열림 간섭 해결: ${product.name} — ${lines.join(' / ')}`;
+    out.push({ id: `auto-door-${item.id}-${shortHash(text)}`, phase: 'carpentry', auto: true, text });
   }
 
   return out;
