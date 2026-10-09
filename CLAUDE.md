@@ -83,4 +83,4 @@ Subagents implementing a plan task update `src/MODULE-MAP.md`; the main session 
 - Past rounds (decisions, deferred minors): `archive/*/HANDOFF.md` (local only).
 
 ## Work in progress (2026-10-08)
-- Plan 5 (spec §14.5-5: Samsung catalog, remaining builders, exploratory QA): not started, waits for the user's model list.
+- Plan 5 remainder (spec §14.5-5, §20.6): official Samsung dims + `sourceUrl` for the `-sample` products once the user's model list arrives; builders and generic products shipped in spec §20 (plan `docs/superpowers/plans/2026-10-09-catalog-elevation.md`).
