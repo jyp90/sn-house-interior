@@ -827,3 +827,20 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 
 - 단위(`persistence/gate.test.ts`): 해시, 5회 실패 → 잠금 → 만료 후 초기화, 성공 시 초기화, 잠긴 동안 무변화, 저장값 파싱(깨진 값은 초기 상태), 활성 조건.
 - e2e(`e2e/gate.spec.ts`): 기본 서버는 잠금 없음 / 틀린 뒤 0809로 진입·새로고침 유지 / 5회 틀려 잠김·새로고침 유지 → `lockedUntil`을 과거로 바꿔 만료시킨 뒤 0809로 진입.
+## 43. 31차 반영: 참고 문서 링크를 브라우저에 저장 (2026-10-09)
+
+사용자 보고: 체크리스트 탭에 문서 링크가 안 보인다. 원인은 §15.4 설계 — 공유 키 URL이라 `private/doc-links.local.json`에만 두고 `virtual:doc-links`가 `npm run dev`(메인 체크아웃)에서만 넘기며, 빌드·Pages·워크트리 dev에서는 `null`이다. 번들에는 계속 넣지 않는다.
+
+### 43.1 저장 위치
+- 링크 목록을 **브라우저 localStorage**(`homefit:doc-links:v1`)에도 둘 수 있다. 저장된 목록이 비어 있지 않으면 그것을, 없으면 `virtual:doc-links`(dev 전용)를 쓴다. Plan JSON·PNG/PDF·번들에는 들어가지 않는다(기기마다 따로).
+- `docs/links.ts`: `readStoredDocLinks()`/`writeStoredDocLinks(raw)`/`clearStoredDocLinks()`(try/catch, `parseDocLinks`로 정규화), `docLinksStore`(`useSyncExternalStore`용 `subscribe`/`get`): 체크리스트·내보내기 탭이 같은 목록을 본다.
+
+### 43.2 화면 (체크리스트 탭 「참고 문서」 줄)
+- 링크 칩 뒤에 「링크 설정」 버튼(저장된 링크가 있으면 「링크 편집」, `aria-expanded`). 누르면 아래에 폼: `<textarea aria-label="참고 문서 링크 JSON">`(현재 목록을 JSON으로 미리 채움 — dev에서 복사해 Pages 브라우저에 붙여 넣는 용도), 형식 안내 한 줄(`[{ "mode": "checklist"|"export", "label", "url": "https://…", "note"? }]`), 「저장」·「지우기」·「닫기」.
+- 저장: JSON 파싱 실패 → `.error` 「JSON 형식이 아닙니다.」, 배열이 아니거나 유효 항목 0개 → 「저장할 링크가 없습니다(mode·label·https URL 확인).」. 성공하면 폼을 닫고 칩이 갱신된다. 지우기: 저장 목록 삭제 → dev면 `virtual` 목록으로 돌아간다.
+- 링크가 하나도 없으면 「참고 문서」 제목 대신 「참고 문서 링크 없음」 + 「링크 설정」 버튼만 보인다(이전에는 아무것도 안 보였다). 내보내기 탭은 표시만 하고 설정 버튼은 없다.
+- 모바일 보기 전용(§33)에서도 설정할 수 있다(화면 설정이지 평면 편집이 아님).
+
+### 43.3 테스트
+- 단위 `docs/links.test.ts`: 저장/읽기/지우기, 깨진 JSON·빈 배열, 저장 > virtual 우선.
+- e2e `e2e/docLinks.spec.ts`: 체크리스트 탭 「링크 설정」 → JSON 입력(https://example.com) → 저장 → 칩 표시 → 새로고침 후 유지 → 내보내기 탭에도 export 항목 → 잘못된 JSON 오류 문구 → 지우기.

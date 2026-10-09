@@ -87,10 +87,10 @@ button[aria-pressed='true']:hover:not(:disabled) { background: var(--walnut-2); 
 .save-error { color: var(--danger-text); }
 
 /* 입력 */
-.props input, .props select, .custom-box input, .field input, .props .field select, .history input, .layout-bar select, .export-view textarea, .export-view select, .finish select {
+.props input, .props select, .custom-box input, .field input, .props .field select, .history input, .layout-bar select, .export-view textarea, .export-view select, .doc-links-form textarea, .finish select {
   padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-s); background: var(--panel); color: var(--text); font: inherit; font-size: 13px; transition: border-color 0.12s, box-shadow 0.12s;
 }
-.props input:focus, .props select:focus, .custom-box input:focus, .field input:focus, .history input:focus, .layout-bar select:focus, .export-view textarea:focus, .export-view select:focus, .finish select:focus {
+.props input:focus, .props select:focus, .custom-box input:focus, .field input:focus, .history input:focus, .layout-bar select:focus, .export-view textarea:focus, .export-view select:focus, .doc-links-form textarea:focus, .finish select:focus {
   outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px var(--brass-bg);
 }
 .props input[type='checkbox'], .check input { accent-color: var(--walnut); }
