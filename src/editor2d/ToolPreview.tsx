@@ -6,7 +6,7 @@ import { useUi } from '../ui/uiStore';
 import { imagePxToPlan } from './calibration';
 import { wallToolPoint } from './snapping';
 import { pointsAttr } from './svg';
-import { areaSnapPoints, measureToolPoint } from './tools';
+import { areaSnapGroups, areaToolPointFrom, measureToolPoint } from './tools';
 
 export function ToolPreview({
   px,
@@ -27,7 +27,7 @@ export function ToolPreview({
   const walls = usePlan((s) => s.plan.walls);
   const bg = usePlan((s) => s.plan.background);
   const plan = usePlan((s) => s.plan);
-  const areaSnap = useMemo(() => areaSnapPoints(walls), [walls]);
+  const areaSnap = useMemo(() => areaSnapGroups(walls), [walls]);
 
   if (tool === 'wall' && wallPoints.length > 0) {
     const endpoints = [...walls.flatMap((w) => [w.a, w.b]), ...wallPoints];
@@ -49,7 +49,7 @@ export function ToolPreview({
     );
   }
   if (tool === 'area' && (areaPoints.length > 0 || cursor)) {
-    const next = cursor ? wallToolPoint(cursor, areaPoints.at(-1) ?? null, [...areaSnap, ...areaPoints], snap) : null;
+    const next = cursor ? areaToolPointFrom(cursor, areaPoints, areaSnap, snap) : null;
     const pts = next ? [...areaPoints, next] : areaPoints;
     return (
       <g className="tool-preview">

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { findProduct } from '../catalog/products';
 import { pointInPolygon, polygonCentroid } from '../geometry/polygon';
 import { DEFAULT_FINISH } from '../materials/presets';
-import { activeItems } from './layout';
+import { activeItems, withActiveItems } from './layout';
 import { SAMPLE_PLAN } from './samplePlan';
 import { createPlanStore, HISTORY_LIMIT } from './store';
 import { validatePlan } from '../validation/validate';
@@ -88,6 +88,13 @@ describe('createPlanStore', () => {
     const copy = s.getState().duplicateItem(id)!;
     expect(activeItems(s.getState().plan).find((i) => i.id === copy)).toMatchObject({ x: 120, y: 120 });
     expect(s.getState().selectedId).toBe(copy);
+  });
+
+  it('duplicateItem도 정규화를 거쳐 정수 cm·0–359° 회전으로 복제한다', () => {
+    const s = createPlanStore(SAMPLE_PLAN);
+    s.getState().loadPlan(withActiveItems(SAMPLE_PLAN, [{ id: 'bad', productId: P, variantId: V, x: 10.6, y: 20.4, rotation: 370, elevation: 12.4 }]));
+    const copy = s.getState().duplicateItem('bad')!;
+    expect(activeItems(s.getState().plan).find((i) => i.id === copy)).toMatchObject({ x: 31, y: 40, rotation: 10, elevation: 12 });
   });
 
   it('removeItem은 선택을 해제한다', () => {
@@ -613,6 +620,20 @@ describe('room areas and finishes', () => {
     s.getState().setRoomPolygon('r1', far);
     expect(s.getState().plan.rooms[0].label).toEqual({ x: 1050, y: 1050 });
     expect(s.getState().setRoomPolygon('r1', [{ x: 0, y: 0 }])).toBe(false);
+  });
+
+  it('변이 교차하는 다각형은 addRoomArea·setRoomPolygon·dragRoomVertex 모두 거부한다', () => {
+    const bowTie = [{ x: 10, y: 10 }, { x: 340, y: 390 }, { x: 340, y: 10 }, { x: 10, y: 200 }]; // 면적≠0인 나비꼴
+    const s = createPlanStore(SAMPLE_PLAN);
+    expect(s.getState().addRoomArea(bowTie)).toBeNull();
+    expect(s.getState().setRoomPolygon('r1', bowTie)).toBe(false);
+    expect(s.getState().plan.rooms[0].polygon).toBeUndefined();
+    expect(s.getState().past).toHaveLength(0);
+    s.getState().setRoomPolygon('r1', sq);
+    s.getState().beginDrag();
+    s.getState().dragRoomVertex('r1', 1, { x: 10, y: 450 }); // 1번 점을 3번 점 너머로 → 변 교차
+    s.getState().endDrag();
+    expect(s.getState().plan.rooms[0].polygon).toEqual(sq);
   });
 
   it('setRoomFinish / setPlanFinish', () => {

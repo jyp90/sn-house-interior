@@ -1,8 +1,8 @@
 import type { StoreApi } from 'zustand/vanilla';
 import { findProduct } from '../catalog/products';
 import { FIXTURE_DEFAULT_HEIGHT, snapFixture } from '../electrical/fixtures';
-import { corners, itemObb } from '../geometry/obb';
-import { closesPolygon, isValidPolygon } from '../geometry/polygon';
+import { axes, corners, itemObb, type OBB } from '../geometry/obb';
+import { closesPolygon, isSimplePolygon, isValidPolygon } from '../geometry/polygon';
 import { nearestWall, openingAtPoint } from '../geometry/structure';
 import { wallObb } from '../geometry/walls';
 import { activeItems } from '../model/layout';
@@ -10,7 +10,7 @@ import type { Opening, Plan, Vec2, Wall } from '../model/schema';
 import type { PlanState } from '../model/store';
 import { useUi, type Tool } from '../ui/uiStore';
 import { planToImagePx } from './calibration';
-import { wallFaceCorners, wallSegments, wallToolPoint } from './snapping';
+import { groupedToolPoint, tJunctionCorners, wallFaceCorners, wallSegments, wallToolPoint } from './snapping';
 
 export const OPENING_PICK_CM = 30;
 
@@ -37,12 +37,36 @@ type ToolContext = {
 
 export const AREA_CLOSE_CM = 15;
 
+function strictlyInsideObb(p: Vec2, o: OBB, eps = 0.5): boolean {
+  const [u, v] = axes(o);
+  const dx = p.x - o.cx;
+  const dy = p.y - o.cy;
+  return Math.abs(dx * u.x + dy * u.y) < o.hw - eps && Math.abs(dx * v.x + dy * v.y) < o.hd - eps;
+}
+
+export type AreaSnapGroups = { faces: Vec2[]; rest: Vec2[] };
+
+// 면 모서리(끝점 공유·T자 접합부)가 1순위, 중심선 끝점·벽 OBB 모서리가 2순위.
+// 다른 벽 안에 묻힌 중심선 끝점·모서리는 마감면 위가 아니므로 뺀다
+export function areaSnapGroups(walls: Wall[]): AreaSnapGroups {
+  const obbs = walls.map(wallObb);
+  const rest = walls.flatMap((w, i) =>
+    [w.a, w.b, ...corners(obbs[i]).map(round)].filter((p) => !obbs.some((o, j) => j !== i && strictlyInsideObb(p, o))),
+  );
+  return { faces: [...wallFaceCorners(walls), ...tJunctionCorners(walls)], rest };
+}
+
 export function areaSnapPoints(walls: Wall[]): Vec2[] {
-  return [...walls.flatMap((w) => [w.a, w.b, ...corners(wallObb(w)).map(round)]), ...wallFaceCorners(walls)];
+  const g = areaSnapGroups(walls);
+  return [...g.faces, ...g.rest];
+}
+
+export function areaToolPointFrom(raw: Vec2, points: Vec2[], groups: AreaSnapGroups, snap: boolean): Vec2 {
+  return groupedToolPoint(raw, points.at(-1) ?? null, [groups.faces, [...groups.rest, ...points]], snap);
 }
 
 export function areaToolPoint(raw: Vec2, points: Vec2[], walls: Wall[], snap: boolean): Vec2 {
-  return wallToolPoint(raw, points.at(-1) ?? null, [...areaSnapPoints(walls), ...points], snap);
+  return areaToolPointFrom(raw, points, areaSnapGroups(walls), snap);
 }
 
 // 측정 스냅 후보: 벽 끝점·모서리·면 모서리 + 배치된 아이템 모서리
@@ -84,6 +108,10 @@ export function finishArea(store: StoreApi<PlanState>, points: Vec2[]): boolean 
       kind: 'error',
       text: pts.length >= 3 ? '영역의 면적이 0입니다.' : '영역은 꼭짓점 3개 이상이어야 합니다.',
     });
+    return false;
+  }
+  if (!isSimplePolygon(pts)) {
+    ui.showBanner({ kind: 'error', text: '영역 선이 서로 교차합니다.' });
     return false;
   }
   const ok = ui.areaTarget ? s.setRoomPolygon(ui.areaTarget, pts) : s.addRoomArea(pts) !== null;

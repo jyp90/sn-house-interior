@@ -2,7 +2,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 import { fitOpening, moveEndpoint, refitOpenings, roomRectWalls, setWallLength } from '../geometry/structure';
 import { refitFixtures } from '../electrical/fixtures';
 import { wallLength } from '../geometry/walls';
-import { isValidPolygon, pointInPolygon, polygonCentroid } from '../geometry/polygon';
+import { isSimplePolygon, isValidPolygon, pointInPolygon, polygonCentroid } from '../geometry/polygon';
 import { planFinish } from '../materials/presets';
 import { newId } from './ids';
 import { activeItems, activeLayout, nextLayoutName, withActiveItems } from './layout';
@@ -157,7 +157,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
       duplicateItem: (id) => {
         const src = findItem(id);
         if (!src) return null;
-        const copy = { ...src, id: newId('item'), x: src.x + 20, y: src.y + 20 };
+        const copy = normalizeItem({ ...src, id: newId('item'), x: src.x + 20, y: src.y + 20 });
         commit(withItems((items) => [...items, copy]), { selectedId: copy.id });
         return copy.id;
       },
@@ -331,7 +331,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
 
       addRoomArea: (polygon, name) => {
         const pts = polygon.map(roundVec);
-        if (!isValidPolygon(pts)) return null;
+        if (!isValidPolygon(pts) || !isSimplePolygon(pts)) return null;
         const plan = get().plan;
         const room: Room = { id: newId('room'), name: name ?? `방 ${plan.rooms.length + 1}`, label: polygonCentroid(pts), polygon: pts };
         commit({ ...plan, rooms: [...plan.rooms, room] }, { selectedId: room.id });
@@ -340,7 +340,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
 
       setRoomPolygon: (id, polygon) => {
         const pts = polygon.map(roundVec);
-        if (!isValidPolygon(pts)) return false;
+        if (!isValidPolygon(pts) || !isSimplePolygon(pts)) return false;
         const plan = get().plan;
         const room = plan.rooms.find((r) => r.id === id);
         if (!room) return false;
@@ -374,7 +374,7 @@ export function createPlanStore(initial: Plan): StoreApi<PlanState> {
         const room = origin.rooms.find((r) => r.id === id);
         if (!room?.polygon || index < 0 || index >= room.polygon.length) return;
         const polygon = room.polygon.map((p, i) => (i === index ? roundVec(to) : p));
-        if (!isValidPolygon(polygon)) return;
+        if (!isValidPolygon(polygon) || !isSimplePolygon(polygon)) return;
         set({ plan: { ...get().plan, rooms: get().plan.rooms.map((r) => (r.id === id ? { ...r, polygon } : r)) } });
       },
 

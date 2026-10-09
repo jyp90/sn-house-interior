@@ -24,7 +24,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `pick.ts` — items under a point (candidate picker).
 - `bounds.ts` — plan bounds/center for view fitting.
 - `wallReference.ts` — "벽 기준 위치" text for PDF/built-in detail.
-- `polygon.ts` — area/centroid/point-in-polygon/validity for room floor polygons.
+- `polygon.ts` — area/centroid/point-in-polygon/validity for room floor polygons; `isSimplePolygon` rejects crossing or touching non-adjacent edges (spec §22, used by `finishArea`, `addRoomArea`, `setRoomPolygon`, `dragRoomVertex`).
 
 ## validation/
 - `validate.ts` — `validatePlan` → per-item status (`collides`, `clearanceBlocked`, `blocksDoor`) with `conflicts` reasons. Every obstacle (wall, item, door swing) is also filtered by vertical span (spec §20.2).
@@ -47,16 +47,17 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## editor2d/ (SVG, coordinates = plan cm)
 - `Editor2D.tsx` — the 2D editor root; layers `Walls2D`, `Openings2D` (per-leaf swings, glass leaf + 「중문」 label for middle doors), `Rooms2D`, `Items2D`, `Fixtures2D`, `Overlays2D`, `RoomVertexHandles` (top layer, above walls), `ToolPreview` (incl. `areaPoints` for the area tool, live measure line/label for the measure tool), `BackgroundImage`. Select-tool press on a room selects it (`roomPress.ts` WeakSet flag on the native event, no `stopPropagation`) and still starts the pan. Esc on the `measure` tool clears `ui.measure` without leaving the tool (checked before the generic Escape block).
-- `Rooms2D.tsx` — draws `room.polygon` floors (`floorFill`/`FloorPatternDefs` from `floorPattern.tsx`) under the room name labels and the selected-room outline; `RoomVertexHandles` (mounted by `Editor2D` as a top layer so handles on walls stay grabbable) draws draggable `VertexHandle`s for the selected room (structure mode + select tool only; snaps via `snapToEndpoint`/`areaSnapPoints`, commits through `dragRoomVertex`).
+- `Rooms2D.tsx` — draws `room.polygon` floors (`floorFill`/`FloorPatternDefs` from `floorPattern.tsx`) under the room name labels and the selected-room outline; `RoomVertexHandles` (mounted by `Editor2D` as a top layer so handles on walls stay grabbable) draws draggable `VertexHandle`s for the selected room (structure mode + select tool only; snaps via `snapToEndpointGroups` over `areaSnapGroups` computed once at drag start (face corners first), commits through `dragRoomVertex`).
 - `floorPattern.tsx` — React layer over `materials/pattern.ts`: `floorPatternId(roomId)`, `FloorPatternDefs({ rooms, plan })` (one `<pattern>` per room with a polygon), `floorFill(room, plan)` → pattern url or flat color for `plain`.
-- `tools.ts` — tool click handling (wall, opening, room, fixture, area, measure) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapPoints`/`areaToolPoint` snap to wall endpoints, `corners(wallObb(w))`, and `wallFaceCorners`; `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices. `measure` tool (spec §21): `measureSnapPoints`/`measureToolPoint` add placed-item corners (`corners(itemObb(...))` via `findProduct`/`activeItems`) to `areaSnapPoints` and reuse `wallToolPoint` for the 45° end-point snap; clicks go through `ui.measureClick` (a → b → new a).
-- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.2 inner-corner snap for the area tool).
+- `tools.ts` — tool click handling (wall, opening, room, fixture, area, measure) and `finishWall`; `middle-door` tool places a `door` with `MIDDLE_DOOR_DEFAULTS` (120cm, asym, middle). `area` tool: `areaSnapGroups` → `faces` (`wallFaceCorners` + `tJunctionCorners`) take priority over `rest` (wall endpoints and `corners(wallObb(w))`, minus points buried inside another wall's OBB); `areaToolPoint`/`areaToolPointFrom` (also used by `ToolPreview`), `areaSnapPoints` = flat list (spec §22); `finishArea` closes via `setRoomPolygon`/`addRoomArea` using `areaTarget`, bannering on < 3 vertices, zero area or crossing edges (「영역 선이 서로 교차합니다.」). `measure` tool (spec §21): `measureSnapPoints`/`measureToolPoint` add placed-item corners (`corners(itemObb(...))` via `findProduct`/`activeItems`) to `areaSnapPoints` and reuse `wallToolPoint` for the 45° end-point snap; clicks go through `ui.measureClick` (a → b → new a).
+- `snapping.ts` — angle and endpoint snap for wall drawing; `wallFaceCorners(walls)` intersects the two finish-face lines of each pair of walls sharing an endpoint (spec §19.2 inner-corner snap for the area tool); `tJunctionCorners(walls)` the inner corners where a wall end meets another wall mid-span; `snapToEndpointGroups`/`groupedToolPoint` try candidate groups in priority order (spec §22).
 - `calibration.ts` — scale from two points, verification length mismatch (`SCALE_TOLERANCE` 2%); `backgroundForNewImage` keeps scale/offset/calibration when a same-pixel-size image replaces the background (used by `StructurePanel` 이미지 불러오기).
 - `viewBox.ts` — fit, zoom, pan; `svgPoint.ts` client → plan coords; `svg.ts` path helpers; `itemColor.ts` item fill.
 - `useBackgroundUrl.ts` — object URL for the stored background image.
 
 ## scene3d/ (R3F, 1 unit = 1 m)
-- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3).
+- `Viewport.tsx` — canvas root (always mounted, `active` prop); `Walls3D`, `Floor`, `Items3D`, `Overlays`; warm ambient light + `#efeae2` background (spec §19.3); `<LabelOverlay />` sits next to the canvas.
+- `labelBridge.ts` + `LabelProjector.tsx` + `LabelOverlay.tsx` — 3D labels without drei `Html` (spec §22): `LabelProjector` (in Canvas, `useFrame`) projects world labels with `projectToScreen` and `publishLabels(kind)`; `LabelOverlay` (`useSyncExternalStore`) draws `.room-label`/`.dist-label` divs (`.label-3d`, absolute px); off-screen labels are culled and `.viewport` clips with `overflow: hidden`. Room labels from `Floor`, wall-distance labels from `Overlays`.
 - `Floor.tsx` — neutral base plane (#e8e2d6; plan default floor applies only to rooms with a polygon) + Grid + `RoomFloor` per room with a polygon: ShapeGeometry from (x, -y) laid with rotation.x = -π/2 → world (x, 0, y), textured by `floorTexture`, DoubleSide, row phase matches the 2D SVG pattern; disposes geometry/material/cloned map on unmount.
 - `Walls3D.tsx` — one group per `wallPieces` piece: box with `[base, base, TOP, base, base, base]` (plan default sides/ends/bottom, dark shared `TOP`) plus `FaceStrip` planes 0.1 cm off each side for `wallFaceSegments` intervals whose room's `roomWall` differs from the default (browser-verified: finish changes at the partition). Materials cached module-wide by `material:color` (wallpaper map cloned, repeat 1/m); box and strip UVs in metres, strips offset to continue the box face's u.
 - `CameraRig.tsx` + `cameraFit.ts` — perspective/top views, fit, fixed PDF poses (`pdfViewPoses`).
@@ -74,7 +75,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 
 ## checklist/
 - `defaults.ts` — phases and default on-site inspection items (`i-` ids).
-- `items.ts` — `autoChecklist` from the plan + merged `checklistItems` with saved state.
+- `items.ts` — `autoChecklist` from the plan + merged `checklistItems` with saved state. Auto ids carry `shortHash` (`hash.ts`, FNV-1a → base36): `auto-circuit-<h>`/`auto-door-<itemId>-<h>` hash the full text; `auto-builtin-<itemId>-<h>` hashes only name + W×D×H + verified, so moving keeps the check/memo (spec §22); `auto-outlets` stays fixed.
 
 ## quote/
 - `request.ts` — quote request data for the PDF (groups, questions, spec decisions, photo requests). No budget amounts.
@@ -82,7 +83,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 ## export/
 - `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
-- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」).
+- `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」). Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
 
 ## devserver/ (Node, dev server only)
@@ -96,7 +97,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `FinishPicker.tsx` — generic preset-chip + material `<select>` + color `<input type="color">` picker for `FloorFinish`/`WallFinish` (colour previews locally, commits once on the native `change` event); used by `RoomProperties` (room floor/wall) and `StructurePanel` (plan defaults). Exports `FLOOR_MATERIALS`/`WALL_MATERIALS` option lists.
 - `styles.css` (src root) — wood-tone design tokens on `:root` (spec §19.4); colors only via tokens, 2D selection accent stays blue (`--accent`).
 - `fields.tsx` — number/text/checkbox inputs with units; `saveLabel.ts` "저장됨 HH:MM" text; `dnd.ts` catalog drag MIME; `selfUpdateClient.ts` update request, banner text, wait-for-restart poll.
-- `catalogFilter.ts` — `filterCatalog`: name/model substring filter for `CatalogPanel`'s 제품 찾기 input.
+- `catalogFilter.ts` — `filterCatalog`: name/model/category-label (`CATEGORY_LABEL`) substring filter for `CatalogPanel`'s 제품 찾기 input.
 - `properties/ItemProperties.tsx` — 설치 높이 `NumberField` (`itemElevationCm`, commits `item.elevation`) with a 기본값 reset button shown only when the item has an explicit elevation.
 
 ## scripts/ (Node, outside the app bundle)

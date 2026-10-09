@@ -3,7 +3,7 @@ import type { Vec2 } from '../model/schema';
 import { emptyPlanFields, SAMPLE_PLAN } from '../model/samplePlan';
 import { createPlanStore } from '../model/store';
 import { useUi } from '../ui/uiStore';
-import { applyToolClick, finishArea, finishWall } from './tools';
+import { applyToolClick, areaSnapPoints, areaToolPoint, finishArea, finishWall, measureSnapPoints } from './tools';
 
 const plan = () => ({
   version: 5 as const, info: { title: 't' }, rooms: [], openings: [], ...emptyPlanFields(),
@@ -75,6 +75,34 @@ describe('area tool', () => {
     const c = ctx();
     applyToolClick('area', { x: 13, y: 12 }, c.ctx); // w1 모서리(10,10)로 스냅
     expect(c.get()).toEqual([{ x: 10, y: 10 }]);
+  });
+
+  it('T자 접합부 안쪽 모서리를 후보로 내고, 다른 벽 안에 묻힌 중심선 끝점·모서리는 뺀다', () => {
+    const pts = areaSnapPoints(SAMPLE_PLAN.walls);
+    expect(pts).toEqual(expect.arrayContaining([{ x: 344, y: 10 }, { x: 356, y: 10 }, { x: 344, y: 390 }, { x: 356, y: 390 }]));
+    for (const buried of [{ x: 350, y: 0 }, { x: 356, y: -6 }, { x: 344, y: -6 }, { x: 0, y: 0 }]) {
+      expect(pts).not.toContainEqual(buried);
+    }
+    expect(measureSnapPoints(SAMPLE_PLAN)).toEqual(expect.arrayContaining([{ x: 344, y: 10 }]));
+    expect(measureSnapPoints(SAMPLE_PLAN)).not.toContainEqual({ x: 350, y: 0 });
+  });
+
+  it('T자 접합부 근처 클릭은 칸막이 안쪽 모서리로 스냅한다', () => {
+    expect(areaToolPoint({ x: 347, y: 4 }, [], SAMPLE_PLAN.walls, true)).toEqual({ x: 344, y: 10 });
+  });
+
+  it('면 모서리가 초안 점보다 우선한다', () => {
+    // 초안 점 (13,13)이 더 가까워도 벽 면 모서리 (10,10)을 고른다
+    expect(areaToolPoint({ x: 12, y: 13 }, [{ x: 13, y: 13 }], SAMPLE_PLAN.walls, true)).toEqual({ x: 10, y: 10 });
+  });
+
+  it('변이 서로 교차하는 영역은 닫지 않고 교차 배너를 띄운다', () => {
+    useUi.setState({ tool: 'area', areaTarget: null, banner: null });
+    const c = ctx();
+    expect(finishArea(c.store, [{ x: 20, y: 20 }, { x: 300, y: 300 }, { x: 300, y: 20 }, { x: 20, y: 200 }])).toBe(false);
+    expect(useUi.getState().banner?.text).toBe('영역 선이 서로 교차합니다.');
+    expect(c.store.getState().plan.rooms).toHaveLength(2);
+    expect(useUi.getState().tool).toBe('area');
   });
 
   it('첫 점을 다시 클릭하면 방을 만든다', () => {
