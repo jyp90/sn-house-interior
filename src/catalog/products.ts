@@ -1,6 +1,6 @@
 import type { Category, Plan, Product } from '../model/schema';
 
-export const CATEGORY_ORDER: Category[] = ['kitchen', 'laundry', 'tv', 'climate', 'living', 'furniture', 'custom'];
+export const CATEGORY_ORDER: Category[] = ['kitchen', 'laundry', 'tv', 'climate', 'living', 'furniture', 'bath', 'custom'];
 
 export const CATEGORY_LABEL: Record<Category, string> = {
   kitchen: '주방가전',
@@ -9,6 +9,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   climate: '냉난방',
   living: '생활가전',
   furniture: '가구',
+  bath: '욕실',
   custom: '사용자 정의',
 };
 
