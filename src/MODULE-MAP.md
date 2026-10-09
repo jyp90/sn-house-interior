@@ -11,14 +11,14 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `entities.ts` — `findEntity` across walls/openings/rooms/items/fixtures by id.
 - `units.ts` — `cmToM` / `mToCm`; the only cm↔m conversion.
 - `samplePlan.ts` — anonymous `SAMPLE_PLAN` bundled in the app (never our home).
-- `useValidation.ts` — memoised `validatePlan` over the current plan.
+- `useValidation.ts` — `planValidation(plan)` runs `validatePlan` once per plan object (`WeakMap<Plan, ...>` keyed by identity) so every consumer shares one result; `useValidation()` hook just reads it (spec §30.1).
 - `ids.ts` — `newId`.
 
 ## geometry/ (pure)
 - `vertical.ts` — vertical span overlap (touching ≠ overlap).
 - `obb.ts` — 2D OBB + SAT overlap, `itemObb`.
 - `walls.ts` — wall pieces split by openings, wall OBBs for collision.
-- `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan.
+- `clearance.ts` — product front clearance shapes; `doorLeaves` (per-leaf door swing: single / double / asym, spec §16) and `doorSwings` for the plan. `doorLeaves` clamps `o.offset`/`o.width` to the wall via `walls.ts`'s `clampToWall` before computing leaves, so an opening past the wall end stays inside it (spec §30.2).
 - `distance.ts` — 4-direction nearest-wall rays for the selected item.
 - `snap.ts` — item-to-wall snap (`WALL_SNAP_CM`).
 - `structure.ts` — room-rect → walls, fit/refit openings, endpoint move, wall length; called by store actions. `openingNumbers` (id → `D1`/`W1`/`O1` per kind, `plan.openings` order) shared by `export/planSvg.ts` and `export/pages.ts` (spec §25).
@@ -74,7 +74,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `builders/` — procedural THREE.Group per builder id (`fridge`, `frontLoader`, `tv`, `sofa`, `bed`, `table`, `box`, `standAc`, `builtInAppliance`, `cabinetRun`, `ceilingAc`, `chair`, `wardrobe`, `toilet`, `basin`, `shower`, `cornerCabinet`); `index.ts` dispatches and disposes. `parts.ts` gained `cylinder`/`glass` primitives. `cornerCabinet.ts` — L-shaped corner cabinet/hood housing (`corner-cabinet` builder, spec §29): two `body` boxes (back/left arms), two `door` panels, `base` part adds one named `counter` group (upper has none).
 
 ## electrical/
-- `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius). `switchGroups` (switch/light with `group`, name order `ko`) and `switchLinks` (switch × light pairs per group) feed 2D `Fixtures2D` dashed `switch-link-<s>-<l>` lines (electric mode only), `ElectricPanel` 「스위치 그룹」 list, `planSvg` 전기 계획도 dashes, `auto-switch-<h>` checklist item (spec §27).
+- `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius) and `missingDedicatedCircuitCached(plan)` (`WeakMap<Plan, string[]>`, resolves via `findProduct`) so `Items2D`/`ItemProperties`/`ElectricPanel` share one computation per plan (spec §30.1). `switchGroups` (switch/light with `group`, name order `ko`) and `switchLinks` (switch × light pairs per group) feed 2D `Fixtures2D` dashed `switch-link-<s>-<l>` lines (electric mode only), `ElectricPanel` 「스위치 그룹」 list, `planSvg` 전기 계획도 dashes, `auto-switch-<h>` checklist item (spec §27).
 
 ## checklist/
 - `defaults.ts` — phases and default on-site inspection items (`i-` ids).
@@ -84,7 +84,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `request.ts` — quote request data for the PDF (groups, questions, spec decisions, photo requests). No budget amounts.
 
 ## export/
-- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26). 전기 설비 목록 has a 「그룹」 column (switch/light only, else `-`; spec §27).
+- `pages.ts` — pure plan → PDF page data (wrapping, table pagination, quote pages, 방 마감표/창호 일람 after 치수 평면도 — spec §25). 배치도 notes append `${number}. ${product.name} — ${item.note}` per noted item, after the fixed notes (spec §26). 전기 설비 목록 has a 「그룹」 column (switch/light only, else `-`; spec §27). `pdfSafe(text)` strips `\p{Extended_Pictographic}`/variation selectors/ZWJ and collapses the resulting double spaces; called from `wrapText` so every table cell, cover row and drawing note is emoji-free before reaching Pretendard (spec §30.3).
 - `pdf.ts` — jsPDF + svg2pdf.js renderer (lazy); `pdfFont.ts` Pretendard loading with retry error.
 - `planSvg.ts` — standalone SVG of the plan for PNG/PDF (labels with halo, unverified marks, item numbers, per-leaf door swings, middle-door glass leaves + 「중문」, room area `12.3㎡` 14cm below the name label when `polygon` set — spec §25). 치수 평면도 only (`dimensionLines: true`): opening width labels prefixed with `openingNumbers` (`geometry/structure.ts`) e.g. `D1 ≈90` — not shown on 배치도/전기 계획도/PNG. Opening position label gap: 16cm on horizontal walls, 46cm on vertical walls (text width, also used for the 「중문」 label on vertical walls to clear the width label); fixture legend wraps into `floor((width + MARGIN) / LEGEND_STEP)` columns (spec §22).
 - `exportPdf.ts` — orchestrates 3D captures + render; `png.ts` SVG/canvas → PNG blob with header lines.
