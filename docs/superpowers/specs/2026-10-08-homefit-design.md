@@ -720,3 +720,19 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 
 ### 36.2 코드·테스트
 - `src/ui/modeHash.ts` — `modeFromHash`, `modeToHash`(pure), `syncModeWithHash(ui)`(main.tsx에서 1회 호출). 단위 `modeHash.test.ts`, e2e `e2e/modeHash.spec.ts`(타이틀, 클릭→reload 유지, 직접 hash, 모르는 hash → 배치).
+## 37. 25차 반영: 도면 흰 종이·방 라벨 확대·면적 표기 (2026-10-09)
+
+사용자 요청: Planner 5D 캡처처럼 2D 평면도의 도면 영역이 흰 바탕이고, 방 이름이 크고, 이름 아래 면적이 괄호로 붙는다.
+
+### 37.1 도면 자리의 흰 종이
+- `BackgroundImage`는 배경 이미지와 같은 위치·크기(`offsetX/Y`, `widthPx·cmPerPx`, `heightPx·cmPerPx`)의 흰 `<rect class="background-paper">`를 이미지 **아래**에 항상 그린다. 배경이 없으면 그리지 않는다.
+- 우리 집 프리셋(`home/plan.json`)의 배경 `opacity`는 0: 도면 이미지 대신 흰 종이가 보인다. 구조 패널 투명도 슬라이더로 언제든 이미지를 다시 볼 수 있다(축척·보정은 그대로).
+- 캔버스 바깥은 기존 크림색(`.editor2d-bg`) 유지.
+
+### 37.2 방 라벨
+- 방 이름 글씨 14px → 20px(화면 px 기준 `ROOM_NAME_PX`, 줌과 무관), weight 500.
+- `polygon`이 있는 방은 이름 아래 두 번째 줄에 `(면적㎡)` — `areaM2`(소수 1자리, PDF 면적과 같은 계산), 14px. 두 줄은 `label` 좌표를 중심으로 세로 정렬. 영역이 없는 방은 이름만.
+- 면적 줄도 이름과 같은 `<text>`라 클릭하면 방이 선택된다.
+
+### 37.3 테스트
+- e2e(`e2e/roomFinish.spec.ts`): 영역을 그린 뒤 `room-area-label-<id>`가 `(7.8㎡)`.
