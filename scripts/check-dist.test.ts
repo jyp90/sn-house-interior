@@ -17,8 +17,12 @@ describe('findDistProblems', () => {
     expect(findDistProblems(ok())).toEqual([]);
   });
 
-  it.each(['photo.jpg', 'assets/plan.JPEG', 'a.png', 'b.webp', 'c.heic', 'd.gif'])('이미지 파일 %s를 잡는다', (path) => {
+  it.each(['photo.jpg', 'assets/plan.JPEG', 'a.png', 'b.webp', 'c.heic', 'd.gif', 'floorplan-abc.jpg', 'assets/floorplan.jpg'])('이미지 파일 %s를 잡는다', (path) => {
     expect(findDistProblems([...ok(), { path, text: null }])).toEqual([`이미지 파일: ${path}`]);
+  });
+
+  it('우리 집 평면도 산출물 assets/floorplan-<hash>.jpg는 허용한다', () => {
+    expect(findDistProblems([...ok(), { path: 'assets/floorplan-D3kF9x_a.jpg', text: null }])).toEqual([]);
   });
 
   it.each(['our-home.local', 'make-our-home', 'home-floorplan.jpg', 'private/'])('금지 문자열 %s를 잡는다', (word) => {

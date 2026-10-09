@@ -1,0 +1,638 @@
+{
+  "version": 3,
+  "info": {
+    "title": "우리 집",
+    "supplyArea": 93.64,
+    "exclusiveArea": 59.97,
+    "scope": "전체 리모델링: 거실·주방 사이 벽 철거, 샷시 전체 교체, 거실 발코니 확장, 욕실 1개 전체 철거(구조 변경 검토), 현관 중문 신규(여닫이), 장판 3.2T",
+    "notes": "28평형 / 전용 약 18평 구축 아파트. 전체 톤은 화이트 & 우드, 우선순위는 전기 배선·단열·수납. 평면은 기본형 도면 치수 기반(거실만 발코니 확장 반영)이며 문 위치, 현관 중문, 전기 설비는 가안이므로 실측 후 보정."
+  },
+  "background": {
+    "imageRef": "image-home-floorplan",
+    "widthPx": 923,
+    "heightPx": 676,
+    "cmPerPx": 1.4145658263305323,
+    "offsetX": -107.50700280112045,
+    "offsetY": -130.14005602240897,
+    "rotation": 0,
+    "opacity": 0.5,
+    "calibration": {
+      "a": {
+        "x": 76,
+        "y": 72
+      },
+      "b": {
+        "x": 790,
+        "y": 72
+      },
+      "lengthCm": 1010,
+      "check": {
+        "a": {
+          "x": 56,
+          "y": 92
+        },
+        "b": {
+          "x": 56,
+          "y": 580
+        },
+        "lengthCm": 690
+      }
+    }
+  },
+  "walls": [
+    {
+      "id": "e-top",
+      "a": {
+        "x": 0,
+        "y": 0
+      },
+      "b": {
+        "x": 1010,
+        "y": 0
+      },
+      "thickness": 20,
+      "height": 230
+    },
+    {
+      "id": "e-right",
+      "a": {
+        "x": 1010,
+        "y": 0
+      },
+      "b": {
+        "x": 1010,
+        "y": 690
+      },
+      "thickness": 20,
+      "height": 230
+    },
+    {
+      "id": "e-bottom",
+      "a": {
+        "x": 1010,
+        "y": 690
+      },
+      "b": {
+        "x": 0,
+        "y": 690
+      },
+      "thickness": 20,
+      "height": 230
+    },
+    {
+      "id": "e-left",
+      "a": {
+        "x": 0,
+        "y": 690
+      },
+      "b": {
+        "x": 0,
+        "y": 0
+      },
+      "thickness": 20,
+      "height": 230
+    },
+    {
+      "id": "balcony",
+      "a": {
+        "x": 150,
+        "y": 0
+      },
+      "b": {
+        "x": 150,
+        "y": 390
+      },
+      "thickness": 20,
+      "height": 230
+    },
+    {
+      "id": "balcony-living",
+      "a": {
+        "x": 0,
+        "y": 390
+      },
+      "b": {
+        "x": 150,
+        "y": 390
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "bed1-living",
+      "a": {
+        "x": 150,
+        "y": 390
+      },
+      "b": {
+        "x": 510,
+        "y": 390
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "x510",
+      "a": {
+        "x": 510,
+        "y": 0
+      },
+      "b": {
+        "x": 510,
+        "y": 690
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "bath-kitchen",
+      "a": {
+        "x": 510,
+        "y": 285
+      },
+      "b": {
+        "x": 680,
+        "y": 285
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "bath-bed2",
+      "a": {
+        "x": 680,
+        "y": 0
+      },
+      "b": {
+        "x": 680,
+        "y": 300
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "bed2-south",
+      "a": {
+        "x": 680,
+        "y": 300
+      },
+      "b": {
+        "x": 1010,
+        "y": 300
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "entry-utility",
+      "a": {
+        "x": 870,
+        "y": 405
+      },
+      "b": {
+        "x": 1010,
+        "y": 405
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "kitchen-utility",
+      "a": {
+        "x": 870,
+        "y": 405
+      },
+      "b": {
+        "x": 870,
+        "y": 690
+      },
+      "thickness": 12,
+      "height": 230
+    },
+    {
+      "id": "entry-middle",
+      "a": {
+        "x": 870,
+        "y": 300
+      },
+      "b": {
+        "x": 870,
+        "y": 405
+      },
+      "thickness": 12,
+      "height": 230
+    }
+  ],
+  "openings": [
+    {
+      "id": "bed1-balcony",
+      "wallId": "balcony",
+      "kind": "window",
+      "offset": 80,
+      "width": 220,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "living-window",
+      "wallId": "e-left",
+      "kind": "window",
+      "offset": 30,
+      "width": 240,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "bed1-door",
+      "wallId": "x510",
+      "kind": "door",
+      "offset": 295,
+      "width": 80,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": true
+    },
+    {
+      "id": "living-kitchen",
+      "wallId": "x510",
+      "kind": "opening",
+      "offset": 410,
+      "width": 240,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "bath-door",
+      "wallId": "bath-kitchen",
+      "kind": "door",
+      "offset": 95,
+      "width": 70,
+      "height": 210,
+      "sill": 0,
+      "hinge": "end",
+      "swingIn": true
+    },
+    {
+      "id": "bed2-door",
+      "wallId": "bed2-south",
+      "kind": "door",
+      "offset": 60,
+      "width": 80,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "entrance",
+      "wallId": "e-right",
+      "kind": "door",
+      "offset": 315,
+      "width": 90,
+      "height": 210,
+      "sill": 0,
+      "hinge": "end",
+      "swingIn": false
+    },
+    {
+      "id": "utility-door",
+      "wallId": "kitchen-utility",
+      "kind": "door",
+      "offset": 150,
+      "width": 70,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "middle-door",
+      "wallId": "entry-middle",
+      "kind": "door",
+      "offset": 8,
+      "width": 90,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": true,
+      "middle": true,
+      "leaves": "single"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "balcony",
+      "name": "발코니",
+      "label": {
+        "x": 75,
+        "y": 195
+      }
+    },
+    {
+      "id": "bed1",
+      "name": "침실1",
+      "label": {
+        "x": 330,
+        "y": 195
+      }
+    },
+    {
+      "id": "living",
+      "name": "거실(확장)",
+      "label": {
+        "x": 255,
+        "y": 540
+      }
+    },
+    {
+      "id": "bath",
+      "name": "욕실",
+      "label": {
+        "x": 595,
+        "y": 140
+      }
+    },
+    {
+      "id": "bed2",
+      "name": "침실2",
+      "label": {
+        "x": 845,
+        "y": 150
+      }
+    },
+    {
+      "id": "kitchen",
+      "name": "주방·식당",
+      "label": {
+        "x": 690,
+        "y": 500
+      }
+    },
+    {
+      "id": "entry",
+      "name": "현관",
+      "label": {
+        "x": 940,
+        "y": 352
+      }
+    },
+    {
+      "id": "utility",
+      "name": "다용도실",
+      "label": {
+        "x": 940,
+        "y": 548
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "id": "layout-a",
+      "name": "A안",
+      "items": []
+    }
+  ],
+  "activeLayoutId": "layout-a",
+  "fixtures": [
+    {
+      "id": "fx-bath-in",
+      "kind": "outlet-waterproof",
+      "wallId": "e-top",
+      "pos": {
+        "x": 625,
+        "y": 10
+      },
+      "height": 140,
+      "memo": "세면대 수납장 안쪽 — 전동칫솔·면도기. 문 닫을 때 선이 끼지 않는 위치. 위치·높이 가안"
+    },
+    {
+      "id": "fx-bath-out",
+      "kind": "outlet-waterproof",
+      "wallId": "e-top",
+      "pos": {
+        "x": 665,
+        "y": 10
+      },
+      "height": 115,
+      "memo": "수납장 바깥 — 드라이기. 물 튀지 않는 높이(상판에서 띄우는 높이 추천 요청), 방수 커버, 누전차단기 회로. 가안"
+    },
+    {
+      "id": "fx-induction",
+      "kind": "outlet-dedicated",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 805,
+        "y": 680
+      },
+      "height": 30,
+      "memo": "인덕션 전용회로 — 위치는 주방 가구 확정 후"
+    },
+    {
+      "id": "fx-dishwasher",
+      "kind": "outlet-dedicated",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 745,
+        "y": 680
+      },
+      "height": 30,
+      "memo": "식기세척기 전용회로 — 싱크대 옆, 위치 가안"
+    },
+    {
+      "id": "fx-dryer",
+      "kind": "outlet-dedicated",
+      "wallId": "e-right",
+      "pos": {
+        "x": 1000,
+        "y": 600
+      },
+      "height": 110,
+      "memo": "다용도실 건조기 전용회로 — 위치 가안"
+    },
+    {
+      "id": "fx-aircon",
+      "kind": "outlet-dedicated",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 180,
+        "y": 680
+      },
+      "height": 30,
+      "memo": "거실 에어컨 전용회로 — 위치·배관 타공은 배치 확정 후"
+    },
+    {
+      "id": "fx-bed1-n1",
+      "kind": "outlet",
+      "wallId": "e-top",
+      "pos": {
+        "x": 250,
+        "y": 10
+      },
+      "height": 30,
+      "memo": "침실1 침대 왼쪽 협탁 — 가안"
+    },
+    {
+      "id": "fx-bed1-n2",
+      "kind": "outlet",
+      "wallId": "e-top",
+      "pos": {
+        "x": 420,
+        "y": 10
+      },
+      "height": 30,
+      "memo": "침실1 침대 오른쪽 협탁 — 가안"
+    },
+    {
+      "id": "fx-bed1-s",
+      "kind": "outlet",
+      "wallId": "bed1-living",
+      "pos": {
+        "x": 330,
+        "y": 384
+      },
+      "height": 30,
+      "memo": "침실1 화장대·책상 — 가안"
+    },
+    {
+      "id": "fx-living-tv1",
+      "kind": "outlet",
+      "wallId": "bed1-living",
+      "pos": {
+        "x": 250,
+        "y": 396
+      },
+      "height": 30,
+      "memo": "거실 TV 뒤 — TV·셋톱·공유기, 가안"
+    },
+    {
+      "id": "fx-living-tv2",
+      "kind": "outlet",
+      "wallId": "bed1-living",
+      "pos": {
+        "x": 420,
+        "y": 396
+      },
+      "height": 30,
+      "memo": "거실 TV 옆 — 가안"
+    },
+    {
+      "id": "fx-living-sofa",
+      "kind": "outlet",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 400,
+        "y": 680
+      },
+      "height": 30,
+      "memo": "거실 소파 옆 충전용 — 가안"
+    },
+    {
+      "id": "fx-kitchen-top1",
+      "kind": "outlet",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 600,
+        "y": 680
+      },
+      "height": 110,
+      "memo": "조리대 위 — 밥솥·전기포트, 가안"
+    },
+    {
+      "id": "fx-kitchen-top2",
+      "kind": "outlet",
+      "wallId": "e-bottom",
+      "pos": {
+        "x": 700,
+        "y": 680
+      },
+      "height": 110,
+      "memo": "조리대 위 — 믹서·토스터, 가안"
+    },
+    {
+      "id": "fx-fridge",
+      "kind": "outlet",
+      "wallId": "kitchen-utility",
+      "pos": {
+        "x": 864,
+        "y": 500
+      },
+      "height": 30,
+      "memo": "냉장고 — 위치는 주방 가구 확정 후, 가안"
+    },
+    {
+      "id": "fx-dining",
+      "kind": "outlet",
+      "wallId": "x510",
+      "pos": {
+        "x": 516,
+        "y": 670
+      },
+      "height": 30,
+      "memo": "식탁 옆 — 가안"
+    },
+    {
+      "id": "fx-bed2-n1",
+      "kind": "outlet",
+      "wallId": "e-top",
+      "pos": {
+        "x": 760,
+        "y": 10
+      },
+      "height": 30,
+      "memo": "침실2 침대 왼쪽 — 가안"
+    },
+    {
+      "id": "fx-bed2-n2",
+      "kind": "outlet",
+      "wallId": "e-top",
+      "pos": {
+        "x": 930,
+        "y": 10
+      },
+      "height": 30,
+      "memo": "침실2 침대 오른쪽 — 가안"
+    },
+    {
+      "id": "fx-bed2-s",
+      "kind": "outlet",
+      "wallId": "bed2-south",
+      "pos": {
+        "x": 900,
+        "y": 294
+      },
+      "height": 30,
+      "memo": "침실2 책상 — 가안"
+    },
+    {
+      "id": "fx-entry",
+      "kind": "outlet",
+      "wallId": "entry-utility",
+      "pos": {
+        "x": 940,
+        "y": 399
+      },
+      "height": 110,
+      "memo": "현관 신발장 — 제습기·신발 건조기, 가안"
+    },
+    {
+      "id": "fx-washer",
+      "kind": "outlet",
+      "wallId": "e-right",
+      "pos": {
+        "x": 1000,
+        "y": 520
+      },
+      "height": 110,
+      "memo": "다용도실 세탁기 — 가안"
+    }
+  ],
+  "checklist": [],
+  "customProducts": []
+}

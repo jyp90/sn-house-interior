@@ -3,6 +3,7 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
+- 2026-10-09 `feat/tracked-home-preset`: 스펙 §24 — 우리 집 프리셋·평면도를 `home/plan.json`·`home/floorplan.jpg`로 추적, dev·build 양쪽 로드, `check:dist` 평면도 산출물 허용. typecheck 통과, `npm test` 387 통과·3 skip, e2e 29 통과, e2e:preview 2 통과, check:dist·privacy scan(--dist) 통과. 탐색 QA(preview 5181): 첫 방문에 우리 집 평면+배경 로드, 3D, 구조 탭 버튼. `feat/room-finish`는 PR #8로 main 병합됨.
 - `feat/openings-3d`(`c549319`): 스펙 §23 3D 문짝·창 유리 — `scene3d/openingParts.ts`(순수, 틀·문짝·손잡이·유리·멀리온 부품, 벽 길이/높이 클램프) + `Openings3D.tsx`(raycast 없음, 재질 공유). 중문은 유리 문짝·회색 틀. 테스트: typecheck 통과, `npm test` 483 통과·3 skip, e2e 32 통과. 탐색 QA(샘플, 5181): 3D에서 창틀·멀리온·유리, 칸막이 문짝 표시, 아이템 추가 선택·빈 곳 클릭 해제 그대로, 콘솔 오류 없음.
 - `fix/deferred-minors`(`dc64ec0`): 스펙 §22 보류 minor 정리 — 3D 방 이름·벽 간격 라벨을 drei `Html` 대신 자체 투영 오버레이(`scene3d/labelBridge.ts`·`LabelProjector.tsx`·`LabelOverlay.tsx`)로 그려 「거실」 라벨 누락·콘솔 unmount 오류 해결, 영역/측정 스냅에 T자 접합부 안쪽 모서리 추가·묻힌 중심선 점 제외, 영역 자기 교차 거부, 세로 벽 개구부 라벨 겹침·전기 범례 줄바꿈, 자동 체크리스트 id 해시, `duplicateItem` 정규화, 카탈로그 분류명 검색. 테스트: typecheck 통과, `npm test` 471 통과·3 skip, e2e 32 통과(`e2e/scene3d.spec.ts` 신규). 탐색 QA(샘플, 5181): 3D 라벨 거실·방 모두 표시, 콘솔 오류 없음, 영역 점이 T자 모서리(356,10)에 스냅, 분류명 「욕실」 검색 4개.
 - `feat/measure-tool`(`b756890`): 스펙 §21 거리 측정 도구 — 도구 막대 「측정」(구조·배치·전기, 배치 3D에서 누르면 2D), 두 점 클릭·실시간 라벨 `Ncm (가로×세로)`·벽/아이템 모서리 스냅·45° 각도 스냅·Esc 지우기, 화면 전용(`uiStore.measure`). `window.__homefit.ui`(dev 전용) 추가, `e2e/elevation.spec.ts` 대기 보강. 테스트: typecheck 통과, `npm test` 448 통과·3 skip, e2e 31 통과(`e2e/measure.spec.ts` 포함). 탐색 QA(샘플, 5181): 시작점 벽 모서리 스냅 점 표시, 실시간 라벨, 고정 후 3D 전환 시 도구 해제, 구조/전기 모드 동작, 체크리스트 모드에는 버튼 없음, Esc, 페이지 오류 없음.
@@ -24,7 +25,7 @@
 - 마지막 라운드 기록: `archive/20261008-electrical-pdf/HANDOFF.md`.
 
 ## 다음 할 일
-0b. 다른 세션 PR #2(`feat/tracked-home-preset`, 스펙 「§20 프리셋 추적」 — §20·§21은 카탈로그·설치 높이·측정 도구가 차지했으므로 병합 전 §24로 번호를 바꿔야 함)는 repo가 공개라 보류 중 — 사용자는 2026-10-09 「브라우저에서 열기」(프리셋 미푸시)를 선택. 병합하려면 공개 전제로 사용자 재확인 필요.
+0b. (완료) PR #2 `feat/tracked-home-preset` — 사용자가 공개 repo 포함을 승인(2026-10-09), 스펙 §24로 재번호 후 병합.
 0. (완료) `feat/room-finish` 병합됨. `private/make-our-home.mjs`는 `version: 5`로 고쳐 다시 실행(영역·마감은 앱에서 그린다). 3D 「거실」 라벨·T자 스냅은 §22에서 해결.
 0a. (완료, §22) T자 접합부 스냅·영역 자기 교차 검사. 남은 것: e2e의 3D 반영 검증은 `e2e/scene3d.spec.ts`가 라벨까지 확인(캔버스 픽셀 검증은 여전히 없음).
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인; 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.

@@ -5,7 +5,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 ## Specs and plans
 | Doc | Status |
 |---|---|
-| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass (latest) |
+| `docs/superpowers/specs/2026-10-08-homefit-design.md` | Binding. §14 (Planner 5D round) overrides §1–13; §15 quote / home preset, §16 middle door, §17 Pages deploy, §18 auto-update button, §19 room areas / floor-wall finishes / wood-tone UI, §20 catalog expansion / item elevation, §21 distance measurement tool, §22 deferred-minor fixes, §23 3D door leaves / window glass, §24 tracked home preset (latest) |
 | `docs/references/2026-10-08-planner5d-research-design.md` | User-provided research; source of requirement IDs F01–F12 |
 | `docs/superpowers/plans/2026-10-08-homefit-01-foundation-placement.md` | Plan 1 done |
 | `docs/superpowers/plans/2026-10-08-homefit-02-editor2d.md` | Plan 2 done |
@@ -24,7 +24,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | Store, undo/redo, selection | `src/model/store.ts`, `src/model/StoreContext.tsx` | §4, §6 |
 | Autosave, save status, JSON open/save | `src/persistence/storage.ts`, `src/persistence/file.ts`, `src/ui/saveLabel.ts` | §6 저장, §10, §14.1 F11 |
 | Revision history (20 snapshots) | `src/persistence/revisions.ts`, `src/ui/HistoryPanel.tsx` | §14.1 F10 |
-| Local-only home preset | `vite.config.ts` `virtual:home-preset`, `src/persistence/homePreset.ts`, `src/main.tsx` | §3, §15.1 |
+| Home preset (tracked `home/plan.json` + `home/floorplan.jpg`, dev + build, spec §24) | `vite.config.ts` `virtual:home-preset`, `src/persistence/homePreset.ts`, `src/main.tsx`, `scripts/check-dist.ts` | §15.1, §20 |
 | 2D structure editor (walls, openings, rooms, tools, snapping) | `src/editor2d/`, `src/geometry/structure.ts`, `src/ui/StructurePanel.tsx` | §6 구조 모드, §14.1 |
 | Distance measurement tool (측정, screen-only) | `src/ui/uiStore.ts` `measure`, `src/editor2d/tools.ts` `measureToolPoint`, `src/editor2d/ToolPreview.tsx`, `src/ui/Toolbar.tsx` | §21 |
 | Background image + scale calibration (same-size re-upload keeps scale/offset) | `src/editor2d/calibration.ts`, `src/editor2d/BackgroundImage.tsx`, `src/persistence/images.ts` | §6, §14.1 F01 |
@@ -54,7 +54,7 @@ Start at `HANDOFF.md` 「지금 상태」/「다음 할 일」. Rules: `CLAUDE.m
 | PDF page or copy | spec §9, §15.3; `src/export/pages.ts` then `src/export/pdf.ts`; svg2pdf pitfalls in `CLAUDE.md` |
 | Floor/wall finish preset, room area | spec §19; `src/materials/presets.ts`, `src/geometry/polygon.ts`, `src/editor2d/tools.ts` (area tool) |
 | Checklist items | spec §8, §15.2 (new `i-` ids, fresh wording) |
-| Anything touching `private/` or the home preset | skill `checking-privacy`; spec §3, §15.1; privacy rule in `CLAUDE.md` |
+| Anything touching `private/` or the home preset | skill `checking-privacy`; spec §3, §15.1, §24; privacy rule in `CLAUDE.md` |
 | Deploy / change the Pages setup | spec §17 → `docs/superpowers/specs/2026-10-08-pages-deploy-design.md`; `.github/workflows/pages.yml`, `scripts/check-dist.ts`; never push pre-rewrite history |
 | Commit / finish a round | skills `committing-safely`, `syncing-docs`, `exploratory-qa` |
 | Resume a past round | `archive/*/HANDOFF.md` (local only) |
