@@ -24,9 +24,30 @@ test('모바일 폭에서는 캔버스 → 속성 → 도구 순 1열이고 도�
   await expect(page.getByRole('button', { name: 'JSON 저장' })).toBeVisible();
 });
 
+test('모바일 폭에서 체크리스트·내보내기 탭은 가로로 밀리지 않는다 (스펙 §49)', async ({ page }) => {
+  for (const tab of ['체크리스트', '내보내기']) {
+    await page.getByRole('button', { name: tab, exact: true }).click();
+    const panel = page.locator('.page-panel:visible');
+    await expect(panel).toBeVisible();
+    const { scrollW, clientW } = await panel.evaluate((el) => ({ scrollW: el.scrollWidth, clientW: el.clientWidth }));
+    expect(scrollW, tab).toBeLessThanOrEqual(clientW);
+  }
+  // 체크리스트 머리(제목·진행률)도 화면 폭 안에 있다
+  await page.getByRole('button', { name: '체크리스트', exact: true }).click();
+  const head = (await page.locator('.cl-head').boundingBox())!;
+  expect(head.x).toBeGreaterThanOrEqual(0);
+  expect(head.x + head.width).toBeLessThanOrEqual(390);
+});
+
 test('두 손가락 핀치로 2D 도면이 확대된다', async ({ page }) => {
   await page.getByRole('button', { name: '구조', exact: true }).click();
   const svg = page.getByTestId('editor2d');
+  // 탭이 보이면 캔버스 크기가 잡히면서 평면 전체 맞춤이 한 번 더 일어난다. 그 뒤에 핀치해야 맞춤이 핀치를 덮지 않는다
+  await expect.poll(() => svg.evaluate((el) => {
+    const [, , w, h] = el.getAttribute('viewBox')!.split(' ').map(Number);
+    const r = el.getBoundingClientRect();
+    return Math.abs(w / h - r.width / r.height) < 0.01;
+  })).toBe(true);
   const before = (await svg.getAttribute('viewBox'))!.split(' ').map(Number);
   await svg.evaluate((el) => {
     // 캔버스 가운데는 샘플 평면의 벽이라(벽이 포인터를 가져간다) 왼쪽 위 빈 곳에서 핀치한다

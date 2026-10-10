@@ -936,3 +936,17 @@ L자 발자국 충돌(빈 코너에 다른 가구 허용), ㄷ자 자동 배치,
 
 ### 48.2 테스트
 - e2e `mobile.spec.ts`(390×844): meta `device-width`, 구조 탭에서 `.left`·「벽 그리기」·`.right` 표시, `.center` 위 < `.right` 위 < `.left` 위, `scrollWidth ≤ 390`; 핀치는 벽을 피해 캔버스 왼쪽 위 빈 곳에서. `gate.spec.ts`: 390px blur 입장 뒤 `.left` 표시.
+
+## 49. 37차 반영: 모바일 체크리스트 가로 고정 (2026-10-10)
+
+사용자 확인(폰 Safari): 체크리스트 탭이 옆으로 밀려 왼쪽이 잘려 보임. 원인은 §48에서 `.page-panel` 여백만 16px로 줄이고 체크리스트 머리(`.cl-head`)의 음수 여백(-24px -32px)은 그대로 둔 것 → 머리가 좌우 16px씩 넘쳐 패널이 가로 스크롤됐다.
+
+### 49.1 레이아웃 (`styles.css` `@media (max-width: 820px)`)
+- `.cl-head`: `top: -16px; margin: -16px -16px 0; padding: 16px 16px 14px`(패널 여백과 같게).
+- `.page-panel`(체크리스트·내보내기): `overflow-x: hidden; touch-action: pan-y` — 폰 폭에 고정되고 세로로만 스크롤된다.
+- `.cl-total`은 `white-space: nowrap`(「0 / 48 완료」가 두 줄로 꺾이지 않게, 모든 폭).
+
+### 49.2 테스트
+- e2e `mobile.spec.ts`(390px): 체크리스트·내보내기 `.page-panel`의 `scrollWidth ≤ clientWidth`, `.cl-head`가 화면 폭 안.
+- 같은 파일의 핀치 테스트는 탭 전환 직후 캔버스 크기가 잡히며 일어나는 전체 맞춤(`fitViewBox`)이 핀치를 덮어 간헐 실패했다(main에서 5회 중 2회) → viewBox 비율이 캔버스 비율과 같아질 때까지 기다린 뒤 핀치.
+
