@@ -28,7 +28,7 @@ export function ElectricPanel() {
           </button>
         ))}
       </div>
-      <p className="muted">벽 가까이(30cm 이내)를 클릭하면 벽면에 붙습니다. 조명은 벽에 붙지 않습니다. 스냅을 끄면 클릭한 자리에 놓입니다. Esc로 선택 도구로 돌아갑니다.</p>
+      <p className="muted">벽 가까이(30cm 이내)를 클릭하면 벽면에 붙습니다. 조명·실링팬은 벽에 붙지 않습니다. 스냅을 끄면 클릭한 자리에 놓입니다. Esc로 선택 도구로 돌아갑니다.</p>
       <h3>배치된 전기 설비</h3>
       <p className="muted">{plan.fixtures.length > 0 ? fixtureSummary(plan.fixtures) : '아직 없습니다.'}</p>
       <h3>스위치 그룹</h3>

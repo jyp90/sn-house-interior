@@ -28,6 +28,14 @@ describe('기본 항목', () => {
     expect(phasesOf('전력 증설')).toEqual(['carpentry', 'common']);
     expect(phasesOf('가스 배관')).toEqual(['carpentry', 'common']);
   });
+  it('휴젠트 방충망은 샷시·창호, 디아망 벽지는 도배, 냉장고 가림·실링팬은 목공·전기에 들어 있고 기본 항목은 61개 (스펙 §51)', () => {
+    const phasesOf = (word: string) => [...new Set(DEFAULT_CHECKLIST.filter((i) => i.text.includes(word)).map((i) => i.phase))];
+    expect(phasesOf('휴젠트')).toEqual(['window']);
+    expect(phasesOf('디아망')).toEqual(['wallpaper']);
+    expect(phasesOf('냉장고 가림')).toEqual(['carpentry']);
+    expect(phasesOf('실링팬')).toEqual(['carpentry']);
+    expect(DEFAULT_CHECKLIST).toHaveLength(61);
+  });
 });
 
 describe('autoChecklist', () => {

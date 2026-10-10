@@ -42,6 +42,8 @@ export const DEFAULT_CHECKLIST: ChecklistItem[] = [
   item('i-window-3', 'window', '기존 실리콘을 걷어 내고 새로 쐈는지 확인한다'),
   item('i-window-4', 'window', '외부 실리콘 시공이 끝난 뒤 마감 상태 사진을 받는다'),
   item('i-window-5', 'window', 'PVC 창호 안 철재 보강재: 계약 전에는 제조사 사양서로, 설치 뒤에는 자석을 대어 확인한다'),
+  item('i-window-6', 'window', '휴젠트 방충망은 샷시와 함께 다는지 미리 정하고, 들어온 방충망이 창 크기에 맞는 규격·색인지 대조한다'),
+  item('i-window-7', 'window', '휴젠트 방충망을 끝까지 올리고 내려 보며 걸리는 곳이나 틈이 없는지 본다'),
 
   item('i-carp-1', 'carpentry', '콘센트·스위치 위치를 목공 전에 확정한다. 늦으면 목공을 다시 불러 인건비가 두 번 든다'),
   item('i-carp-2', 'carpentry', '외벽·창가 단열재가 틈 없이 붙고 이음부가 우레탄폼으로 메워졌는지 본다'),
@@ -55,6 +57,10 @@ export const DEFAULT_CHECKLIST: ChecklistItem[] = [
   item('i-carp-10', 'carpentry', '전력 증설에 맞춰 분전반 메인 차단기와 인입 전선 굵기를 올렸는지, 늘린 회로마다 이름표가 붙었는지 본다'),
   item('i-carp-11', 'carpentry', '벽·바닥에 묻는 가스 배관은 덮기 전에 누설 검사를 통과했는지 확인한다'),
   item('i-carp-12', 'carpentry', '묻은 가스 배관 경로를 사진·치수로 남기고, 그 줄에는 못·피스를 박지 말라고 다음 공정에 알린다'),
+  item('i-carp-13', 'carpentry', '냉장고 가림(냉장고장) 재단 치수가 실제 냉장고 치수에 방열 틈과 문 열림 여유를 더한 값인지 본다'),
+  item('i-carp-14', 'carpentry', '냉장고 가림 안쪽 콘센트와 급수 자리가 냉장고를 넣기 전에 맞는지 확인한다'),
+  item('i-carp-15', 'carpentry', '실링팬 자리 천장에 무게를 받는 보강(덧댐목·합판)이 들어갔는지 본다'),
+  item('i-carp-16', 'carpentry', '실링팬 배선과 스위치(또는 리모컨) 위치를 확인하고, 날개 끝이 벽·조명·문에 닿지 않는지 본다'),
 
   item('i-tile-1', 'tile', '바닥·벽 평탄도를 본 뒤 접착제를 바르는지 확인한다'),
   item('i-tile-2', 'tile', '욕실 바닥이 배수구 쪽으로 기울어 물이 고이지 않는지 본다'),
@@ -70,6 +76,8 @@ export const DEFAULT_CHECKLIST: ChecklistItem[] = [
   item('i-wall-3', 'wallpaper', '마르는 동안 창문을 닫고 자연 건조하는지 확인한다'),
   item('i-wall-4', 'wallpaper', '바닥의 풀 자국과 자투리를 치웠는지 본다'),
   item('i-wall-5', 'wallpaper', '보수용 남은 벽지를 받아 둔다. 없으면 한 곳만 찢어져도 그 벽 전체를 다시 해야 한다'),
+  item('i-wall-6', 'wallpaper', '디아망 벽지는 시공 전에 품번·색·생산 로트가 박스마다 같은지 대조한다'),
+  item('i-wall-7', 'wallpaper', '디아망 벽지는 초배 후 시공하는지, 이음매가 벌어지거나 들뜬 곳이 없는지 밝은 조명 아래에서 본다'),
 
   item('i-floor-1', 'floor', '시공 전에 모래·시멘트 가루를 청소기로 치웠는지 본다'),
   item('i-floor-2', 'floor', '깨지거나 꺼진 바닥을 먼저 평탄하게 메웠는지 본다'),

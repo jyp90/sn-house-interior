@@ -2,7 +2,7 @@ import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
 import { PHASES } from '../checklist/defaults';
 import { checklistEntry, checklistItems } from '../checklist/items';
-import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, missingDedicatedCircuit } from '../electrical/fixtures';
+import { DEDICATED_RADIUS_CM, FIXTURE_LABEL, fixtureNumbers, fixtureSummary, hasSwitchGroup, missingDedicatedCircuit } from '../electrical/fixtures';
 import { areaM2 } from '../geometry/polygon';
 import { openingNumbers } from '../geometry/structure';
 import { wallReferenceText } from '../geometry/wallReference';
@@ -314,7 +314,7 @@ export function buildPdf(plan: Plan, input: PdfInput): PdfDocument {
         `${f.height}cm`,
         f.wallId ? '예' : '아니오',
         // 스위치 그룹은 스위치·조명에만 의미가 있다(spec §27.1)
-        (f.kind === 'switch' || f.kind === 'light') && f.group ? f.group : '-',
+        hasSwitchGroup(f.kind) && f.group ? f.group : '-',
         f.memo ?? '',
       ]),
       '배치된 전기 설비가 없습니다',

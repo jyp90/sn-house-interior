@@ -1,4 +1,4 @@
-import { FIXTURE_KINDS, FIXTURE_LABEL, keepWallIdAfterMove, kindChangePatch, switchGroups, type FixtureKind } from '../../electrical/fixtures';
+import { FIXTURE_KINDS, FIXTURE_LABEL, hasSwitchGroup, keepWallIdAfterMove, kindChangePatch, switchGroups, type FixtureKind } from '../../electrical/fixtures';
 import type { Fixture, Vec2 } from '../../model/schema';
 import { usePlan, usePlanStore } from '../../model/StoreContext';
 import { NumberField, TextField } from '../fields';
@@ -7,7 +7,7 @@ export function FixtureProperties({ fixture }: { fixture: Fixture }) {
   const store = usePlanStore();
   const s = store.getState();
   const fixtures = usePlan((st) => st.plan.fixtures);
-  const hasGroup = fixture.kind === 'switch' || fixture.kind === 'light';
+  const hasGroup = hasSwitchGroup(fixture.kind);
   // 좌표를 고친 뒤 벽면을 벗어나면 벽 부착을 푼다
   const move = (pos: Vec2) => s.updateFixture(fixture.id, { pos, wallId: keepWallIdAfterMove(store.getState().plan.walls, fixture, pos) });
   return (

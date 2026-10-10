@@ -6,7 +6,12 @@ import type { Fixture, Plan, Product, Vec2, Wall } from '../model/schema';
 
 export type FixtureKind = Fixture['kind'];
 
-export const FIXTURE_KINDS: FixtureKind[] = ['outlet', 'outlet-dedicated', 'outlet-waterproof', 'switch', 'light'];
+export const FIXTURE_KINDS: FixtureKind[] = ['outlet', 'outlet-dedicated', 'outlet-waterproof', 'switch', 'light', 'ceiling-fan'];
+
+// 천장 설비: 벽 스냅·wallId 없음, 스위치 그룹 가능(조명과 같은 취급, spec §51.3)
+export const isCeilingKind = (kind: FixtureKind) => kind === 'light' || kind === 'ceiling-fan';
+// 스위치 그룹은 스위치·조명·실링팬에만 의미가 있다(spec §27.1, §51.3)
+export const hasSwitchGroup = (kind: FixtureKind) => kind === 'switch' || isCeilingKind(kind);
 
 export const FIXTURE_LABEL: Record<FixtureKind, string> = {
   outlet: '콘센트',
@@ -14,6 +19,7 @@ export const FIXTURE_LABEL: Record<FixtureKind, string> = {
   'outlet-waterproof': '방수 콘센트',
   switch: '스위치',
   light: '조명',
+  'ceiling-fan': '실링팬',
 };
 
 // 설치 높이 기본값(cm, 바닥 기준). 조명은 천장(기본 벽 높이)
@@ -23,6 +29,7 @@ export const FIXTURE_DEFAULT_HEIGHT: Record<FixtureKind, number> = {
   'outlet-waterproof': 120,
   switch: 120,
   light: 230,
+  'ceiling-fan': 230,
 };
 
 type FixtureGlyph = { shape: 'circle' | 'square'; fill: string; stroke: string; letter: string; letterFill: string };
@@ -33,6 +40,7 @@ export const FIXTURE_GLYPH: Record<FixtureKind, FixtureGlyph> = {
   'outlet-waterproof': { shape: 'circle', fill: '#ffffff', stroke: '#0e7490', letter: '방', letterFill: '#0e7490' },
   switch: { shape: 'square', fill: '#ffffff', stroke: '#4338ca', letter: 'S', letterFill: '#4338ca' },
   light: { shape: 'circle', fill: '#fef3c7', stroke: '#a16207', letter: 'L', letterFill: '#a16207' },
+  'ceiling-fan': { shape: 'circle', fill: '#e0f2fe', stroke: '#0369a1', letter: '팬', letterFill: '#0369a1' },
 };
 
 export const FIXTURE_R_CM = 9;
@@ -43,7 +51,7 @@ const r0 = (n: number) => Math.round(n) + 0; // -0 방지
 
 export function snapFixture(walls: Wall[], p: Vec2, kind: FixtureKind, snap: boolean): { pos: Vec2; wallId?: string } {
   const free = { pos: { x: r0(p.x), y: r0(p.y) } };
-  if (!snap || kind === 'light') return free;
+  if (!snap || isCeilingKind(kind)) return free;
   const wall = nearestWall(walls, p, FIXTURE_SNAP_CM);
   if (!wall) return free;
   const u = wallDir(wall);
@@ -117,13 +125,12 @@ export function refitFixtures(oldWalls: Wall[], newWalls: Wall[], fixtures: Fixt
   });
 }
 
-// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명은 벽에서 떼고, 콘센트 종류는 스위치 그룹을 지운다
+// 종류 변경: 높이가 이전 종류 기본값이면 새 기본값으로, 조명·실링팬은 벽에서 떼고, 콘센트 종류는 스위치 그룹을 지운다
 export function kindChangePatch(fixture: Fixture, kind: FixtureKind): Partial<Omit<Fixture, 'id'>> {
   const patch: Partial<Omit<Fixture, 'id'>> = { kind };
   if (fixture.height === FIXTURE_DEFAULT_HEIGHT[fixture.kind]) patch.height = FIXTURE_DEFAULT_HEIGHT[kind];
-  if (kind === 'light') patch.wallId = undefined;
-  // 스위치 그룹은 스위치·조명에만 의미가 있다(spec §27.1)
-  if (kind !== 'switch' && kind !== 'light') patch.group = undefined;
+  if (isCeilingKind(kind)) patch.wallId = undefined;
+  if (!hasSwitchGroup(kind)) patch.group = undefined;
   return patch;
 }
 
@@ -136,11 +143,11 @@ export function keepWallIdAfterMove(walls: Wall[], fixture: Fixture, pos: Vec2):
 
 type SwitchGroup = { name: string; switches: Fixture[]; lights: Fixture[] };
 
-// 스위치 그룹(spec §27): 그룹 이름이 있는 스위치·조명만, 이름 순. 콘센트의 group은 무시한다
+// 스위치 그룹(spec §27): 그룹 이름이 있는 스위치·조명·실링팬만, 이름 순. 콘센트의 group은 무시한다. 실링팬은 lights 쪽에 들어간다
 export function switchGroups(fixtures: Fixture[]): SwitchGroup[] {
   const byName = new Map<string, SwitchGroup>();
   for (const f of fixtures) {
-    if (!f.group || (f.kind !== 'switch' && f.kind !== 'light')) continue;
+    if (!f.group || !hasSwitchGroup(f.kind)) continue;
     let g = byName.get(f.group);
     if (!g) {
       g = { name: f.group, switches: [], lights: [] };

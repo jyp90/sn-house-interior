@@ -15,8 +15,11 @@ export function Overlays2D({ px }: { px: number }) {
   const selectedId = usePlan((s) => s.selectedId);
   const status = useValidation();
   const compareId = useUi((s) => s.compareLayoutId);
-  const ghosts = compareItems(plan, compareId);
+  const mode = useUi((s) => s.mode);
   const wallObbs = useMemo(() => planWallObbs(plan), [plan]);
+  // 비교 유령·간격·벽 거리선은 가구와 함께 배치 탭에서만 그린다(스펙 §51.2)
+  if (mode !== 'place') return null;
+  const ghosts = compareItems(plan, compareId);
   const placed = activeItems(plan).flatMap((item) => {
     const product = findProduct(plan, item.productId);
     return product ? [{ item, product }] : [];

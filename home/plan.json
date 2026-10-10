@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "info": {
     "title": "우리 집",
     "supplyArea": 93.64,
@@ -241,6 +241,17 @@
       "kind": "window",
       "offset": 422,
       "width": 240,
+      "height": 210,
+      "sill": 0,
+      "hinge": "start",
+      "swingIn": false
+    },
+    {
+      "id": "living-sash",
+      "wallId": "e-left",
+      "kind": "window",
+      "offset": 15,
+      "width": 270,
       "height": 210,
       "sill": 0,
       "hinge": "start",
@@ -932,6 +943,15 @@
       "pos": {
         "x": 331,
         "y": 505
+      },
+      "height": 230
+    },
+    {
+      "id": "fx-living-fan",
+      "kind": "ceiling-fan",
+      "pos": {
+        "x": 257,
+        "y": 538
       },
       "height": 230
     }

@@ -58,6 +58,17 @@ const LIGHT_DOME_COLOR = '#fff6dc';
 const LIGHT_DOME_EMISSIVE = '#ffe9a8';
 const LIGHT_GAP_CM = 1; // 천장(또는 설치 높이)에서 베이스 윗면까지
 const LOOSE_BOX_CM = 6; // 벽에 붙지 않은 콘센트·스위치 상자
+const FAN_BASE_DIAMETER_CM = 20; // 실링팬 천장 받침 원판
+const FAN_BASE_D_CM = 1.5;
+const FAN_BASE_COLOR = '#f5f4f0';
+const FAN_MOTOR_DIAMETER_CM = 18;
+const FAN_MOTOR_H_CM = 12;
+const FAN_MOTOR_COLOR = '#d6d3cd';
+export const FAN_SPAN_CM = 120; // 날개 끝에서 끝까지(지름)
+const FAN_BLADE_W_CM = 14;
+const FAN_BLADE_D_CM = 1.5; // 날개 판 두께
+const FAN_BLADE_COLOR = '#8b6f4e';
+const FAN_BLADES = 4;
 
 function lightParts(f: Fixture, ceiling: number): FixturePart[] {
   const top = Math.min(f.height, ceiling) - LIGHT_GAP_CM;
@@ -92,9 +103,61 @@ function lightParts(f: Fixture, ceiling: number): FixturePart[] {
   ];
 }
 
+// 실링팬(spec §51.3): 천장 받침 원판 + 모터 원통 + 날개 4장(지름 120cm). 조명과 같은 천장 높이 규칙
+function fanParts(f: Fixture, ceiling: number): FixturePart[] {
+  const top = Math.min(f.height, ceiling) - LIGHT_GAP_CM;
+  const total = FAN_BASE_D_CM + FAN_MOTOR_H_CM;
+  const baseTop = Math.max(total, top); // 바닥 아래로 내려가지 않는다
+  const motorBottom = baseTop - total;
+  const bladeCenter = motorBottom + FAN_BLADE_D_CM / 2; // 날개는 모터 아랫단 높이
+  const bladeLen = FAN_SPAN_CM / 2 - FAN_MOTOR_DIAMETER_CM / 2;
+  const blades: FixturePart[] = Array.from({ length: FAN_BLADES }, (_, i) => {
+    const angle = (i * Math.PI * 2) / FAN_BLADES;
+    const r = FAN_MOTOR_DIAMETER_CM / 2 + bladeLen / 2;
+    return {
+      kind: 'box',
+      cx: f.pos.x + Math.cos(angle) * r,
+      cy: f.pos.y + Math.sin(angle) * r,
+      yCenter: bladeCenter,
+      w: bladeLen,
+      h: FAN_BLADE_D_CM,
+      d: FAN_BLADE_W_CM,
+      angle,
+      color: FAN_BLADE_COLOR,
+    };
+  });
+  return [
+    {
+      kind: 'disc',
+      cx: f.pos.x,
+      cy: f.pos.y,
+      yCenter: baseTop - FAN_BASE_D_CM / 2,
+      w: FAN_BASE_DIAMETER_CM,
+      h: FAN_BASE_D_CM,
+      d: FAN_BASE_DIAMETER_CM,
+      angle: 0,
+      color: FAN_BASE_COLOR,
+    },
+    {
+      kind: 'cylinder',
+      axis: 'y',
+      cx: f.pos.x,
+      cy: f.pos.y,
+      yCenter: baseTop - FAN_BASE_D_CM - FAN_MOTOR_H_CM / 2,
+      w: FAN_MOTOR_DIAMETER_CM,
+      h: FAN_MOTOR_H_CM,
+      d: FAN_MOTOR_DIAMETER_CM,
+      angle: 0,
+      color: FAN_MOTOR_COLOR,
+    },
+    ...blades,
+  ];
+}
+
 export function fixtureParts(f: Fixture, walls: Wall[], ceiling: number): FixturePart[] {
   const glyphColor = FIXTURE_GLYPH[f.kind].stroke;
   if (f.kind === 'light') return lightParts(f, ceiling);
+  if (f.kind === 'ceiling-fan') return fanParts(f, ceiling);
 
   const wall = f.wallId ? walls.find((w) => w.id === f.wallId) : undefined;
   if (!wall) {
