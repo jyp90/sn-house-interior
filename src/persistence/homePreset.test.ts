@@ -96,10 +96,10 @@ describe.skipIf(!existsSync(PRESET))('우리 집 프리셋 (private)', () => {
 const HOME_PLAN = new URL('../../home/plan.json', import.meta.url);
 
 describe('home/plan.json', () => {
-  it('파싱되고 방 9개 모두 polygon이 있으며 라벨은 그 안에 있다', () => {
+  it('파싱되고 방 8개 모두 polygon이 있으며 라벨은 그 안에 있다', () => {
     const r = parsePlan(JSON.parse(readFileSync(HOME_PLAN, 'utf8')));
     if (!r.ok) throw new Error(r.error);
-    expect(r.plan.rooms).toHaveLength(9);
+    expect(r.plan.rooms).toHaveLength(8);
     for (const room of r.plan.rooms) {
       expect(room.polygon, room.id).toBeDefined();
       expect(isValidPolygon(room.polygon!) && isSimplePolygon(room.polygon!), room.id).toBe(true);
@@ -107,10 +107,10 @@ describe('home/plan.json', () => {
     }
     const living = r.plan.rooms.find((room) => room.id === 'living')!.polygon!;
     expect([...living].sort((a, b) => a.x - b.x || a.y - b.y)).toEqual([
-      { x: 9, y: 370 },
-      { x: 9, y: 720 },
-      { x: 584, y: 370 },
-      { x: 584, y: 720 },
+      { x: 10, y: 396 },
+      { x: 10, y: 680 },
+      { x: 504, y: 396 },
+      { x: 504, y: 680 },
     ]);
   });
 });
