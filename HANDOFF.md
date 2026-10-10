@@ -6,6 +6,7 @@
 - 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §48.
 - 테스트(`main`): typecheck 통과, `npm test` 628 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 51 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
+- 2026-10-10 `chore/home-sync`: 사용자가 Pages(브라우저 localStorage)에서 편집한 평면을 `home/plan.json` 프리셋으로 반영(방 8개·벽 14·창호 9·설비 28·A안 가구 6개, 거실 opacity 0.9). `homePreset.test.ts` 스냅샷(방 개수·거실 polygon)을 새 프리셋에 맞춤.
 - 미확인: 실제 휴대폰 Safari에서 §48 1열 배치·핀치 줌(에뮬레이션만 확인).
 
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
