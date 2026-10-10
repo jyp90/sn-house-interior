@@ -83,7 +83,7 @@ One or two lines per module; grep, never read whole. Tests sit next to the modul
 - `fixtures.ts` — fixture kinds, labels, glyphs, default heights, wall snap, `missingDedicatedCircuit` (150 cm radius) and `missingDedicatedCircuitCached(plan)` (`WeakMap<Plan, string[]>`, resolves via `findProduct`) so `Items2D`/`ItemProperties`/`ElectricPanel` share one computation per plan (spec §30.1). `switchGroups` (switch/light with `group`, name order `ko`) and `switchLinks` (switch × light pairs per group) feed 2D `Fixtures2D` dashed `switch-link-<s>-<l>` lines (electric mode only), `ElectricPanel` 「스위치 그룹」 list, `planSvg` 전기 계획도 dashes, `auto-switch-<h>` checklist item (spec §27).
 
 ## checklist/
-- `defaults.ts` — phases and default on-site inspection items (`i-` ids).
+- `defaults.ts` — phases and default on-site inspection items (`i-` ids; 53 items, incl. power upgrade / gas pipe embedding, spec §50).
 - `items.ts` — `autoChecklist` from the plan + merged `checklistItems` with saved state. Auto ids carry `shortHash` (`hash.ts`, FNV-1a → base36): `auto-circuit-<h>`/`auto-door-<itemId>-<h>` hash the full text; `auto-builtin-<itemId>-<h>` hashes only name + W×D×H + verified, so moving keeps the check/memo (spec §22); `auto-outlets` stays fixed; `auto-switch-<h>` (full-text hash) lists switch groups (spec §27).
 
 ## quote/

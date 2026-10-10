@@ -2,7 +2,7 @@
 
 Personal (family-only) interior planner: rebuild our home in 3D from a floor plan, place real-size furniture and appliances (Samsung-first) by drag, check collisions / wall gaps / door swings, and export a contractor PDF. Single-package Vite + TypeScript + React 19 + react-three-fiber + zustand + zod SPA. No backend: localStorage + IndexedDB + JSON files.
 
-Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13; §15–§49 are later rounds, latest last; the current last § is listed in `docs/README.md`). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
+Read first: `HANDOFF.md` 「지금 상태」 and 「다음 할 일」 only. Binding design: `docs/superpowers/specs/2026-10-08-homefit-design.md` (§14 overrides §1–13; §15–§50 are later rounds, latest last; the current last § is listed in `docs/README.md`). Plans in `docs/superpowers/plans/` are history — the code wins. Doc index with a task → doc table: `docs/README.md`. Per-module notes: `src/MODULE-MAP.md` (grep, never read whole).
 
 ## Commands
 ```bash
