@@ -1,7 +1,7 @@
 import type { FloorFinish, Plan, PlanFinish, Room, WallFinish } from '../model/schema';
 
-export type FloorPreset = { id: string; label: string; finish: FloorFinish };
-export type WallPreset = { id: string; label: string; finish: WallFinish };
+type FloorPreset = { id: string; label: string; finish: FloorFinish };
+type WallPreset = { id: string; label: string; finish: WallFinish };
 
 export const FLOOR_PRESETS: readonly FloorPreset[] = [
   { id: 'oak-natural', label: '내추럴 오크', finish: { material: 'wood', color: '#c9a06c' } },

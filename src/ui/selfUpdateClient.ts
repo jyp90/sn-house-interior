@@ -1,6 +1,6 @@
 import { UPDATE_PATH, type UpdateResult } from '../devserver/selfUpdate';
 
-export type UpdateResponse = UpdateResult & { boot?: number };
+type UpdateResponse = UpdateResult & { boot?: number };
 
 export function updateBannerText(r: UpdateResponse): { kind: 'info' | 'error'; text: string } {
   switch (r.status) {

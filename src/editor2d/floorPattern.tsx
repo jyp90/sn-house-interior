@@ -2,7 +2,7 @@ import type { Plan, Room } from '../model/schema';
 import { roomFloor } from '../materials/presets';
 import { patternSpec, shade } from '../materials/pattern';
 
-export function floorPatternId(roomId: string): string {
+function floorPatternId(roomId: string): string {
   return `floor-${roomId}`;
 }
 

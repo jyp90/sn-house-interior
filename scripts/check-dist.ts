@@ -50,5 +50,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     for (const p of problems) console.error(p);
     process.exit(1);
   }
+  // slop-ok: CLI 스크립트의 결과 출력
   console.log(`dist 검사 통과 (${files.length}개 파일)`);
 }

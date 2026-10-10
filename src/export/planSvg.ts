@@ -22,7 +22,7 @@ import type { Plan } from '../model/schema';
 
 export { itemNumbers };
 
-export const EXPORT_PX_PER_CM = 2;
+const EXPORT_PX_PER_CM = 2;
 
 const MARGIN = 80;
 const HEADER = 70;
@@ -72,7 +72,7 @@ export function pdfFileName(title: string, layoutName: string): string {
   return `sn-house-interior-${safeFilePart(title)}-${safeFilePart(layoutName)}.pdf`;
 }
 
-export type PlanSvgOptions = {
+type PlanSvgOptions = {
   fontFamily?: string; // PDF는 jsPDF에 등록한 'Pretendard'
   header?: boolean; // 제목·단위 머리글
   items?: 'name' | 'number' | 'faint' | 'none'; // 가구 표시 방식

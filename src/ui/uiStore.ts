@@ -3,15 +3,15 @@ import type { CalibrationDraft } from '../editor2d/calibration';
 import type { FixtureKind } from '../electrical/fixtures';
 import type { Vec2 } from '../model/schema';
 
-export type Banner = { kind: 'error' | 'info'; text: string };
+type Banner = { kind: 'error' | 'info'; text: string };
 export type Mode = 'structure' | 'place' | 'electric' | 'checklist' | 'export';
 export type View = '2d' | 'persp' | 'top';
 export type Tool = 'select' | 'wall' | 'room' | 'door' | 'middle-door' | 'window' | 'opening' | 'label' | 'calibrate' | 'fixture' | 'area' | 'measure';
-export type Measure = { a: Vec2; b: Vec2 | null };
+type Measure = { a: Vec2; b: Vec2 | null };
 export type SaveStatus = { state: 'clean' | 'pending' | 'saved' | 'error'; at?: number };
-export type Candidates = { ids: string[]; clientX: number; clientY: number };
-export type WallDraft = { thickness: number; height: number };
-export type RoomDraft = { w: number; d: number; thickness: number; height: number; name: string };
+type Candidates = { ids: string[]; clientX: number; clientY: number };
+type WallDraft = { thickness: number; height: number };
+type RoomDraft = { w: number; d: number; thickness: number; height: number; name: string };
 
 type UiState = {
   mode: Mode;

@@ -30,8 +30,8 @@ export const OpeningSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-export const FloorMaterialSchema = z.enum(['wood', 'tile', 'plain']);
-export const WallMaterialSchema = z.enum(['paint', 'wallpaper']);
+const FloorMaterialSchema = z.enum(['wood', 'tile', 'plain']);
+const WallMaterialSchema = z.enum(['paint', 'wallpaper']);
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, '#rrggbb 형식이어야 합니다');
 export const FloorFinishSchema = z.object({ material: FloorMaterialSchema, color: hexColor });
 export const WallFinishSchema = z.object({ material: WallMaterialSchema, color: hexColor });
@@ -84,7 +84,7 @@ export const ChecklistStateSchema = z.object({
   memo: z.string().optional(),
 });
 
-export const ClearanceSchema = z.discriminatedUnion('kind', [
+const ClearanceSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('swing'), hinge: z.enum(['left', 'right']), radius: positiveCm }),
   z.object({ kind: z.literal('front'), depth: positiveCm }),
 ]);
@@ -137,7 +137,7 @@ const PxSchema = z.object({ x: z.number(), y: z.number() });
 
 const CalibrationLineSchema = z.object({ a: PxSchema, b: PxSchema, lengthCm: positiveCm });
 
-export const CalibrationSchema = CalibrationLineSchema.extend({ check: CalibrationLineSchema.optional() });
+const CalibrationSchema = CalibrationLineSchema.extend({ check: CalibrationLineSchema.optional() });
 
 export const BackgroundSchema = z.object({
   imageRef: z.string(),
@@ -176,21 +176,17 @@ export type Wall = z.infer<typeof WallSchema>;
 export type Opening = z.infer<typeof OpeningSchema>;
 export type DoorLeaves = NonNullable<Opening['leaves']>;
 export type Room = z.infer<typeof RoomSchema>;
-export type FloorMaterial = z.infer<typeof FloorMaterialSchema>;
-export type WallMaterial = z.infer<typeof WallMaterialSchema>;
 export type FloorFinish = z.infer<typeof FloorFinishSchema>;
 export type WallFinish = z.infer<typeof WallFinishSchema>;
 export type PlanFinish = z.infer<typeof PlanFinishSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type Layout = z.infer<typeof LayoutSchema>;
 export type Fixture = z.infer<typeof FixtureSchema>;
-export type Clearance = z.infer<typeof ClearanceSchema>;
 export type Variant = z.infer<typeof VariantSchema>;
 export type Product = z.infer<typeof ProductSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type BuilderId = z.infer<typeof BuilderIdSchema>;
 export type Background = z.infer<typeof BackgroundSchema>;
-export type Calibration = z.infer<typeof CalibrationSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type ChecklistState = z.infer<typeof ChecklistStateSchema>;
 export type PlanInfo = z.infer<typeof PlanInfoSchema>;

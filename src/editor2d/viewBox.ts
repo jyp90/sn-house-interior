@@ -3,8 +3,8 @@ import type { Vec2 } from '../model/schema';
 export type ViewBox = { x: number; y: number; w: number; h: number };
 type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
 
-export const MIN_VIEW_CM = 50;
-export const MAX_VIEW_CM = 50000;
+const MIN_VIEW_CM = 50;
+const MAX_VIEW_CM = 50000;
 
 export function fitViewBox(b: Bounds, aspect: number, margin = 100): ViewBox {
   const a = aspect > 0 && Number.isFinite(aspect) ? aspect : 1;

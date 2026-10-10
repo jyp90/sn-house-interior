@@ -1,7 +1,7 @@
 import type { Item, Plan, Product } from '../model/schema';
 
 export const DEFAULT_CEILING_CM = 230;
-export const DEFAULT_WALL_MOUNT_CM = 90;
+const DEFAULT_WALL_MOUNT_CM = 90;
 
 // 천장 높이 = 평면 벽 높이의 최댓값(벽이 없으면 230)
 export function ceilingHeightCm(plan: Pick<Plan, 'walls'>): number {

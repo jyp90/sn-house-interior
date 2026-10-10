@@ -13,7 +13,7 @@ import { useUi, type Tool } from '../ui/uiStore';
 import { planToImagePx } from './calibration';
 import { groupedToolPoint, tJunctionCorners, wallFaceCorners, wallSegments, wallToolPoint } from './snapping';
 
-export const OPENING_PICK_CM = 30;
+const OPENING_PICK_CM = 30;
 
 export const OPENING_DEFAULTS: Record<'door' | 'window' | 'opening', Omit<Opening, 'id' | 'wallId' | 'kind' | 'offset'>> = {
   door: { width: 90, height: 210, sill: 0, hinge: 'start', swingIn: true },
@@ -22,7 +22,7 @@ export const OPENING_DEFAULTS: Record<'door' | 'window' | 'opening', Omit<Openin
 };
 
 // 현관 중문: 문과 같은 방식으로 벽에 붙이고 기본은 비대칭 양개, 실내 쪽 열림
-export const MIDDLE_DOOR_DEFAULTS: Omit<Opening, 'id' | 'wallId' | 'kind' | 'offset'> = {
+const MIDDLE_DOOR_DEFAULTS: Omit<Opening, 'id' | 'wallId' | 'kind' | 'offset'> = {
   width: 120, height: 210, sill: 0, hinge: 'start', swingIn: true, middle: true, leaves: 'asym',
 };
 
@@ -36,7 +36,7 @@ type ToolContext = {
   setAreaPoints(points: Vec2[]): void;
 };
 
-export const AREA_CLOSE_CM = 15;
+const AREA_CLOSE_CM = 15;
 
 function strictlyInsideObb(p: Vec2, o: OBB, eps = 0.5): boolean {
   const [u, v] = axes(o);
@@ -45,7 +45,7 @@ function strictlyInsideObb(p: Vec2, o: OBB, eps = 0.5): boolean {
   return Math.abs(dx * u.x + dy * u.y) < o.hw - eps && Math.abs(dx * v.x + dy * v.y) < o.hd - eps;
 }
 
-export type AreaSnapGroups = { faces: Vec2[]; rest: Vec2[] };
+type AreaSnapGroups = { faces: Vec2[]; rest: Vec2[] };
 
 // 면 모서리(끝점 공유·T자 접합부)가 1순위, 중심선 끝점·벽 OBB 모서리가 2순위.
 // 다른 벽 안에 묻힌 중심선 끝점·모서리는 마감면 위가 아니므로 뺀다

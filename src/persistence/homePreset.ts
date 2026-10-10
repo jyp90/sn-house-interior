@@ -3,11 +3,11 @@ import type { ImageStore } from './images';
 import { parsePlan } from './parse';
 
 // 우리 집 프리셋(home/)은 virtual:home-preset으로 들어온다. 테스트·HOMEFIT_SAMPLE=1에서는 null(스펙 §15.1, §20)
-export type HomePresetSource = { plan: unknown; imageUrl: string | null };
+type HomePresetSource = { plan: unknown; imageUrl: string | null };
 
 export const HOME_IMAGE_REF = 'image-home-floorplan';
 
-export type HomePresetResult = { ok: true; plan: Plan; imageMissing: boolean } | { ok: false; error: string };
+type HomePresetResult = { ok: true; plan: Plan; imageMissing: boolean } | { ok: false; error: string };
 
 async function fetchBlob(url: string): Promise<Blob> {
   const res = await fetch(url);
@@ -45,7 +45,7 @@ export function presetFingerprint(plan: unknown): string {
   return `${(h >>> 0).toString(16)}-${s.length}`;
 }
 
-export type SeenStore = { getItem(key: string): string | null; setItem(key: string, value: string): void };
+type SeenStore = { getItem(key: string): string | null; setItem(key: string, value: string): void };
 
 // 지문이 새것이면 true를 돌려주고 기억한다(한 번만 안내). 저장소 오류는 안내 생략
 export function markPresetSeen(fingerprint: string, storage: SeenStore | undefined): boolean {
