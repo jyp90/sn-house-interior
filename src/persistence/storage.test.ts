@@ -49,7 +49,7 @@ describe('storage', () => {
     const st = memoryStorage();
     const store = createPlanStore(SAMPLE_PLAN);
     const results: boolean[] = [];
-    const stop = startAutosave(store, { storage: st, delayMs: 500, onResult: (ok) => results.push(ok) });
+    const { stop } = startAutosave(store, { storage: st, delayMs: 500, onResult: (ok) => results.push(ok) });
     const id = store.getState().addItem('p', 'v', { x: 0, y: 0 });
     store.getState().updateItem(id, { x: 50 });
     vi.advanceTimersByTime(499);
@@ -76,7 +76,7 @@ describe('storage', () => {
     const store = createPlanStore(SAMPLE_PLAN);
     const target = new EventTarget();
     const results: boolean[] = [];
-    const stop = startAutosave(store, { storage: st, delayMs: 500, target, onResult: (ok) => results.push(ok) });
+    const { stop } = startAutosave(store, { storage: st, delayMs: 500, target, onResult: (ok) => results.push(ok) });
     const id = store.getState().addItem('p', 'v', { x: 0, y: 0 });
     store.getState().updateItem(id, { x: 50 });
     target.dispatchEvent(new Event('pagehide'));
@@ -98,6 +98,34 @@ describe('storage', () => {
     store.getState().addItem('p', 'v', { x: 10, y: 0 });
     vi.advanceTimersByTime(500);
     expect(events).toEqual(['pending', 'pending', 'saved']);
+  });
+});
+
+describe('startAutosave flush', () => {
+  it('flush는 대기 중인 저장을 바로 실행하고 예약을 취소한다', () => {
+    vi.useFakeTimers();
+    const st = memoryStorage();
+    const store = createPlanStore(SAMPLE_PLAN);
+    const results: boolean[] = [];
+    const { stop, flush } = startAutosave(store, { storage: st, delayMs: 500, onResult: (ok) => results.push(ok) });
+    const id = store.getState().addItem('p', 'v', { x: 0, y: 0 });
+    store.getState().updateItem(id, { x: 70 });
+    flush();
+    expect(activeItems(loadFromStorage(st)!)[0].x).toBe(70);
+    vi.advanceTimersByTime(500);
+    expect(results).toEqual([true]);
+    stop();
+  });
+
+  it('바뀐 것이 없어도 flush는 저장하고 결과를 알린다', () => {
+    const st = memoryStorage();
+    const store = createPlanStore(SAMPLE_PLAN);
+    const results: boolean[] = [];
+    const { stop, flush } = startAutosave(store, { storage: st, onResult: (ok) => results.push(ok) });
+    flush();
+    expect(loadFromStorage(st)).not.toBeNull();
+    expect(results).toEqual([true]);
+    stop();
   });
 });
 

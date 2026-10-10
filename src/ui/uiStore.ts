@@ -50,6 +50,9 @@ type UiState = {
   showCandidates(candidates: Candidates): void;
   clearCandidates(): void;
   setSaveStatus(status: SaveStatus): void;
+  /** 이 브라우저에 지금 바로 저장(main.tsx가 autosave flush를 연결, 스펙 §52) */
+  saveNow: () => void;
+  setSaveNow(fn: () => void): void;
   startCalibration(target: CalibrationDraft['target']): void;
   addCalibrationPoint(p: Vec2): void;
   cancelCalibration(): void;
@@ -74,6 +77,7 @@ export const useUi = create<UiState>()((set, get) => ({
   viewResetKey: 0,
   candidates: null,
   saveStatus: { state: 'clean' },
+  saveNow: () => undefined,
   calibration: null,
   wallDraft: { thickness: 12, height: 230 },
   roomDraft: { w: 400, d: 300, thickness: 12, height: 230, name: '방' },
@@ -97,6 +101,7 @@ export const useUi = create<UiState>()((set, get) => ({
   showCandidates: (candidates) => set({ candidates }),
   clearCandidates: () => set({ candidates: null }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
+  setSaveNow: (saveNow) => set({ saveNow }),
   startCalibration: (target) => set({ tool: 'calibrate', calibration: { target, points: [] }, candidates: null, measure: null }),
   addCalibrationPoint: (p) => {
     const c = get().calibration;

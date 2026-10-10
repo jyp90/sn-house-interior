@@ -65,3 +65,13 @@ test('두 손가락 핀치로 2D 도면이 확대된다', async ({ page }) => {
   });
   await expect.poll(async () => (await svg.getAttribute('viewBox'))!.split(' ').map(Number)[2]).toBeLessThan(before[2] * 0.5);
 });
+
+test('모바일 폭에서도 저장 버튼이 보이고 누르면 이 브라우저에 바로 저장된다 (스펙 §52)', async ({ page }) => {
+  await expect(page.getByTestId('save-status')).toHaveText('변경 없음');
+  const save = page.getByRole('button', { name: '저장', exact: true });
+  await expect(save).toBeVisible();
+  await save.click();
+  await expect(page.getByTestId('save-status')).toContainText('저장됨');
+  await expect(page.getByText('이 기기 브라우저에 저장했습니다')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('homefit:plan:v1'))).not.toBeNull();
+});

@@ -3,8 +3,8 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 10`, 스펙 최신 라운드 §51.
-- 테스트(`main`): typecheck 통과, `npm test` 634 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 53 통과(21 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
+- 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 10`, 스펙 최신 라운드 §52(`feat/save-button`, 툴바 「저장」 버튼).
+- 테스트(`main`): typecheck 통과, `npm test` 636 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 54 통과(21 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 2026-10-10 `chore/home-sync`: 사용자가 Pages(브라우저 localStorage)에서 편집한 평면을 `home/plan.json` 프리셋으로 반영(방 8개·벽 14·창호 9·설비 28·A안 가구 6개, 거실 opacity 0.9). `homePreset.test.ts` 스냅샷(방 개수·거실 polygon)을 새 프리셋에 맞춤.
 - 미확인: 실제 휴대폰 Safari에서 §48 1열 배치·핀치 줌(에뮬레이션만 확인).
@@ -12,6 +12,7 @@
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
+| §52 | — | 툴바 「저장」 버튼: `startAutosave` `flush`를 `uiStore.saveNow`로 연결, 즉시 localStorage 저장 + 배너 | 636 / 54 |
 | §51 | — | 체크리스트 53 → 61(휴젠트·디아망·냉장고 가림·실링팬), 구조·전기 탭 2D에서 가구 숨김(`Items2D`/`Overlays2D`), 설비 `ceiling-fan`(스키마 v10, 3D 날개), 프리셋 거실 샷시 `living-sash`·실링팬 `fx-living-fan` | 634 / 53 |
 | §50 | — | 체크리스트 기본 항목 48 → 53: 전력 증설·가스 배관 매립(공통 2, 목공·전기 3, `checklist/defaults.ts`) | 629 / 52 |
 | §49 | #39 | 모바일 체크리스트·내보내기 가로 고정(`.cl-head` 음수 여백을 16px 패널 여백에 맞춤, `.page-panel` `overflow-x: hidden`·`touch-action: pan-y`), 핀치 e2e 간헐 실패(맞춤이 핀치를 덮음) 수정 | 628 / 52 |

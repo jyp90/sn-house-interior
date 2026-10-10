@@ -53,7 +53,7 @@ if (stored.status === 'ok') {
 
 const store = createPlanStore(initialPlan);
 let saveFailedShown = false;
-startAutosave(store, {
+const autosave = startAutosave(store, {
   onPending: () => useUi.getState().setSaveStatus({ state: 'pending' }),
   onResult: (ok) => {
     useUi.getState().setSaveStatus(ok ? { state: 'saved', at: Date.now() } : { state: 'error' });
@@ -67,6 +67,7 @@ startAutosave(store, {
     useUi.getState().showBanner({ kind: 'error', text: '브라우저 저장에 실패했습니다. 상단의 "JSON 저장"으로 백업하세요.' });
   },
 });
+useUi.getState().setSaveNow(autosave.flush);
 syncModeWithHash(useUi);
 
 // GitHub 동기화 시작 확인(스펙 §45.2): 동기화한 적 있는 기기만, 토큰 없이 한 번. 렌더를 막지 않고 실패는 조용히 넘긴다

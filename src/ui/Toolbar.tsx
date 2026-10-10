@@ -97,6 +97,18 @@ export function Toolbar() {
           <button type="button" disabled={!canUndo} onClick={() => store.getState().undo()}>실행 취소</button>
           <button type="button" disabled={!canRedo} onClick={() => store.getState().redo()}>다시 실행</button>
           {import.meta.env.DEV && <UpdateButton />}
+          <button
+            type="button"
+            className="save-now"
+            title="자동 저장을 기다리지 않고 이 기기 브라우저에 지금 저장합니다"
+            onClick={() => {
+              ui.saveNow();
+              const ok = useUi.getState().saveStatus.state === 'saved';
+              ui.showBanner(ok
+                ? { kind: 'info', text: '이 기기 브라우저에 저장했습니다. 다른 기기와 나누려면 「동기화」나 「JSON 저장」을 쓰세요.' }
+                : { kind: 'error', text: '브라우저 저장에 실패했습니다. 「JSON 저장」으로 백업하세요.' });
+            }}
+          >저장</button>
           <span className={`save-status save-${saveStatus.state}`} data-testid="save-status">{saveLabel(saveStatus)}</span>
           <a className="toolbar-link" href={`${import.meta.env.BASE_URL}licenses/Pretendard-OFL.txt`} target="_blank" rel="noreferrer">글꼴 라이선스</a>
       </>

@@ -75,7 +75,7 @@ export function startAutosave(
     onResult?: (ok: boolean) => void;
     target?: EventTarget;
   } = {},
-): () => void {
+): { stop: () => void; flush: () => void } {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const save = () => {
     timer = undefined;
@@ -94,9 +94,16 @@ export function startAutosave(
     save();
   };
   target?.addEventListener('pagehide', onPageHide);
-  return () => {
-    clearTimeout(timer);
-    unsubscribe();
-    target?.removeEventListener('pagehide', onPageHide);
+  return {
+    stop: () => {
+      clearTimeout(timer);
+      unsubscribe();
+      target?.removeEventListener('pagehide', onPageHide);
+    },
+    // 저장 버튼(스펙 §52): 예약 여부와 상관없이 지금 상태를 바로 저장한다
+    flush: () => {
+      clearTimeout(timer);
+      save();
+    },
   };
 }
