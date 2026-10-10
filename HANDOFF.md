@@ -3,8 +3,8 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-10 기준 `main` = PR #36 `feat/mobile-stack`(§48 모바일 1열 배치, §44.1/§46.1 viewport 축소 철회) 병합(그 전 #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §48.
-- 테스트(`main`): typecheck 통과, `npm test` 628 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 51 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과.
+- 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §48.
+- 테스트(`main`): typecheck 통과, `npm test` 628 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 51 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 미확인: 실제 휴대폰 Safari에서 §48 1열 배치·핀치 줌(에뮬레이션만 확인).
 
