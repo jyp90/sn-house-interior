@@ -3,7 +3,7 @@ import type { StoreApi } from 'zustand/vanilla';
 import { findEntity } from '../model/entities';
 import type { PlanState } from '../model/store';
 
-export type KeyInput = { key: string; shiftKey: boolean; mod: boolean; targetTag?: string };
+type KeyInput = { key: string; shiftKey: boolean; mod: boolean; targetTag?: string };
 
 const TEXT_INPUT = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const ARROWS: Record<string, [number, number]> = {

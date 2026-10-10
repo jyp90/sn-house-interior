@@ -5,7 +5,7 @@ export type ImageStore = {
   get(key: string): Promise<Blob | undefined>;
 };
 
-export const MAX_IMAGE_PX = 4096;
+const MAX_IMAGE_PX = 4096;
 
 export function fitWithin(w: number, h: number, max = MAX_IMAGE_PX): { w: number; h: number } {
   const k = Math.min(1, max / Math.max(w, h));
@@ -22,7 +22,7 @@ export function memoryImageStore(): ImageStore {
   };
 }
 
-export function indexedDbImageStore(dbName = 'homefit', storeName = 'images'): ImageStore {
+function indexedDbImageStore(dbName = 'homefit', storeName = 'images'): ImageStore {
   let db: Promise<IDBDatabase> | null = null;
   const fail = (e: DOMException | null, what: string) => e ?? new Error(`IndexedDB ${what}에 실패했습니다`);
   const open = () =>
@@ -68,9 +68,9 @@ export function getDefaultImageStore(): ImageStore {
   return (defaultStore ??= indexedDbImageStore());
 }
 
-export type PreparedImage = { blob: Blob; widthPx: number; heightPx: number };
+type PreparedImage = { blob: Blob; widthPx: number; heightPx: number };
 
-export async function prepareImage(file: Blob, max = MAX_IMAGE_PX): Promise<PreparedImage> {
+async function prepareImage(file: Blob, max = MAX_IMAGE_PX): Promise<PreparedImage> {
   const bitmap = await createImageBitmap(file);
   try {
     const size = fitWithin(bitmap.width, bitmap.height, max);

@@ -5,7 +5,7 @@ export type ParseResult = { ok: true; plan: Plan } | { ok: false; error: string 
 
 type RawPlan = Record<string, unknown>;
 
-export const CURRENT_VERSION = 9;
+const CURRENT_VERSION = 9;
 
 // version N → N+1 변환. 스키마 버전을 올릴 때 여기에 추가한다.
 const MIGRATIONS: Record<number, (raw: RawPlan) => RawPlan> = {

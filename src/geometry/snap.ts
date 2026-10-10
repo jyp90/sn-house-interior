@@ -1,6 +1,6 @@
 import { axes, corners, type OBB } from './obb';
 
-export const WALL_SNAP_CM = 2;
+const WALL_SNAP_CM = 2;
 
 const dot = (a: { x: number; y: number }, b: { x: number; y: number }) => a.x * b.x + a.y * b.y;
 

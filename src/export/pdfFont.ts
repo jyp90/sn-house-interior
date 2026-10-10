@@ -1,7 +1,7 @@
 import boldUrl from 'pretendard/dist/public/static/alternative/Pretendard-Bold.ttf?url';
 import regularUrl from 'pretendard/dist/public/static/alternative/Pretendard-Regular.ttf?url';
 
-export type PdfFonts = { regular: string; bold: string };
+type PdfFonts = { regular: string; bold: string };
 
 export class PdfFontError extends Error {
   constructor(message = '글꼴을 불러오지 못했습니다') {

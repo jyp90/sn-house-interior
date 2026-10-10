@@ -4,9 +4,9 @@ import { pdfViewPoses } from '../scene3d/cameraFit';
 import { captureViews } from '../scene3d/CaptureBridge';
 import { buildPdf, type PdfView } from './pages';
 
-export const VIEW_SIZE = { width: 1200, height: 800 };
+const VIEW_SIZE = { width: 1200, height: 800 };
 
-export function capturePdfViews(plan: Plan): PdfView[] {
+function capturePdfViews(plan: Plan): PdfView[] {
   const capture = captureViews.current;
   if (!capture) return [];
   const poses = pdfViewPoses(planBounds(plan));

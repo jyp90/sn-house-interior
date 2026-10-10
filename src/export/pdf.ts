@@ -24,7 +24,7 @@ const INK = '#1f2328';
 const MUTED = '#6b7280';
 const RULE = '#e5e1d8';
 
-export type PdfResult = { blob: Blob; pageCount: number };
+type PdfResult = { blob: Blob; pageCount: number };
 
 function setFont(doc: jsPDF, style: 'normal' | 'bold', size: number, color: string): void {
   doc.setFont(PDF_FONT_FAMILY, style);

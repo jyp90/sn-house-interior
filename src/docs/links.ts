@@ -2,7 +2,7 @@ import type { Mode } from '../ui/uiStore';
 
 // 탭별 참고 문서 링크. 공유 키가 든 URL이라 private/doc-links.local.json에만 두고 로컬 dev에서만 들어온다(스펙 §15.4).
 // Pages 등 다른 환경에서는 브라우저 localStorage에 저장한 목록을 쓴다(스펙 §43) — Plan JSON·번들·내보내기에는 절대 들어가지 않는다
-export type DocLink = { mode: Mode; label: string; url: string; note?: string };
+type DocLink = { mode: Mode; label: string; url: string; note?: string };
 
 const MODES: Mode[] = ['structure', 'place', 'electric', 'checklist', 'export'];
 
@@ -37,11 +37,11 @@ export function readStoredDocLinks(st: StorageLike | null = storage()): DocLink[
     const raw = st?.getItem(DOC_LINKS_KEY);
     return raw ? parseDocLinks(JSON.parse(raw)) : [];
   } catch {
-    return [];
+    return []; // 저장소 접근 불가나 손상된 JSON은 "저장된 링크 없음"과 같게 본다
   }
 }
 
-export type SaveResult = { ok: true; links: DocLink[] } | { ok: false; error: string };
+type SaveResult = { ok: true; links: DocLink[] } | { ok: false; error: string };
 
 // 사용자가 붙여 넣은 JSON 문자열을 검증해 저장한다. 유효 항목만 남긴 정규화된 목록을 저장한다
 export function writeStoredDocLinks(text: string, st: StorageLike | null = storage()): SaveResult {
@@ -66,7 +66,7 @@ export function clearStoredDocLinks(st: StorageLike | null = storage()): void {
   try {
     st?.removeItem(DOC_LINKS_KEY);
   } catch {
-    // 무시
+    // 저장소 접근 불가: 지울 것도 없다
   }
   notify();
 }
@@ -90,7 +90,7 @@ export const docLinksStore = {
     try {
       return storage()?.getItem(DOC_LINKS_KEY) ?? null;
     } catch {
-      return null;
+      return null; // 저장소 접근 불가 = 저장된 링크 없음
     }
   },
 };

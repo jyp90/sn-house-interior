@@ -1,12 +1,12 @@
 // GitHub Contents API로 저장소의 파일 하나를 읽고 쓴다(스펙 §45.1). React 없음, fetch 주입 가능.
 // 토큰은 호출 인자로만 받고 어디에도 남기지 않는다.
 
-export const GITHUB_API = 'https://api.github.com';
+const GITHUB_API = 'https://api.github.com';
 
-export type GitHubFileRef = { repo: string; branch: string; path: string; token?: string };
-export type GetFileResult = { ok: true; text: string; sha: string } | { ok: false; error: string };
-export type PutFileResult = { ok: true; sha: string } | { ok: false; error: string };
-export type PutFileInput = GitHubFileRef & { token: string; text: string; sha?: string; message: string };
+type GitHubFileRef = { repo: string; branch: string; path: string; token?: string };
+type GetFileResult = { ok: true; text: string; sha: string } | { ok: false; error: string };
+type PutFileResult = { ok: true; sha: string } | { ok: false; error: string };
+type PutFileInput = GitHubFileRef & { token: string; text: string; sha?: string; message: string };
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 export const GITHUB_ERRORS = {
@@ -43,7 +43,7 @@ export function decodeBase64(b64: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-export function contentsUrl(ref: GitHubFileRef): string {
+function contentsUrl(ref: GitHubFileRef): string {
   const path = ref.path.split('/').map(encodeURIComponent).join('/');
   return `${GITHUB_API}/repos/${ref.repo}/contents/${path}`;
 }

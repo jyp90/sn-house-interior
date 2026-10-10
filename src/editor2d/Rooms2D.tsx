@@ -11,8 +11,8 @@ import { FloorPatternDefs, floorFill } from './floorPattern';
 import { markRoomPress } from './roomPress';
 import { areaM2 } from '../geometry/polygon';
 
-export const ROOM_NAME_PX = 20; // 방 이름 글씨(화면 px, 스펙 §37.2)
-export const ROOM_AREA_PX = 14; // 면적 줄 글씨
+const ROOM_NAME_PX = 20; // 방 이름 글씨(화면 px, 스펙 §37.2)
+const ROOM_AREA_PX = 14; // 면적 줄 글씨
 
 function VertexHandle({ roomId, index, point, px }: { roomId: string; index: number; point: Vec2; px: number }) {
   const store = usePlanStore();

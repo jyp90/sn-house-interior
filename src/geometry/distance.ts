@@ -1,7 +1,7 @@
 import type { Vec2 } from '../model/schema';
 import { axes, corners, localToWorld, type OBB } from './obb';
 
-export type DistanceRay = { dir: 'left' | 'right' | 'front' | 'back'; from: Vec2; to: Vec2; distance: number };
+type DistanceRay = { dir: 'left' | 'right' | 'front' | 'back'; from: Vec2; to: Vec2; distance: number };
 
 const cross = (a: Vec2, b: Vec2) => a.x * b.y - a.y * b.x;
 

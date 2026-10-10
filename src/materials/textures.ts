@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { FloorFinish, WallFinish } from '../model/schema';
 import { patternSpec, shade, wallPatternSpec, type PatternSpec } from './pattern';
 
-export type FinishTexture = { texture: THREE.Texture; sizeCm: { w: number; h: number } };
+type FinishTexture = { texture: THREE.Texture; sizeCm: { w: number; h: number } };
 
 const cache = new Map<string, THREE.Texture>();
 const PX_PER_CM = 4;

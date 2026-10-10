@@ -1,7 +1,7 @@
 import type { Opening, Plan, Vec2, Wall } from '../model/schema';
 import type { OBB } from './obb';
 
-export const FLOOR_CUT_SILL_CM = 10;
+const FLOOR_CUT_SILL_CM = 10;
 
 export type WallPiece = { obb: OBB; y0: number; y1: number };
 

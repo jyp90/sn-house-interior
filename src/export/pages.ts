@@ -20,11 +20,11 @@ export const CONTENT_WIDTH = PAGE.width - PAGE.margin * 2;
 export const TABLE_FONT_PT = 10;
 export const NOTE_FONT_PT = 9;
 export const LINE_MM = 5.2;
-export const ROW_PAD_MM = 2.4;
+const ROW_PAD_MM = 2.4;
 export const HEADER_ROW_MM = 8;
 export const TABLE_BODY_MM = PAGE.height - PAGE.top - PAGE.bottom - HEADER_ROW_MM;
 export const MAX_CELL_LINES = Math.floor((TABLE_BODY_MM - ROW_PAD_MM) / LINE_MM);
-export const MAX_NOTES = 8;
+const MAX_NOTES = 8;
 export const NOTE_LINE_MM = 5;
 export const COVER_LABEL_MM = 35;
 export const COVER_LINE_MM = 6.5;
@@ -42,7 +42,7 @@ export function textUnits(s: string): number {
   return n;
 }
 
-export function unitsForWidth(widthMm: number, fontPt = TABLE_FONT_PT): number {
+function unitsForWidth(widthMm: number, fontPt = TABLE_FONT_PT): number {
   return Math.max(1, Math.floor((widthMm - 3) / (fontPt * PT_MM)));
 }
 
@@ -95,10 +95,10 @@ export type TablePage = { kind: 'table'; title: string; columns: TableColumn[]; 
 export type PdfView = { label: string; dataUrl: string };
 export type ViewsPage = { kind: 'views'; title: string; views: PdfView[]; emptyText: string };
 export type PdfPage = CoverPage | DrawingPage | TablePage | ViewsPage;
-export type PdfInput = { views: PdfView[]; now: Date };
+type PdfInput = { views: PdfView[]; now: Date };
 export type PdfDocument = { header: string; fileName: string; pages: PdfPage[] };
 
-export function tablePages(title: string, columns: TableColumn[], cells: string[][], emptyText: string): TablePage[] {
+function tablePages(title: string, columns: TableColumn[], cells: string[][], emptyText: string): TablePage[] {
   const rows = cells.map((r) => r.map((c, i) => clampLines(wrapText(c, unitsForWidth(columns[i].width)), MAX_CELL_LINES)));
   const chunks: string[][][][] = [];
   let current: string[][][] = [];

@@ -9,11 +9,11 @@ export function defaultStorage(): Storage | undefined {
   try {
     return globalThis.localStorage;
   } catch {
-    return undefined;
+    return undefined; // 사생활 보호 모드 등에서 접근 자체가 throw
   }
 }
 
-export type ReadStoredPlanResult =
+type ReadStoredPlanResult =
   | { status: 'empty' }
   | { status: 'ok'; plan: Plan }
   | { status: 'invalid'; raw: string; error: string };

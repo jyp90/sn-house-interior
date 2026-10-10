@@ -10,7 +10,7 @@ export function cmPerPxFrom(a: Vec2, b: Vec2, lengthCm: number): number | null {
   return lengthCm / d;
 }
 
-export function scaleMismatch(primary: number, check: number): number {
+function scaleMismatch(primary: number, check: number): number {
   return Math.abs(primary - check) / primary;
 }
 

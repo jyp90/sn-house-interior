@@ -1,6 +1,6 @@
 import { cmToM } from '../model/units';
 
-export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
+type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
 type Vec3 = [number, number, number];
 export type CameraFit = { position: Vec3; target: Vec3 };
 

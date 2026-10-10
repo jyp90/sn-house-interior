@@ -18,7 +18,7 @@ import { buildToilet } from './toilet';
 import { buildTv } from './tv';
 import { buildWardrobe } from './wardrobe';
 
-export type Builder = (p: Product, v: Variant) => THREE.Group;
+type Builder = (p: Product, v: Variant) => THREE.Group;
 
 const BUILDERS: Record<BuilderId, Builder> = {
   box: buildBox,

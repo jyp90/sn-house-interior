@@ -3,7 +3,7 @@ import { cmToM } from '../../model/units';
 
 const materials = new Map<string, THREE.MeshStandardMaterial>();
 
-export function material(color: string): THREE.MeshStandardMaterial {
+function material(color: string): THREE.MeshStandardMaterial {
   let m = materials.get(color);
   if (!m) {
     m = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05 });

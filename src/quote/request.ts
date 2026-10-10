@@ -1,6 +1,6 @@
 // 업체 전달용 견적 요청 내용(스펙 §15.3). 예산 금액·업체 판단 기준은 넣지 않는다
 
-export type QuoteGroup = { name: string; items: string[] };
+type QuoteGroup = { name: string; items: string[] };
 
 export const QUOTE_GROUPS: QuoteGroup[] = [
   { name: '철거·폐기', items: ['전체 철거', '거실·주방 사이 벽 철거', '폐기물 처리', '운반·양중'] },
@@ -49,7 +49,7 @@ export const QUOTE_QUESTIONS: string[] = [
   '철거 후 현장 상태를 보고 전기·단열을 저희와 한 번 더 확인하는 과정이 있는지',
 ];
 
-export type QuoteSpec = { item: string; current: string; method: string };
+type QuoteSpec = { item: string; current: string; method: string };
 
 export const QUOTE_SPECS: QuoteSpec[] = [
   { item: '바닥재', current: '장판', method: '3.2T 기준, 2.2T·4.5T 비교' },
@@ -72,7 +72,7 @@ export const QUOTE_SPECS: QuoteSpec[] = [
   { item: '천장 흡음·차음', current: '선택사항', method: '효과와 천장고가 낮아지는 폭 안내' },
 ];
 
-export type PhotoRequest = { phase: string; photo: string };
+type PhotoRequest = { phase: string; photo: string };
 
 export const PHOTO_REQUESTS: PhotoRequest[] = [
   { phase: '샷시', photo: '창틀 설치 상태와 폼 충전 상태' },

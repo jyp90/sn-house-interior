@@ -6,7 +6,7 @@ export type SectorShape = { kind: 'sector'; center: Vec2; radius: number; start:
 export type ClearanceShape = { kind: 'rect'; obb: OBB } | SectorShape;
 
 // 문짝 하나: hinge에서 closed 방향(벽 면을 따라)으로 닫혀 있고 open 방향으로 90° 열린다
-export type DoorLeaf = { hinge: Vec2; closed: Vec2; open: Vec2; width: number; swing: SectorShape };
+type DoorLeaf = { hinge: Vec2; closed: Vec2; open: Vec2; width: number; swing: SectorShape };
 
 // hinge에서 closed 방향으로 닫혀 있던 문이 open 방향으로 90° 열린다
 function sector(hinge: Vec2, closed: Vec2, open: Vec2, r: number): SectorShape {
@@ -87,7 +87,7 @@ export function doorSwings(plan: Plan): ClearanceShape[] {
 // 외짝 슬라이딩 문짝(spec §47.2): 레일 면(swingIn 쪽 법선)으로 두께/2 + 3cm 띄운 선분.
 // a = 경첩 반대쪽 끝, b = hinge 쪽 끝, dir = 열 때 문짝이 밀려가는 단위 벡터(hinge가 end면 +u, start면 -u)
 export const SLIDING_RAIL_GAP_CM = 3;
-export type SlidingLeaf = { a: Vec2; b: Vec2; dir: Vec2 };
+type SlidingLeaf = { a: Vec2; b: Vec2; dir: Vec2 };
 
 export function slidingLeaf(w: Wall, o: Opening): SlidingLeaf | null {
   if (o.kind !== 'door' || o.leaves !== 'sliding') return null;
@@ -103,8 +103,8 @@ export function slidingLeaf(w: Wall, o: Opening): SlidingLeaf | null {
 }
 
 // 문짝 선 중앙에서 dir로 25cm 화살표(spec §47.3): 자루 from→tip, 화살촉 h1·h2. 2D·PNG/PDF가 같은 점을 쓴다
-export const SLIDE_ARROW_CM = 25;
-export type SlideArrow = { from: Vec2; tip: Vec2; h1: Vec2; h2: Vec2 };
+const SLIDE_ARROW_CM = 25;
+type SlideArrow = { from: Vec2; tip: Vec2; h1: Vec2; h2: Vec2 };
 
 export function slideArrow({ a, b, dir }: SlidingLeaf): SlideArrow {
   const from = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };

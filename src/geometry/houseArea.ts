@@ -2,7 +2,7 @@ import type { Vec2, Wall } from '../model/schema';
 import { corners } from './obb';
 import { wallObb } from './walls';
 
-export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
+type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
 
 // 집 영역(스펙 §38): 모든 벽 OBB 모서리를 감싸는 사각형(벽 두께 포함). 벽이 없으면 null = 제한 없음
 export function houseBounds(walls: Wall[]): Bounds | null {

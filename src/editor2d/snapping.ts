@@ -1,7 +1,7 @@
 import type { Vec2, Wall } from '../model/schema';
 import { wallDir, wallLength } from '../geometry/walls';
 
-export const ENDPOINT_SNAP_CM = 15;
+const ENDPOINT_SNAP_CM = 15;
 
 const STEP = Math.PI / 4;
 const round = (p: Vec2): Vec2 => ({ x: Math.round(p.x), y: Math.round(p.y) });

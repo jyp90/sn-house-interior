@@ -10,12 +10,12 @@ export const GATE_UNLOCK_MS = 7 * 24 * 60 * 60 * 1000;
 /** SHA-256('0809') hex. PIN 자체는 번들에 두지 않는다 */
 export const PIN_HASH = '3bd62f7f9ccb2821f5330bd3a68629ed8b8a1a19370adf7d74636e76a698d430';
 
-export interface GateState {
+interface GateState {
   fails: number;
   lockedUntil: number | null;
 }
 
-export type GateStatus = { kind: 'open'; remaining: number } | { kind: 'locked'; until: number };
+type GateStatus = { kind: 'open'; remaining: number } | { kind: 'locked'; until: number };
 
 const EMPTY: GateState = { fails: 0, lockedUntil: null };
 

@@ -14,11 +14,11 @@ function local(): Storage | undefined {
   try {
     return globalThis.localStorage;
   } catch {
-    return undefined;
+    return undefined; // 사생활 보호 모드 등에서 접근 자체가 throw
   }
 }
 
-export function remainingLabel(until: number, now: number): string {
+function remainingLabel(until: number, now: number): string {
   const min = Math.max(1, Math.ceil((until - now) / 60_000));
   return `${min}분 뒤 다시 시도할 수 있습니다.`;
 }
