@@ -21,7 +21,7 @@ describe('pointInObb', () => {
 describe('itemsAtPoint', () => {
   it('겹친 아이템을 위에 그려진 것부터 돌려준다', () => {
     const plan = withActiveItems(
-      { version: 9 as const, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields() },
+      { version: 10 as const, info: { title: 't' }, walls: [], openings: [], rooms: [], ...emptyPlanFields() },
       [
         { id: 'a', productId: 'p', variantId: 'v', x: 0, y: 0, rotation: 0 },
         { id: 'b', productId: 'p', variantId: 'v', x: 30, y: 0, rotation: 0 },

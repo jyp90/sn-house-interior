@@ -283,7 +283,6 @@ p.badge { display: inline-block; margin: 0 0 8px; }
 .fixture2d-selected .fixture2d-shape { stroke: var(--accent); stroke-width: 3; }
 .fixture2d-letter { font-weight: 700; pointer-events: none; user-select: none; }
 .switch-link { stroke: #4338ca; stroke-width: 1.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; pointer-events: none; }
-.item2d-circuit { stroke: var(--danger); stroke-width: 3; stroke-dasharray: 6 4; }
 
 /* 진입 PIN 잠금(스펙 §42) */
 .gate { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--bg); }

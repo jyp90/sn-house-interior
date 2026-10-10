@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FIXTURE_GLYPH } from '../electrical/fixtures';
 import type { Fixture, Wall } from '../model/schema';
-import { fixtureParts, LID_OPACITY, PLATE_COLOR } from './fixtureParts';
+import { FAN_SPAN_CM, fixtureParts, LID_OPACITY, PLATE_COLOR } from './fixtureParts';
 
 const wall: Wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, thickness: 10, height: 230 };
 const fx = (over: Partial<Fixture>): Fixture => ({ id: 'f', kind: 'outlet', pos: { x: 100, y: 5 }, height: 30, ...over });
@@ -92,6 +92,28 @@ describe('fixtureParts (spec §40)', () => {
     const [base, dome] = fixtureParts(fx({ kind: 'light', height: 0 }), [wall], 230);
     expect(base.yCenter).toBe(6.5 - 0.75);
     expect(dome.yCenter).toBe(2.5);
+  });
+
+  it('실링팬: 받침 원판 + 모터 원통 + 날개 4장, 끝에서 끝까지 120cm, 모두 천장 아래 (스펙 §51.3)', () => {
+    const parts = fixtureParts(fx({ kind: 'ceiling-fan', pos: { x: 200, y: 200 }, height: 230 }), [wall], 230);
+    expect(parts[0]).toMatchObject({ kind: 'disc', cx: 200, cy: 200, yCenter: 229 - 0.75 });
+    expect(parts[1]).toMatchObject({ kind: 'cylinder', axis: 'y', cx: 200, cy: 200 });
+    const blades = parts.filter((p) => p.kind === 'box');
+    expect(blades).toHaveLength(4);
+    expect(parts).toHaveLength(6);
+    for (const p of parts) expect(p.yCenter + p.h / 2).toBeLessThanOrEqual(229);
+    for (const b of blades) {
+      expect(b).toMatchObject({ h: 1.5, d: 14 });
+      expect(b.yCenter).toBeLessThan(parts[1].yCenter);
+    }
+    // 날개는 90°씩, 바깥 끝은 중심에서 60cm
+    expect(blades.map((b) => b.angle)).toEqual([0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2]);
+    const tips = blades.map((b) => Math.hypot(b.cx - 200, b.cy - 200) + b.w / 2);
+    for (const t of tips) expect(t).toBeCloseTo(FAN_SPAN_CM / 2);
+    const [east, , west] = blades;
+    expect(east.cx + east.w / 2 - (west.cx - west.w / 2)).toBeCloseTo(FAN_SPAN_CM);
+    // 천장보다 높게 적힌 실링팬은 천장 아래로
+    expect(fixtureParts(fx({ kind: 'ceiling-fan', height: 300 }), [wall], 240)[0].yCenter).toBe(239 - 0.75);
   });
 
   it('벽에 붙지 않았거나 벽이 사라진 콘센트·스위치는 6cm 정육면체', () => {

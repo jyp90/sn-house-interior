@@ -3,8 +3,8 @@
 프로젝트 개요·규칙은 `CLAUDE.md`, 문서 지도는 `docs/README.md`. 이 파일은 현재 상태와 다음 할 일만 둔다. 이슈별 상세 핸드오프는 `handoff/`(진행 중)·`archive/`(완료), 둘 다 git 제외.
 
 ## 지금 상태
-- 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 9`, 스펙 최신 라운드 §50.
-- 테스트(`main`): typecheck 통과, `npm test` 629 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 52 통과(20 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
+- 2026-10-10 기준 `main` = PR #37 `chore/anti-slop`(anti-slop 정리: 미사용 export 117개 해제, 죽은 타입 4개 삭제, 동작 변경 없음) 병합(그 전 #36 §48, #35 §47, #34 §46, #33 §45). 열린 브랜치·워크트리·PR 없음. 스키마 `CURRENT_VERSION = 10`, 스펙 최신 라운드 §51.
+- 테스트(`main`): typecheck 통과, `npm test` 634 통과·3 skip(워크트리 기준; `private/`가 있는 메인 체크아웃은 +3), e2e 53 통과(21 spec), e2e:preview 2 통과, check:dist·privacy scan 통과. slop-scan 0, knip 0(`node ~/.claude/skills/anti-slop/scripts/slop-scan.mjs`, `npx -y knip@5`).
 - **공개 배포 중**: https://jyp90.github.io/sn-house-interior/ — `main` push마다 `pages.yml`(typecheck→test→build→check:dist→deploy), PR·main push마다 `privacy.yml`(secret `PRIVACY_TERMS`). 우리 집 프리셋은 `home/plan.json`·`home/floorplan.jpg`로 추적·배포(§24). 옛 repo `jyp90/sn-house-interior-old`(비공개) 보존.
 - 2026-10-10 `chore/home-sync`: 사용자가 Pages(브라우저 localStorage)에서 편집한 평면을 `home/plan.json` 프리셋으로 반영(방 8개·벽 14·창호 9·설비 28·A안 가구 6개, 거실 opacity 0.9). `homePreset.test.ts` 스냅샷(방 개수·거실 polygon)을 새 프리셋에 맞춤.
 - 미확인: 실제 휴대폰 Safari에서 §48 1열 배치·핀치 줌(에뮬레이션만 확인).
@@ -12,6 +12,7 @@
 ### 병합된 라운드 (최신 먼저, PR 번호는 현재 repo 기준)
 | § | PR | 내용 | 테스트(unit/e2e) |
 |---|---|---|---|
+| §51 | — | 체크리스트 53 → 61(휴젠트·디아망·냉장고 가림·실링팬), 구조·전기 탭 2D에서 가구 숨김(`Items2D`/`Overlays2D`), 설비 `ceiling-fan`(스키마 v10, 3D 날개), 프리셋 거실 샷시 `living-sash`·실링팬 `fx-living-fan` | 634 / 53 |
 | §50 | — | 체크리스트 기본 항목 48 → 53: 전력 증설·가스 배관 매립(공통 2, 목공·전기 3, `checklist/defaults.ts`) | 629 / 52 |
 | §49 | #39 | 모바일 체크리스트·내보내기 가로 고정(`.cl-head` 음수 여백을 16px 패널 여백에 맞춤, `.page-panel` `overflow-x: hidden`·`touch-action: pan-y`), 핀치 e2e 간헐 실패(맞춤이 핀치를 덮음) 수정 | 628 / 52 |
 | §48 | #36 | 모바일 1열 배치(`styles.css` 820px: 캔버스 60vh → 속성 → 도구, viewport 항상 device-width, `smallScreen.ts`·안내 문구 삭제) | 628 / 51 |
@@ -52,6 +53,7 @@
 라운드별 상세(QA 절차·보류 사유)는 `archive/*/HANDOFF.md`(로컬 전용). 스펙 §별 코드 위치는 `docs/README.md` Feature map.
 
 ## 다음 할 일
+0. 배포본: 갱신 배너 → 구조 탭 「우리 집 기본 평면 불러오기」로 §51 샷시·실링팬 적용. `ed20515` 동기화로 프리셋이 §39 v2 구조(창고·단·18cm 벽) 이전 구조로 돌아가 있음 — v2 구조 복원 여부는 사용자 판단.
 0. 배포본 사용자 작업: 배포 후 구조 탭 「우리 집 기본 평면 불러오기」로 프리셋 v2 적용(갱신 배너가 안내). 옛 배경 이미지(`home/floorplan.jpg`)는 v2 치수와 안 맞으므로 투명도를 올리면 어긋남 — 새 도면 이미지로 교체·재보정은 별도 라운드.
 1. 배포 후속: 휴대폰 Safari에서 실제 주소 확인(§46 잠금 화면 크기·키보드 닫기 입장, §44 핀치 줌); §45 「GitHub에 저장」을 fine-grained PAT(contents: write)로 실제 1회 검증(pages.yml·privacy.yml 통과 확인); 옛 repo `sn-house-interior-old` 삭제 여부(`gh auth refresh -s delete_repo` 후 `gh repo delete`); PWA(manifest·오프라인)는 범위 밖(설계 §12), 원하면 별도 라운드.
 2. 계획 5 잔여(스펙 §14.5-5, §20.6): 삼성 모델 목록(사용자 제공) → `-sample` 제품 13개의 공식 치수·`sourceUrl` 교체(`adding-catalog-product`). `private/make-our-home.mjs`는 아직 `version: 3`이고 `middle-door`가 `kind: 'opening'`(로드 시 v9로 마이그레이션되므로 급하지 않음; 손볼 때 현재 `CURRENT_VERSION`과 §47 슬라이딩 중문으로). **다시 돌릴 때 §35로 넣은 방 8개 `polygon`을 보존해야 함**(스크립트에 polygon을 넣거나, 돌린 뒤 앱의 「영역 없는 방 자동 인식」으로 다시 채우고 JSON 저장).

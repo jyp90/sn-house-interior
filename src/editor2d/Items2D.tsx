@@ -1,7 +1,6 @@
-import { useContext, useEffect, useMemo, useRef, type PointerEvent } from 'react';
+import { useContext, useEffect, useRef, type PointerEvent } from 'react';
 import { ceilingHeightCm, itemElevationCm } from '../catalog/elevation';
 import { findProduct } from '../catalog/products';
-import { missingDedicatedCircuitCached } from '../electrical/fixtures';
 import { corners, itemObb } from '../geometry/obb';
 import { itemsAtPoint } from '../geometry/pick';
 import { snapToWalls } from '../geometry/snap';
@@ -31,10 +30,6 @@ export function Items2D({ px }: { px: number }) {
   const svgRef = useContext(SvgContext);
   const drag = useRef<Drag | null>(null);
   const interactive = mode === 'place' && tool === 'select';
-  const missingCircuit = useMemo(
-    () => (mode === 'electric' ? new Set(missingDedicatedCircuitCached(plan)) : new Set<string>()),
-    [mode, plan],
-  );
   const toPlan = (e: { clientX: number; clientY: number }) => clientToPlan(svgRef.current!, e.clientX, e.clientY);
 
   const onDown = (e: PointerEvent<SVGPolygonElement>, item: Item) => {
@@ -92,6 +87,8 @@ export function Items2D({ px }: { px: number }) {
     if (ids.length > 1) useUi.getState().showCandidates({ ids, clientX: e.clientX, clientY: e.clientY });
   };
 
+  // 가구·가전은 배치 탭에서만 그린다(스펙 §51.2). 훅은 위에서 모두 호출한 뒤 여기서 빠진다
+  if (mode !== 'place') return null;
   const ceiling = ceilingHeightCm(plan);
   return (
     <g className="items2d">
@@ -105,7 +102,6 @@ export function Items2D({ px }: { px: number }) {
           item.id === selectedId ? 'item2d-selected' : '',
           st?.clearanceBlocked ? 'item2d-warn' : '',
           st?.collides || st?.blocksDoor ? 'item2d-danger' : '',
-          missingCircuit.has(item.id) ? 'item2d-circuit' : '',
           elevation > 0 ? 'item2d-elevated' : '',
           product?.mount === 'ceiling' ? 'item2d-ceiling' : '',
         ]

@@ -69,7 +69,7 @@ export const LayoutSchema = z.object({
 
 export const FixtureSchema = z.object({
   id,
-  kind: z.enum(['outlet', 'outlet-dedicated', 'outlet-waterproof', 'switch', 'light']),
+  kind: z.enum(['outlet', 'outlet-dedicated', 'outlet-waterproof', 'switch', 'light', 'ceiling-fan']),
   wallId: id.optional(),
   pos: Vec2Schema,
   height: cm.nonnegative(),
@@ -153,7 +153,7 @@ export const BackgroundSchema = z.object({
 
 export const PlanSchema = z
   .object({
-    version: z.literal(9),
+    version: z.literal(10),
     info: PlanInfoSchema,
     background: BackgroundSchema.optional(),
     walls: z.array(WallSchema),

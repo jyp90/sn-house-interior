@@ -113,6 +113,30 @@ describe('home/plan.json', () => {
       { x: 504, y: 680 },
     ]);
   });
+
+  it('거실 확장부 외벽 샷시 living-sash가 e-left 거실 구간(y 390–690) 안에 있고, 실링팬 fx-living-fan은 거실 안에 있다 (스펙 §51.4)', () => {
+    const r = parsePlan(JSON.parse(readFileSync(HOME_PLAN, 'utf8')));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.plan.version).toBe(10);
+    const sash = r.plan.openings.find((o) => o.id === 'living-sash')!;
+    expect(sash).toMatchObject({ wallId: 'e-left', kind: 'window', width: 270, height: 210, sill: 0 });
+    const wall = r.plan.walls.find((w) => w.id === 'e-left')!;
+    expect(wall.a).toEqual({ x: 0, y: 690 });
+    expect(wall.b).toEqual({ x: 0, y: 0 });
+    const from = wall.a.y - sash.offset;
+    const to = from - sash.width;
+    expect(Math.min(from, to)).toBeGreaterThanOrEqual(390);
+    expect(Math.max(from, to)).toBeLessThanOrEqual(690);
+    // 기존 거실 창과 겹치지 않는다
+    const other = r.plan.openings.find((o) => o.id === 'living-window')!;
+    expect(sash.offset + sash.width <= other.offset || other.offset + other.width <= sash.offset).toBe(true);
+
+    const fan = r.plan.fixtures.find((f) => f.id === 'fx-living-fan')!;
+    expect(fan).toMatchObject({ kind: 'ceiling-fan', height: 230 });
+    expect(fan.wallId).toBeUndefined();
+    const living = r.plan.rooms.find((room) => room.id === 'living')!.polygon!;
+    expect(pointInPolygon(fan.pos, living)).toBe(true);
+  });
 });
 
 describe('프리셋 갱신 안내 (스펙 §39.4)', () => {
