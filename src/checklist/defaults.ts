@@ -21,6 +21,8 @@ export const DEFAULT_CHECKLIST: ChecklistItem[] = [
   item('i-common-1', 'common', '자재가 들어오면 주문한 브랜드·모델·규격과 같은지 대조한다'),
   item('i-common-2', 'common', '벽 안 전기 배선과 수도관을 옮긴 구간은 덮기 전에 사진·영상으로 남긴다'),
   item('i-common-3', 'common', '방수·단열처럼 마감 후 안 보이는 공정은 시공 사진을 받아 둔다'),
+  item('i-common-4', 'common', '전력 증설(계약전력 올리기)은 관리사무소 동의와 한전 신청이 필요하니 공사 시작 전에 접수해 둔다'),
+  item('i-common-5', 'common', '가스 배관 이설·매립은 가스시설 시공업체가 맡고, 도시가스사 신고와 완성검사 날짜를 미리 잡는다'),
 
   item('i-demo-1', 'demolition', '바닥·현관문·창호 등 철거하지 않는 곳에 합판·골판지 보양이 됐는지 본다'),
   item('i-demo-2', 'demolition', '현관에서 집으로 올라서는 턱 모서리는 파손이 잦으니 보양을 따로 부탁한다'),
@@ -50,6 +52,9 @@ export const DEFAULT_CHECKLIST: ChecklistItem[] = [
   item('i-carp-7', 'carpentry', '문선(9mm)과 걸레받이 두께가 요청한 대로인지 본다'),
   item('i-carp-8', 'carpentry', '커튼박스 안에 간접조명용 전선이 미리 빠져 있는지 본다'),
   item('i-carp-9', 'carpentry', '스위치·콘센트 박스 자리가 정확히 뚫렸는지 본다'),
+  item('i-carp-10', 'carpentry', '전력 증설에 맞춰 분전반 메인 차단기와 인입 전선 굵기를 올렸는지, 늘린 회로마다 이름표가 붙었는지 본다'),
+  item('i-carp-11', 'carpentry', '벽·바닥에 묻는 가스 배관은 덮기 전에 누설 검사를 통과했는지 확인한다'),
+  item('i-carp-12', 'carpentry', '묻은 가스 배관 경로를 사진·치수로 남기고, 그 줄에는 못·피스를 박지 말라고 다음 공정에 알린다'),
 
   item('i-tile-1', 'tile', '바닥·벽 평탄도를 본 뒤 접착제를 바르는지 확인한다'),
   item('i-tile-2', 'tile', '욕실 바닥이 배수구 쪽으로 기울어 물이 고이지 않는지 본다'),

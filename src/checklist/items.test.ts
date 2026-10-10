@@ -23,6 +23,11 @@ describe('기본 항목', () => {
     expect(new Set(DEFAULT_CHECKLIST.map((i) => i.id)).size).toBe(DEFAULT_CHECKLIST.length);
     expect(DEFAULT_CHECKLIST.every((i) => !i.auto && i.id.startsWith('i-'))).toBe(true);
   });
+  it('전력 증설·가스 배관 매립은 공사 전 신청(공통)과 덮기 전 확인(목공·전기)에 들어 있다 (스펙 §50)', () => {
+    const phasesOf = (word: string) => [...new Set(DEFAULT_CHECKLIST.filter((i) => i.text.includes(word)).map((i) => i.phase))].sort();
+    expect(phasesOf('전력 증설')).toEqual(['carpentry', 'common']);
+    expect(phasesOf('가스 배관')).toEqual(['carpentry', 'common']);
+  });
 });
 
 describe('autoChecklist', () => {
